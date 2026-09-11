@@ -6,6 +6,7 @@ import { maxCollectionRadius, type Level } from "./shared";
 import "./style.css";
 import { Trophy } from "./Trophy";
 import { BrandCursor } from "./BrandCursor";
+import { RabbitLab } from "./RabbitLab";
 import { ProgressDial, PickupSignal } from "./Circuit";
 import {
   ArrowRightIcon,
@@ -426,5 +427,7 @@ function App() {
   );
 }
 const appRoot = createRoot(document.getElementById("root")!);
-appRoot.render(<App />);
+appRoot.render(
+  new URLSearchParams(location.search).get("lab") === "rabbit" ? <RabbitLab /> : <App />,
+);
 if (import.meta.hot) import.meta.hot.dispose(() => appRoot.unmount());

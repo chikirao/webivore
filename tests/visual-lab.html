@@ -104,8 +104,8 @@
           percent: (game.mass / game.total) * 100,
           done: game.done,
           visualBites: game.visualBites,
-          outerHighlights: game.collection.accents.length,
-          outerGraphics: game.collection.accents.filter(a => a.score >= 1e6).length,
+          outerHighlights: game.collection.priorities.length,
+          outerGraphics: game.collection.priorities.filter((a) => a.score >= 1e6).length,
           renderedMeshes: game.collection.renderMeshes.length,
         });
       }

@@ -96,3 +96,26 @@ small {
     display: none;
   }
 }
+.lab {
+  padding: 20px;
+  font: 13px Arial, sans-serif;
+  background: #fff;
+  color: #111;
+}
+.lab-sheet {
+  display: grid;
+  grid-template-columns: repeat(8, 256px);
+  gap: 8px;
+  margin-bottom: 30px;
+}
+.lab figure {
+  margin: 0;
+  border: 3px solid #0c0;
+}
+.lab figure.bad {
+  border-color: #f00;
+}
+.lab figcaption {
+  font-size: 10px;
+  padding: 3px;
+}

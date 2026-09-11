@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { PickupIndex, combinedPiece } from "../src/grouping";
 import { properties, type Piece } from "../src/shared";
-import { highlightScore, highlightSlot, HIGHLIGHT_LIMIT } from '../src/highlights';
+import { highlightScore, highlightSlot, PRIORITY_LIMIT as HIGHLIGHT_LIMIT } from "../src/highlights";
 const items = Array.from({ length: 100 }, (_, id) => ({
   id,
   x: 100 + (id % 10) * 12,

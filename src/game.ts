@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { maxCollectionRadius, type Level, type Piece } from "./shared";
 import { PickupIndex, combinedPiece } from "./grouping";
-import { Rabbit } from "./rabbit";
+import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
 import { LayeredPile, type PackedFragment } from "./pile";
 
@@ -541,7 +541,7 @@ export class Game {
     this.x = clamp(this.x, 18, this.level.width - 18);
     this.y = clamp(this.y, 18, this.level.height - 18);
     const reach = this.count ? this.radius : 13;
-    const offset = this.count ? 24 + this.radius : 0;
+    const offset = this.count ? RABBIT.ballGap + this.radius : 0;
     const px = this.x + Math.sin(this.heading) * offset,
       pz = this.y + Math.cos(this.heading) * offset;
     const nearby = new Set([
@@ -590,9 +590,9 @@ export class Game {
     if (this.count && !this.paused && !this.reduced)
       this.pile.rotateY(dt * 0.24);
     this.pile.position.set(
-      this.x + Math.sin(this.heading) * (24 * scale + this.radius),
+      this.x + Math.sin(this.heading) * (RABBIT.ballGap * scale + this.radius),
       Math.max(12, this.radius),
-      this.y + Math.cos(this.heading) * (24 * scale + this.radius),
+      this.y + Math.cos(this.heading) * (RABBIT.ballGap * scale + this.radius),
     );
     if (this.pileShadow) {
       this.pileShadow.visible = this.count > 0;
