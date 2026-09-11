@@ -1,0 +1,336 @@
+/* Entry screen: logo rail, URL slot with START key, hero rabbit, bottom rail. */
+.entry {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
+  grid-template-rows: auto 1fr auto auto;
+  grid-template-areas:
+    "head hero"
+    "form hero"
+    "author hero"
+    "rail rail";
+  gap: 0 var(--pad);
+  padding: var(--pad) 0 0 var(--pad);
+  background: var(--paper);
+  overflow: hidden;
+}
+.entry-head {
+  grid-area: head;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding-top: 6px;
+}
+.logo-rail {
+  width: 100%;
+  padding: clamp(10px, 1.2vw, 18px) clamp(26px, 4vw, 60px) clamp(12px, 1.4vw, 22px) clamp(22px, 2.6vw, 40px);
+  justify-content: flex-start;
+}
+.logo-rail .logotype {
+  font-size: clamp(54px, 8.6vw, 132px);
+}
+.logo-accents {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding-left: 34px;
+}
+.logo-accents .hatch-red {
+  width: 120px;
+  height: 16px;
+}
+.logo-accents .ink-bar {
+  height: 8px;
+  width: 42%;
+  background: var(--ink);
+}
+/* Form block */
+.entry-form {
+  grid-area: form;
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 10px 0 20px;
+  max-width: 900px;
+}
+.globe {
+  width: clamp(64px, 6.4vw, 96px);
+  height: clamp(64px, 6.4vw, 96px);
+  border-radius: 50%;
+  background: var(--paper);
+  border: 5px solid var(--ink);
+  box-shadow: 0 0 0 3px var(--paper) inset;
+  display: grid;
+  place-items: center;
+  margin-bottom: -6px;
+}
+.globe svg {
+  width: 62%;
+  height: 62%;
+}
+.url-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  width: 100%;
+}
+.url-slot {
+  min-height: clamp(78px, 8.5vw, 124px);
+  justify-content: stretch;
+  padding: 0;
+}
+.url-slot .plate-body {
+  width: 100%;
+  height: 100%;
+}
+.url-slot input {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 0 clamp(20px, 2.6vw, 40px);
+  font-family: var(--display);
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(22px, 2.9vw, 42px);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.url-slot input::placeholder {
+  color: var(--smoke);
+}
+.url-slot:focus-within .plate-art path:last-child {
+  stroke: var(--red);
+}
+.start-key {
+  min-width: clamp(170px, 20vw, 300px);
+  margin-left: -8px;
+  padding: 0 clamp(52px, 6vw, 92px) 0 clamp(22px, 2.6vw, 38px);
+  font-size: clamp(28px, 3.4vw, 50px);
+}
+.entry-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.tick {
+  width: 42px;
+  height: 12px;
+  transform: skewX(-20deg);
+}
+.chip.preset {
+  color: var(--ink);
+}
+.chip.demo {
+  font-size: 19px;
+  min-height: 54px;
+  padding: 0 36px;
+}
+.entry-status {
+  min-height: 24px;
+  text-align: center;
+  max-width: 640px;
+}
+/* Hero */
+.entry-hero {
+  grid-area: hero;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.hero-art {
+  position: absolute;
+  right: -6%;
+  bottom: -2%;
+  height: 104%;
+  max-height: 900px;
+  width: auto;
+  min-width: 100%;
+  object-fit: cover;
+}
+.entry-author {
+  grid-area: author;
+  align-self: end;
+  margin: 0 0 22px 6px;
+}
+/* Bottom rail */
+.entry-rail {
+  grid-area: rail;
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.6vw, 26px);
+  height: clamp(58px, 6.4vw, 84px);
+  padding: 0 var(--pad) 0 var(--pad);
+  background: var(--ink);
+  color: var(--paper);
+  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40%, 100% 100%, 0 100%);
+  margin-left: calc(-1 * var(--pad));
+}
+.entry-rail .strip {
+  height: 18px;
+}
+.hatch-white {
+  width: 110px;
+  background: repeating-linear-gradient(-60deg, var(--paper) 0 9px, transparent 9px 22px);
+}
+.entry-rail .checker {
+  width: 150px;
+  height: 22px;
+  background: repeating-conic-gradient(var(--paper) 0 25%, var(--ink) 0 50%) 0 0 / 22px 22px;
+}
+.serial {
+  height: 20px;
+  width: auto;
+}
+.rail-bar {
+  width: 3px;
+  height: 30px;
+  background: var(--paper);
+}
+.rail-sound {
+  width: var(--touch);
+  height: var(--touch);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+}
+.rail-sound svg {
+  width: 30px;
+  height: 30px;
+}
+.rail-sound:hover {
+  color: var(--red);
+}
+.rail-line {
+  flex: 1;
+  height: 3px;
+  background: var(--paper);
+  min-width: 30px;
+}
+.rail-hint {
+  margin: 0;
+  color: var(--ash);
+}
+.rail-hint b {
+  color: var(--paper);
+}
+.rail-chevrons {
+  height: 22px;
+  width: auto;
+  color: var(--paper);
+}
+.entry-rail .hatch-red.wide {
+  width: 120px;
+  height: 100%;
+}
+.dots-paper {
+  width: 90px;
+  height: 100%;
+  background: radial-gradient(circle, var(--paper) 1.8px, transparent 2.1px) 0 0 / 9px 9px;
+}
+/* Recompose: single column, hero becomes a cropped band under the logo. */
+@media (max-width: 1000px), (max-aspect-ratio: 1/1) {
+  .entry {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(140px, 36vh) 1fr auto auto;
+    grid-template-areas:
+      "head"
+      "hero"
+      "form"
+      "author"
+      "rail";
+    padding-right: var(--pad);
+  }
+  .logo-rail .logotype {
+    font-size: clamp(46px, 11vw, 96px);
+  }
+  .entry-hero {
+    margin: 0 calc(-1 * var(--pad)) 0 0;
+  }
+  .hero-art {
+    right: -2%;
+    bottom: auto;
+    top: -4%;
+    height: 210%;
+    min-width: 0;
+  }
+  .entry-form {
+    align-self: start;
+    max-width: none;
+    width: 100%;
+  }
+  .entry-rail {
+    margin-right: calc(-1 * var(--pad));
+  }
+  .hatch-white,
+  .entry-rail .checker,
+  .dots-paper {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .entry {
+    min-height: 620px;
+    grid-template-rows: auto minmax(96px, 22vh) 1fr auto auto;
+  }
+  .logo-rail {
+    padding: 8px 18px 10px 14px;
+  }
+  .logo-accents .hatch-red {
+    width: 70px;
+  }
+  .globe {
+    margin-bottom: -2px;
+  }
+  .url-form {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .url-slot {
+    min-height: 68px;
+  }
+  .url-slot input {
+    font-size: 21px;
+    padding: 0 18px;
+  }
+  .start-key {
+    margin-left: 0;
+    min-height: 62px;
+    justify-self: stretch;
+    padding: 0 62px 0 26px;
+    font-size: 28px;
+  }
+  .tick {
+    display: none;
+  }
+  .entry-actions {
+    gap: 8px;
+  }
+  .entry-author {
+    margin-bottom: 12px;
+  }
+  .entry-rail {
+    height: 60px;
+    gap: 12px;
+    clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 40%, 100% 100%, 0 100%);
+  }
+  .rail-hint {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  .rail-chevrons,
+  .entry-rail .hatch-red.wide,
+  .serial {
+    display: none;
+  }
+}

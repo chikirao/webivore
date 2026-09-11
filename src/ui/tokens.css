@@ -1,0 +1,147 @@
+/* OVERDRIVE design tokens — one vocabulary for entry, game and finish. */
+:root {
+  --ink: #0b0b0b;
+  --paper: #ffffff;
+  --red: #ff1d1d;
+  --red-deep: #c80e0e;
+  --ash: #d9d9d9;
+  --graphite: #2b2b2b;
+  --smoke: #7a7a7a;
+  --display: "Tektur", Arial, Helvetica, sans-serif;
+  --text: Arial, Helvetica, sans-serif;
+  /* Geometry */
+  --cut: 18px; /* chamfer size of cut-corner plates */
+  --line: 3px; /* keyline thickness */
+  --inset: 5px; /* keyline distance from the plate edge */
+  --slant: 14deg; /* italic rail angle */
+  --pad: clamp(14px, 2.2vw, 34px); /* screen edge padding */
+  --touch: 44px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-family: var(--text);
+  color: var(--ink);
+  background: var(--paper);
+  font-synthesis: style;
+  -webkit-font-smoothing: antialiased;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  overflow: hidden;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+a {
+  color: inherit;
+}
+::selection {
+  background: var(--red);
+  color: var(--paper);
+}
+:focus-visible {
+  outline: var(--line) solid var(--red);
+  outline-offset: 4px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* Display type: heavy italic techno lettering used for numbers and headlines. */
+.display {
+  font-family: var(--display);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+/* Small tracked label */
+.label {
+  font-family: var(--text);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+/* Outlined lettering: white fill, black stroke — the logotype treatment. */
+.outlined {
+  color: var(--paper);
+  -webkit-text-stroke: 0.06em var(--ink);
+  paint-order: stroke fill;
+}
+/* Print textures */
+.checker {
+  background: repeating-conic-gradient(var(--ink) 0 25%, var(--paper) 0 50%) 0 0 / 14px 14px;
+}
+.hatch {
+  background: repeating-linear-gradient(-60deg, var(--ink) 0 8px, transparent 8px 20px);
+}
+.hatch-red {
+  background: repeating-linear-gradient(-60deg, var(--red) 0 10px, transparent 10px 24px);
+}
+.dots {
+  background: radial-gradient(circle, var(--red) 1.6px, transparent 1.9px) 0 0 / 8px 8px;
+}
+.dots-ink {
+  background: radial-gradient(circle, var(--ink) 1.6px, transparent 1.9px) 0 0 / 8px 8px;
+}
+.brand-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px #0008;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+}
+.brand-cursor-active body,
+.brand-cursor-active button,
+.brand-cursor-active a,
+.brand-cursor-active input {
+  cursor: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+  .brand-cursor {
+    display: none;
+  }
+}

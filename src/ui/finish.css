@@ -1,0 +1,257 @@
+/* Finish screen: full strip on top, square trophy left, actions right, rail below. */
+.finish {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--paper);
+  color: var(--ink);
+  animation: finish-reveal 0.5s var(--ease);
+  overflow: hidden;
+}
+.finish-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 44px;
+  padding: calc(var(--pad) * 0.7) calc(var(--pad) + 20px) 10px var(--pad);
+  border-bottom: 6px solid var(--ink);
+}
+.finish-meter {
+  min-width: 0;
+}
+.finish .meter-track {
+  margin-bottom: 20px;
+}
+.cleared {
+  font-size: clamp(16px, 2vw, 30px);
+  animation: bite-in 0.4s var(--ease) 0.2s backwards;
+}
+.finish-main {
+  display: grid;
+  grid-template-columns: minmax(280px, 44%) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 70px);
+  padding: 18px var(--pad);
+  min-height: 0;
+}
+.trophy-frame {
+  position: relative;
+  width: min(100%, calc(100svh - 300px));
+  aspect-ratio: 1;
+  justify-self: center;
+  padding: 10px;
+  background: var(--ink);
+  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 40px 100%, 0 calc(100% - 40px));
+  animation: trophy-arrive 0.7s var(--ease);
+}
+.trophy-frame::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  background: var(--paper);
+  clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+}
+.trophy-frame canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+}
+.finish-actions {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  min-width: 0;
+}
+.yours-rail {
+  padding: 8px clamp(30px, 4vw, 70px) 12px clamp(26px, 3vw, 50px);
+  max-width: 100%;
+}
+.yours-rail .logotype {
+  font-size: clamp(48px, 7vw, 116px);
+}
+.finish-site {
+  margin: -4px 0 6px 12px;
+  font: 700 clamp(14px, 1.4vw, 20px) var(--text);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.export-key {
+  font-size: clamp(30px, 3.6vw, 56px);
+  padding: 14px clamp(70px, 8vw, 130px) 14px clamp(28px, 3vw, 46px);
+  min-height: clamp(84px, 9vw, 132px);
+  max-width: 100%;
+}
+.export-key > .plate-body > svg:first-child {
+  width: 0.9em;
+  height: 0.9em;
+  padding: 0.08em;
+  background: var(--paper);
+  color: var(--red);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%);
+}
+.export-key [role="status"] {
+  font-size: 0.7em;
+}
+.again-chip {
+  font-size: 20px;
+  min-height: 54px;
+  padding: 0 34px;
+  margin-left: 12px;
+}
+.export-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 0 12px;
+  font-size: 11px;
+}
+.export-note i {
+  width: 22px;
+  height: 3px;
+  background: var(--ink);
+}
+.download-again {
+  margin-left: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.finish-rail {
+  --mark-line: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 28px);
+  height: clamp(60px, 6.6vw, 88px);
+  padding: 0 var(--pad);
+  background: var(--ink);
+  color: var(--paper);
+  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40%, 100% 100%, 0 100%);
+}
+.finish-rail .author {
+  color: var(--paper);
+  font-size: clamp(20px, 2vw, 28px);
+}
+.finish-rail .rail-bar {
+  width: 3px;
+  height: 34px;
+  background: var(--paper);
+}
+.rail-mark {
+  width: 34px;
+  height: 34px;
+  color: var(--paper);
+}
+.rail-value {
+  font-size: clamp(22px, 2.2vw, 32px);
+}
+.rail-pieces {
+  color: var(--ash);
+}
+.checker-paper {
+  margin-left: auto;
+  width: 140px;
+  height: 22px;
+  background: repeating-conic-gradient(var(--paper) 0 25%, var(--ink) 0 50%) 0 0 / 22px 22px;
+}
+@keyframes finish-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes trophy-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 1000px), (max-aspect-ratio: 1/1) {
+  .finish {
+    overflow: auto;
+  }
+  .finish-main {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: start;
+    gap: 22px;
+  }
+  .trophy-frame {
+    width: min(100%, 44svh, 520px);
+  }
+  .finish-actions {
+    justify-items: center;
+    width: 100%;
+  }
+  .finish-site {
+    margin-left: 0;
+    text-align: center;
+  }
+  .again-chip,
+  .export-note,
+  .download-again {
+    margin-left: 0;
+  }
+  .checker-paper,
+  .hatch-white {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .finish-top {
+    grid-template-columns: 1fr;
+    padding: 12px 14px 16px;
+    gap: 6px;
+  }
+  .cleared {
+    justify-self: end;
+    font-size: 13px;
+    width: 6.4em;
+    height: 5.4em;
+    margin: -30px 0 -10px;
+  }
+  .trophy-frame {
+    width: 100%;
+    padding: 7px;
+  }
+  .export-key {
+    width: 100%;
+    font-size: 28px;
+    min-height: 74px;
+    padding: 10px 60px 10px 22px;
+  }
+  .again-chip {
+    font-size: 17px;
+    min-height: 48px;
+  }
+  .finish-rail {
+    height: 58px;
+    gap: 10px;
+    padding: 0 14px;
+    flex-wrap: nowrap;
+  }
+  .finish-rail .author {
+    font-size: 18px;
+  }
+  .rail-mark {
+    width: 24px;
+    height: 24px;
+  }
+  .rail-value {
+    font-size: 18px;
+  }
+  .rail-pieces,
+  .finish-rail .hatch-red,
+  .dots-paper {
+    display: none;
+  }
+}

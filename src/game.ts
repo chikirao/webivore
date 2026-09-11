@@ -5,6 +5,14 @@ import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
 import { LayeredPile, type PackedFragment } from "./pile";
 
+export type PickupEvent = {
+  id: number;
+  big: boolean;
+  label: string;
+  /** Screen position inside the stage, CSS px. */
+  x: number;
+  y: number;
+};
 export type Stats = {
   count: number;
   percent: number;
@@ -17,6 +25,7 @@ export type Stats = {
   done: boolean;
   ready: boolean;
   error: string;
+  pickups: PickupEvent[];
 };
 type Item = Piece & {
   gone: boolean;
@@ -47,6 +56,8 @@ export class Game {
   rabbit!: Rabbit;
   lastSound = -Infinity;
   visualBites = 0;
+  /** Recent bites with their world position, projected for HUD feedback. Bounded. */
+  recent: { id: number; big: boolean; label: string; x: number; z: number; time: number }[] = [];
   surface?: WorldSurface;
   collection?: LayeredPile;
   flights: Item[] = [];
@@ -113,6 +124,7 @@ export class Game {
     level: Level,
     public report: (s: Stats) => void,
     public onPause: () => void,
+    mapHost?: HTMLElement | null,
   ) {
     this.canvas = canvas;
     this.level = level;
@@ -201,7 +213,7 @@ export class Game {
       "aria-label",
       "Map of the website; red dot is your character",
     );
-    canvas.parentElement?.append(this.mapCanvas);
+    (mapHost ?? canvas.parentElement)?.append(this.mapCanvas);
     void this.loadWorld();
     this.raf = requestAnimationFrame(this.frame);
   }
@@ -478,6 +490,15 @@ export class Game {
         ? "Your first piece. Keep walking — it will grow."
         : `+ ${p.text.slice(0, 42) || p.type.toLowerCase()}`;
     this.labelUntil = this.time + 2;
+    this.recent.push({
+      id: this.visualBites,
+      big: members.length >= 4,
+      label: members.length > 1 ? `${members.length} pieces` : p.text.slice(0, 32) || p.type.toLowerCase(),
+      x: p.x + p.width / 2,
+      z: p.y + p.height / 2,
+      time: this.time,
+    });
+    if (this.recent.length > 6) this.recent.splice(0, this.recent.length - 6);
     this.sound();
     if (!this.reduced && this.particles.length < 80) {
       for (let i = 0; i < 5; i++) {
@@ -679,6 +700,11 @@ export class Game {
     this.camera.position.lerp(desired, 1 - Math.exp(-10 * dt));
     this.camera.lookAt(this.cam.target);
   }
+  /** World point → CSS px inside the stage canvas. */
+  project(x: number, y: number, z: number) {
+    const v = new THREE.Vector3(x, y, z).project(this.camera);
+    return { x: ((v.x + 1) / 2) * this.width, y: ((1 - v.y) / 2) * this.height, behind: v.z > 1 };
+  }
   drawMap() {
     const c = this.mapContext,
       w = 216,
@@ -754,6 +780,12 @@ export class Game {
         done: this.done,
         ready: this.ready,
         error: this.error,
+        pickups: this.recent
+          .filter((r) => this.time - r.time < 1.2)
+          .map((r) => {
+            const s = this.project(r.x, 6, r.z);
+            return { id: r.id, big: r.big, label: r.label, x: s.x, y: s.y };
+          }),
       });
     }
     this.raf = requestAnimationFrame(this.frame);
