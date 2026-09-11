@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CIRCUIT visual regression lab</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ddd;
+        font: 14px Arial;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        width: 1536px;
+        height: 1024px;
+        background: white;
+      }
+      nav {
+        padding: 15px;
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        padding: 10px;
+      }
+      #result {
+        white-space: pre-wrap;
+      }
+      #grid {
+        display: none;
+        background: white;
+        width: 1536px;
+        grid-template-columns: repeat(8, 192px);
+      }
+      #grid > div {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="app" src="/"></iframe>
+    <div id="grid"></div>
+    <nav>
+      <button id="entry">Entry</button><button id="play">Start demo</button
+      ><button id="grow">Collect to 68%</button
+      ><button id="finish">Finish</button
+      ><button id="rabbit">Rabbit 24 views</button
+      ><button id="mobile">Mobile 390×844</button
+      ><button id="desktop">Desktop 1536×1024</button
+      ><button id="cursor">Cursor positions</button>
+    </nav>
+    <pre id="result">Ready</pre>
+    <script type="module">
+      const frame = document.querySelector("#app"),
+        result = document.querySelector("#result"),
+        grid = document.querySelector("#grid");
+      function log(data) {
+        result.textContent = JSON.stringify(data, null, 2);
+      }
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const g = () => frame.contentWindow.__game;
+      document.querySelector("#entry").onclick = () => {
+        frame.src = "/";
+        frame.style.display = "block";
+        grid.style.display = "none";
+      };
+      document.querySelector("#play").onclick = () =>
+        frame.contentDocument.querySelector(".demo")?.click();
+      document.querySelector("#mobile").onclick = () => {
+        frame.style.width = "390px";
+        frame.style.height = "844px";
+      };
+      document.querySelector("#desktop").onclick = () => {
+        frame.style.width = "1536px";
+        frame.style.height = "1024px";
+      };
+      async function collect(target) {
+        const game = g();
+        if (!game?.ready) return log("Not ready");
+        game.muted = true;
+        game.paused = true;
+        let limit = game.items.length + 1;
+        while (game.mass / game.total < target && limit--) {
+          const p = game.items
+            .filter((p) => !p.gone && p.threshold <= game.capacity)
+            .sort((a, b) => a.threshold - b.threshold)[0];
+          if (!p) break;
+          game.pickup(p, game.pickupIndex.group(p, game.radius, game.capacity));
+        }
+        game.time = 102;
+        game.x = 640;
+        game.y = 600;
+        game.heading = Math.PI * 0.8;
+        game.cam.yaw = Math.PI * 0.65;
+        game.cam.pitch = 0.62;
+        game.cam.userZoom = 1.15;
+        game.vx = game.vy = 0;
+        game.done = game.count === game.items.length;
+        await wait(1000);
+        log({
+          count: game.count,
+          total: game.items.length,
+          percent: (game.mass / game.total) * 100,
+          done: game.done,
+          visualBites: game.visualBites,
+          outerHighlights: game.collection.accents.length,
+          outerGraphics: game.collection.accents.filter(a => a.score >= 1e6).length,
+          renderedMeshes: game.collection.renderMeshes.length,
+        });
+      }
+      document.querySelector("#grow").onclick = () => collect(0.68);
+      document.querySelector("#finish").onclick = () => collect(1);
+      document.querySelector("#cursor").onclick = async () => {
+        const doc = frame.contentDocument;
+        const tests = [];
+        for (const [x, y] of [
+          [15, 15],
+          [400, 520],
+          [800, 600],
+          [1250, 850],
+        ]) {
+          doc.defaultView.dispatchEvent(
+            new doc.defaultView.PointerEvent("pointermove", {
+              clientX: x,
+              clientY: y,
+              bubbles: true,
+            }),
+          );
+          await wait(200);
+          const el = doc.querySelector(".brand-cursor"),
+            c = doc.defaultView.getComputedStyle(el);
+          tests.push({
+            x,
+            y,
+            parentIsBody: el.parentElement === doc.body,
+            opacity: c.opacity,
+            z: c.zIndex,
+            mix: c.mixBlendMode,
+            rect: el.getBoundingClientRect().toJSON(),
+          });
+        }
+        log(tests);
+      };
+      document.querySelector("#rabbit").onclick = async () => {
+        const THREE = await import("/node_modules/.vite/deps/three.js");
+        const { Rabbit } = await import("/src/rabbit.ts");
+        const rabbit = new Rabbit();
+        await rabbit.ready;
+        const scene = new THREE.Scene();
+        scene.add(rabbit.root);
+        rabbit.hands.forEach((h) => (h.visible = false));
+        const renderer = new THREE.WebGLRenderer({
+          alpha: true,
+          antialias: true,
+        });
+        renderer.setSize(192, 192);
+        renderer.setClearColor(0, 0);
+        const camera = new THREE.OrthographicCamera(
+          -48,
+          48,
+          85,
+          -11,
+          0.1,
+          1000,
+        );
+        frame.style.display = "none";
+        grid.style.display = "grid";
+        grid.replaceChildren();
+        const checks = [];
+        for (let row = 0; row < 3; row++)
+          for (let col = 0; col < 8; col++) {
+            const pitch = [0.15, 0.65, 1.3][row],
+              yaw = (col * Math.PI) / 4;
+            camera.position.set(
+              Math.sin(yaw) * Math.cos(pitch) * 250,
+              Math.sin(pitch) * 250,
+              Math.cos(yaw) * Math.cos(pitch) * 250,
+            );
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+            rabbit.update(camera, 0, 0, 1, 0.43, 200);
+            renderer.render(scene, camera);
+            const canvas = document.createElement("canvas");
+            canvas.width = canvas.height = 192;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(renderer.domElement, 0, 0);
+            const data = ctx.getImageData(0, 0, 192, 192).data,
+              visited = new Uint8Array(192 * 192),
+              components = [];
+            for (let n = 0; n < visited.length; n++) {
+              if (visited[n] || data[n * 4 + 3] < 128) continue;
+              let count = 0;
+              const stack = [n];
+              visited[n] = 1;
+              while (stack.length) {
+                const at = stack.pop();
+                count++;
+                for (const next of [
+                  at - 192,
+                  at + 192,
+                  ...(at % 192 > 0 ? [at - 1] : []),
+                  ...(at % 192 < 191 ? [at + 1] : []),
+                ])
+                  if (
+                    next >= 0 &&
+                    next < visited.length &&
+                    !visited[next] &&
+                    data[next * 4 + 3] >= 128
+                  ) {
+                    visited[next] = 1;
+                    stack.push(next);
+                  }
+              }
+              if (count > 15) components.push(count);
+            }
+            const cell = document.createElement("div");
+            cell.append(canvas);
+            const cap = document.createElement("p");
+            cap.textContent = `${col * 45}° / ${Math.round((pitch * 180) / Math.PI)}° · ${components.length === 1 ? "connected" : "GAP"}`;
+            cell.append(cap);
+            grid.append(cell);
+            checks.push({
+              frame: rabbit.frame,
+              components,
+              connected: components.length === 1,
+            });
+          }
+        log({ passed: checks.every((c) => c.connected), checks });
+        renderer.dispose();
+        rabbit.dispose();
+      };
+    </script>
+  </body>
+</html>

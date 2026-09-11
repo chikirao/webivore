@@ -1,0 +1,1303 @@
+.landing {
+  position: relative;
+  min-height: 680px;
+  height: 100svh;
+  overflow: hidden;
+  background: white;
+}
+.entry-art {
+  position: absolute;
+  inset: 0;
+  background: url("/assets/circuit-entry.png") center center/cover no-repeat;
+  pointer-events: none;
+}
+.masthead {
+  position: absolute;
+  inset: 4% 3% auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  z-index: 2;
+}
+.entry-motto {
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(12px, 1.2vw, 19px);
+  line-height: 1.1;
+}
+.author {
+  font-size: clamp(25px, 2.8vw, 43px);
+  letter-spacing: -0.08em;
+  text-decoration: underline wavy var(--red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+.entry-panel {
+  position: absolute;
+  top: 47%;
+  left: 28.5%;
+  width: 67%;
+  text-align: center;
+  z-index: 2;
+}
+.url-entry {
+  display: flex;
+  align-items: center;
+  height: clamp(78px, 11vw, 160px);
+  padding: 8px 8px 8px 30px;
+  background: #fafafa;
+  border: 2px solid #b9b9b9;
+  border-radius: 100px;
+  box-shadow:
+    0 0 0 4px white,
+    0 0 0 7px #d3d3d3,
+    inset 0 3px 5px #6669,
+    inset 0 -5px 5px white;
+  transition: box-shadow 0.2s;
+}
+.url-entry:focus-within {
+  box-shadow:
+    0 0 0 4px white,
+    0 0 0 7px #f90018,
+    inset 0 3px 5px #6666;
+}
+.url-entry > svg {
+  width: clamp(22px, 3vw, 43px);
+  height: 43px;
+  flex-shrink: 0;
+  margin-right: 20px;
+}
+.url-entry input {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: 0;
+  border-left: 1px solid #aaa;
+  padding: 12px 22px;
+  outline: none;
+  font-size: clamp(17px, 2vw, 31px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.url-entry input::placeholder {
+  color: #858585;
+}
+.red-button {
+  background: url("/assets/circuit-button.png") center/100% 100% no-repeat;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 94px;
+  padding: 24px 45px;
+  color: white;
+  font-family: Tektur, Arial, sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(19px, 2.5vw, 38px);
+  white-space: nowrap;
+  filter: drop-shadow(0 3px 1px #7777);
+  transition:
+    transform 0.16s,
+    filter 0.16s;
+}
+.red-button svg {
+  width: 1.4em;
+  height: 1.4em;
+  flex-shrink: 0;
+}
+.red-button:hover {
+  filter: brightness(1.12) drop-shadow(0 5px 3px #7778);
+  transform: translateY(-2px);
+}
+.red-button:active {
+  transform: translateY(2px);
+  filter: brightness(0.94);
+}
+.consume {
+  height: calc(100% + 12px);
+  width: 39%;
+  min-height: 0;
+  margin: -6px -8px -6px 0;
+  flex-shrink: 0;
+  padding: 18px 26px;
+  font-size: clamp(22px, 3.2vw, 47px);
+  gap: 15px;
+}
+.silver-panel,
+.silver-button {
+  background: #f8f8f8;
+  border: 2px solid #111;
+  border-radius: 60px;
+  box-shadow:
+    0 0 0 3px #ddd,
+    0 0 0 5px white,
+    0 0 0 7px #a4a4a4,
+    inset 0 3px 3px #fff,
+    inset 0 -5px 7px #ccc;
+}
+.silver-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  min-height: 48px;
+  padding: 10px 26px;
+  font-weight: 700;
+  transition:
+    transform 0.15s,
+    color 0.15s;
+}
+.silver-button:hover {
+  color: #ed0016;
+  transform: translateY(-2px);
+}
+.silver-button svg {
+  width: 27px;
+  height: 27px;
+}
+.demo {
+  margin-top: 28px;
+  font-size: 20px;
+  font-weight: 500;
+  padding: 8px 25px;
+  min-width: 190px;
+  border-color: #aaa;
+  box-shadow:
+    inset 0 -2px 5px #ddd,
+    0 1px 0 white;
+}
+.presets {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 18px;
+  font-size: 12px;
+}
+.presets button {
+  padding: 5px 0;
+  color: #555;
+  border-bottom: 1px solid #aaa;
+}
+.presets button:hover {
+  color: var(--red);
+}
+.loading,
+.error {
+  font-size: 14px;
+  background: #fffffff0;
+  padding: 12px;
+  border-radius: 15px;
+  line-height: 1.5;
+  margin: 14px auto;
+  max-width: 650px;
+}
+.error {
+  color: #b00012;
+}
+.loading small {
+  display: block;
+  color: #666;
+}
+.landing-footer {
+  position: absolute;
+  bottom: 4%;
+  left: 3%;
+  right: 3%;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+}
+.landing-footer > span:first-child {
+  line-height: 2;
+  letter-spacing: 0.5em;
+  font-style: italic;
+}
+.sound {
+  width: 55px;
+  height: 55px;
+}
+.sound svg {
+  width: 100%;
+  height: 100%;
+}
+.playing {
+  height: 100svh;
+  min-height: 430px;
+  position: relative;
+  overflow: hidden;
+  background: white url("/assets/circuit-stage.png") center/cover;
+}
+.game-frame {
+  position: absolute;
+  inset: 28px 15px 34px;
+  border: 5px solid #fff;
+  outline: 3px solid #111;
+  border-radius: 55px 68px 60px 65px;
+  box-shadow:
+    0 0 0 7px #ccc,
+    0 0 0 11px #fff,
+    0 0 0 17px #ed0016;
+  overflow: hidden;
+  background: black;
+}
+.game-frame > canvas:not(.world-map) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.hud {
+  position: absolute;
+  top: 0;
+  left: 34%;
+  right: 24%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+  background: #fff;
+  border-radius: 0 0 45% 35%;
+  padding: 0 20px 13px;
+  box-shadow:
+    0 4px 0 #ccc,
+    0 7px 0 #fff;
+}
+.hud-brand {
+  width: 100%;
+  max-width: 440px;
+  padding: 0;
+}
+.hud-brand img {
+  display: block;
+  width: 100%;
+  height: 85px;
+  object-fit: contain;
+}
+.site-name {
+  text-align: center;
+  max-width: 100%;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.site-name small {
+  display: none;
+}
+.hud-actions {
+  position: absolute;
+  top: 26px;
+  right: 29px;
+  z-index: 6;
+  display: flex;
+  gap: 9px;
+}
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #080808;
+  color: white;
+  border: 2px solid white;
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 2px #111,
+    0 0 0 4px #ccc,
+    inset 0 3px 4px #fff9,
+    inset 0 -4px 5px #555;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 10px;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.icon-button:hover {
+  background: #ed0016;
+  transform: translateY(-2px);
+}
+.icon-button:active {
+  transform: translateY(2px);
+}
+.icon-button svg {
+  width: 30px;
+  height: 30px;
+}
+.hud-actions .icon-button {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 50%;
+  padding: 8px;
+}
+.hud-actions svg {
+  width: 24px;
+  height: 24px;
+}
+.scoreboard {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: clamp(190px, 23vw, 335px);
+  z-index: 4;
+  pointer-events: none;
+}
+.progress-dial {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  background: url("/assets/circuit-dial.png") center/100% 100% no-repeat;
+}
+.progress-dial canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dial-mascot {
+  position: absolute;
+  width: 34%;
+  height: 38%;
+  object-fit: cover;
+  object-position: top;
+  left: 39%;
+  top: 23%;
+  clip-path: inset(0 0 35% 0);
+  transform: scale(1.4);
+  transform-origin: top;
+}
+.progress-dial strong {
+  position: absolute;
+  left: 36%;
+  top: 59%;
+  font:
+    italic 700 clamp(28px, 3.7vw, 55px)/1 Tektur,
+    Arial,
+    sans-serif;
+  letter-spacing: -0.09em;
+}
+.progress-dial strong small {
+  font-size: 0.48em;
+  margin-left: 3px;
+  letter-spacing: -0.06em;
+}
+.dial-caption {
+  position: absolute;
+  left: 37%;
+  top: 80%;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.next-stage {
+  position: absolute;
+  left: 91%;
+  top: 35%;
+  width: 100px;
+  padding: 12px 25px 12px 13px;
+  border-radius: 0 22px 22px 0;
+  z-index: -1;
+  transform: rotate(-6deg);
+  font-family: Tektur, Arial, sans-serif;
+  font-style: italic;
+}
+.next-stage span {
+  font-size: 12px;
+  font-weight: 700;
+  display: block;
+}
+.next-stage b {
+  font-size: 24px;
+  letter-spacing: -0.06em;
+}
+.next-stage svg {
+  position: absolute;
+  right: 0;
+  top: 25px;
+  color: var(--red);
+  width: 25px;
+  height: 25px;
+}
+.milestone {
+  animation: charge-pulse 0.8s ease-out;
+}
+.milestone-label {
+  position: absolute;
+  left: 22%;
+  top: 100%;
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #f90018;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  animation: bite-in 0.3s ease-out;
+}
+.charged .next-stage svg {
+  animation: signal-beat 1.2s ease-in-out infinite;
+}
+.secondary-stats {
+  position: absolute;
+  bottom: 39px;
+  left: 28px;
+  display: grid;
+  grid-template-columns: 40px auto 40px auto;
+  align-items: center;
+  gap: 12px;
+  padding: 17px 28px 25px;
+  min-width: 350px;
+  z-index: 4;
+}
+.secondary-stats > svg {
+  width: 36px;
+  height: 36px;
+}
+.secondary-stats span {
+  font-size: 12px;
+  font-family: Tektur, Arial, sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+.secondary-stats strong {
+  display: block;
+  font:
+    italic 700 31px/1.1 Tektur,
+    Arial,
+    sans-serif;
+  letter-spacing: -0.06em;
+}
+.secondary-stats strong small {
+  font-size: 17px;
+  font-weight: 700;
+}
+.piece-count {
+  position: absolute;
+  bottom: 9px;
+  left: 65px;
+  font-size: 7px;
+  letter-spacing: 0.08em;
+}
+.camera {
+  position: absolute;
+  right: 29px;
+  bottom: 39px;
+  padding: 9px 20px 17px;
+  z-index: 4;
+  text-align: center;
+}
+.camera > span {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 12px;
+}
+.camera > div {
+  display: flex;
+  gap: 13px;
+}
+.camera button {
+  min-width: 57px;
+  min-height: 54px;
+}
+.world-map {
+  position: absolute;
+  width: 218px;
+  height: 142px;
+  right: 18px;
+  top: 56px;
+  z-index: 2;
+  border: 5px solid white;
+  border-radius: 35px;
+  box-shadow:
+    0 0 0 2px #111,
+    0 0 0 5px #ccc,
+    0 0 0 8px white;
+  pointer-events: none;
+}
+.game-help {
+  position: absolute;
+  bottom: 9px;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  font-weight: bold;
+}
+.touch-help {
+  display: none;
+}
+.pickup-label {
+  position: absolute;
+  left: 58%;
+  top: 44%;
+  pointer-events: none;
+  z-index: 5;
+  transform: rotate(-7deg);
+  animation: bite-in 0.22s ease-out;
+  max-width: 32%;
+}
+.pickup-label b {
+  display: block;
+  color: black;
+  -webkit-text-stroke: 5px white;
+  paint-order: stroke fill;
+  font:
+    italic 700 30px/1.2 Tektur,
+    Arial,
+    sans-serif;
+  filter: drop-shadow(0 4px 0 #f90018);
+  white-space: nowrap;
+}
+.pickup-label span {
+  display: block;
+  margin-top: 12px;
+  background: white;
+  color: #111;
+  padding: 5px 10px;
+  border-radius: 12px;
+  max-width: 220px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 10px;
+}
+.big-bite b {
+  font-size: 44px;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #0008;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pause-panel {
+  padding: 45px;
+  text-align: center;
+  width: min(520px, 86%);
+  border-radius: 55px;
+}
+.pause-panel h2 {
+  font:
+    italic 700 55px/1 Tektur,
+    Arial,
+    sans-serif;
+  letter-spacing: -0.07em;
+  margin: 20px 0 35px;
+}
+.pause-panel .red-button {
+  width: 100%;
+  font-size: 20px;
+  padding: 22px 25px;
+}
+.pause-panel .silver-button {
+  margin-top: 20px;
+  font-size: 14px;
+}
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  pointer-events: none;
+  z-index: 8;
+}
+.countdown strong {
+  font:
+    italic 700 150px Tektur,
+    Arial,
+    sans-serif;
+  color: white;
+  -webkit-text-stroke: 6px black;
+  paint-order: stroke fill;
+  filter: drop-shadow(8px 8px 0 #f90018);
+}
+.countdown span {
+  background: white;
+  padding: 9px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.victory {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+  padding: 30px 3vw 100px;
+  background: #fff url("/assets/circuit-stage.png") center/cover;
+  overflow: auto;
+}
+.victory > .author {
+  position: absolute;
+  top: 25px;
+  right: 35px;
+}
+.trophy-card {
+  width: min(49vw, 730px);
+  flex-shrink: 0;
+  position: relative;
+}
+.trophy-card canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+}
+.victory-copy {
+  flex: 1;
+  min-width: 0;
+  max-width: 740px;
+  text-align: center;
+}
+.victory-copy h2 {
+  margin: 0 0 15px;
+}
+.victory-copy h2 img {
+  width: 100%;
+  display: block;
+}
+.victory-site {
+  font-size: clamp(16px, 2vw, 28px);
+  font-weight: bold;
+  font-style: italic;
+  letter-spacing: 0.24em;
+  overflow-wrap: anywhere;
+  margin: 10px 0 30px;
+}
+.victory-copy .red-button {
+  width: 100%;
+  font-size: clamp(22px, 2.6vw, 41px);
+  min-height: 145px;
+  gap: 20px;
+  padding: 25px 30px;
+}
+.victory-copy .silver-button {
+  margin-top: 22px;
+  font:
+    italic 700 19px Tektur,
+    Arial,
+    sans-serif;
+  min-height: 62px;
+  padding: 15px 30px;
+}
+.export-note {
+  display: block;
+  font-size: 10px;
+  font-style: italic;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  margin: 17px 0;
+}
+.final-stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 25px;
+}
+.final-stats b {
+  font:
+    700 22px Tektur,
+    Arial,
+    sans-serif;
+}
+.final-stats small {
+  font: 8px Arial;
+  letter-spacing: 0.12em;
+  display: block;
+  margin-top: 4px;
+}
+.download-again {
+  display: block;
+  font-size: 13px;
+  margin: 15px;
+}
+.export-status {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.victory-copy [role="alert"] {
+  color: #b00012;
+}
+@keyframes charge-pulse {
+  0% {
+    filter: brightness(1);
+  }
+  30% {
+    filter: brightness(1.25) drop-shadow(0 0 15px #f90018);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+@keyframes signal-beat {
+  50% {
+    transform: translateX(5px);
+    opacity: 0.4;
+  }
+}
+@keyframes bite-in {
+  from {
+    opacity: 0;
+    translate: 0 15px;
+    scale: 0.85;
+  }
+  to {
+    opacity: 1;
+    translate: 0;
+    scale: 1;
+  }
+}
+@media (min-aspect-ratio: 17/10) {
+  .entry-art {
+    background-size: 100% auto;
+  }
+  .entry-panel {
+    top: 48%;
+  }
+  .landing {
+    min-height: 600px;
+  }
+  .url-entry {
+    height: 110px;
+  }
+  .entry-panel {
+    width: 65%;
+    left: 31%;
+  }
+  .consume {
+    font-size: 35px;
+  }
+  .landing-footer > span:nth-child(2) {
+    background: #fffd;
+    padding: 8px;
+    border-radius: 15px;
+  }
+}
+@media (max-width: 900px) {
+  .entry-panel {
+    left: 27%;
+    width: 69%;
+  }
+  .url-entry {
+    height: 85px;
+    padding-left: 15px;
+  }
+  .url-entry > svg {
+    margin-right: 8px;
+    width: 25px;
+  }
+  .url-entry input {
+    padding: 10px;
+    font-size: 19px;
+  }
+  .consume {
+    font-size: 24px;
+    padding: 15px;
+    gap: 5px;
+  }
+  .demo {
+    font-size: 17px;
+    margin-top: 20px;
+  }
+  .landing-footer > span:nth-child(2) {
+    display: none;
+  }
+  .scoreboard {
+    width: 210px;
+  }
+  .next-stage {
+    width: 78px;
+    padding: 10px;
+  }
+  .next-stage b {
+    font-size: 20px;
+  }
+  .next-stage svg {
+    width: 19px;
+    right: -2px;
+  }
+  .hud {
+    left: 33%;
+    right: 24%;
+    padding: 5px 10px 10px;
+  }
+  .hud-brand img {
+    height: 63px;
+  }
+  .world-map {
+    width: 146px;
+    height: 105px;
+  }
+  .secondary-stats {
+    min-width: 270px;
+    padding: 13px 20px 25px;
+    grid-template-columns: 26px auto 26px auto;
+    gap: 8px;
+  }
+  .secondary-stats > svg {
+    width: 26px;
+    height: 26px;
+  }
+  .secondary-stats strong {
+    font-size: 25px;
+  }
+  .camera {
+    padding: 8px 14px 13px;
+  }
+  .camera button {
+    min-width: 43px;
+    min-height: 44px;
+  }
+  .camera .icon-button svg {
+    width: 25px;
+    height: 25px;
+  }
+  .camera > div {
+    gap: 10px;
+  }
+  .victory {
+    padding: 45px 20px;
+    gap: 20px;
+  }
+  .victory-copy .red-button {
+    min-height: 105px;
+    font-size: 24px;
+    padding: 20px;
+  }
+  .victory-copy .silver-button {
+    font-size: 14px;
+  }
+  .final-stats {
+    gap: 15px;
+  }
+  .victory-site {
+    letter-spacing: 0.1em;
+  }
+  .export-note {
+    font-size: 8px;
+    letter-spacing: 0.15em;
+  }
+}
+@media (max-width: 600px) {
+  .landing {
+    height: 100svh;
+    min-height: 760px;
+  }
+  .entry-art {
+    inset: 60px 0 auto;
+    height: 410px;
+    background-size: auto 410px;
+    background-position: 45% top;
+  }
+  .masthead {
+    inset: 22px 24px auto;
+  }
+  .entry-motto {
+    font-size: 11px;
+  }
+  .author {
+    font-size: 27px;
+  }
+  .entry-panel {
+    top: 480px;
+    left: 6%;
+    width: 88%;
+  }
+  .url-entry {
+    height: 76px;
+    padding: 6px 6px 6px 14px;
+  }
+  .url-entry > svg {
+    width: 24px;
+    height: 24px;
+    margin-right: 7px;
+  }
+  .url-entry input {
+    font-size: 17px;
+    padding: 7px;
+  }
+  .consume {
+    width: 33%;
+    font-size: 17px;
+    gap: 4px;
+    padding: 12px;
+  }
+  .consume svg {
+    width: 23px;
+    height: 23px;
+  }
+  .demo {
+    font-size: 16px;
+    margin-top: 22px;
+    min-height: 44px;
+  }
+  .presets {
+    margin-top: 14px;
+  }
+  .landing-footer {
+    bottom: 24px;
+    left: 24px;
+    right: 24px;
+    font-size: 8px;
+  }
+  .sound {
+    width: 34px;
+    height: 34px;
+  }
+  .landing-footer > span:first-child {
+    letter-spacing: 0.24em;
+  }
+  .playing {
+    min-height: 570px;
+  }
+  .game-frame {
+    inset: 34px 10px 34px;
+    border-radius: 30px;
+    border-width: 3px;
+  }
+  .hud {
+    left: 37%;
+    right: 24%;
+    padding: 6px 6px 7px;
+    border-radius: 0 0 25px 25px;
+  }
+  .hud-brand img {
+    height: 38px;
+  }
+  .site-name {
+    font-size: 7px;
+    letter-spacing: 0;
+  }
+  .scoreboard {
+    width: 151px;
+    top: 8px;
+    left: 1px;
+  }
+  .progress-dial strong {
+    font-size: 25px;
+  }
+  .dial-caption {
+    font-size: 5px;
+  }
+  .next-stage {
+    left: 85%;
+    top: 57%;
+    width: 57px;
+    padding: 5px 5px 5px 11px;
+    border-width: 1px;
+    border-radius: 0 14px 14px 0;
+  }
+  .next-stage span {
+    font-size: 7px;
+  }
+  .next-stage b {
+    font-size: 15px;
+  }
+  .next-stage svg {
+    width: 14px;
+    height: 14px;
+    right: -2px;
+    top: 16px;
+  }
+  .hud-actions {
+    right: 17px;
+    top: 18px;
+    gap: 7px;
+  }
+  .hud-actions .icon-button {
+    min-width: 30px;
+    min-height: 34px;
+    padding: 5px;
+  }
+  .hud-actions svg {
+    width: 17px;
+    height: 17px;
+  }
+  .world-map {
+    top: 44px;
+    right: 10px;
+    width: 96px;
+    height: 90px;
+    border-radius: 20px;
+    border-width: 3px;
+  }
+  .secondary-stats {
+    left: 18px;
+    bottom: 38px;
+    min-width: 174px;
+    grid-template-columns: auto auto;
+    gap: 2px 13px;
+    padding: 9px 17px 24px;
+    border-radius: 30px;
+  }
+  .secondary-stats > svg {
+    display: none;
+  }
+  .secondary-stats span {
+    font-size: 8px;
+  }
+  .secondary-stats strong {
+    font-size: 21px;
+  }
+  .piece-count {
+    font-size: 5px;
+    left: 15px;
+    bottom: 10px;
+  }
+  .camera {
+    right: 17px;
+    bottom: 38px;
+    border-radius: 28px;
+    padding: 9px 10px 12px;
+  }
+  .camera > span {
+    font-size: 6px;
+    letter-spacing: 0.09em;
+    margin-bottom: 8px;
+  }
+  .camera > div {
+    display: grid;
+    grid-template-columns: repeat(2, 38px);
+    gap: 7px;
+  }
+  .camera button {
+    min-width: 38px;
+    min-height: 36px;
+    padding: 5px;
+    border-radius: 12px;
+  }
+  .camera .icon-button svg {
+    width: 20px;
+    height: 20px;
+  }
+  .game-help {
+    font-size: 6px;
+    bottom: 10px;
+    line-height: 1.5;
+    left: 14px;
+    right: 14px;
+  }
+  .pickup-label {
+    left: 42%;
+    top: 39%;
+    max-width: 52%;
+  }
+  .pickup-label b {
+    font-size: 22px;
+  }
+  .big-bite b {
+    font-size: 28px;
+  }
+  .pickup-label span {
+    font-size: 8px;
+    max-width: 170px;
+  }
+  .milestone-label {
+    font-size: 8px;
+    left: 10%;
+    top: 104%;
+    padding: 5px 8px;
+  }
+  .pause-panel {
+    padding: 30px 20px;
+    border-radius: 35px;
+  }
+  .pause-panel h2 {
+    font-size: 43px;
+  }
+  .pause-panel .red-button {
+    font-size: 17px;
+    min-height: 90px;
+  }
+  .victory {
+    flex-direction: column;
+    padding: 75px 24px 40px;
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  .victory > .author {
+    top: 17px;
+    right: 25px;
+  }
+  .trophy-card {
+    width: min(85vw, 410px);
+  }
+  .victory-copy {
+    width: 100%;
+  }
+  .victory-copy h2 {
+    margin: 0;
+  }
+  .victory-copy h2 img {
+    max-height: 100px;
+    object-fit: contain;
+  }
+  .victory-site {
+    font-size: 16px;
+    margin: 8px 0 18px;
+  }
+  .victory-copy .red-button {
+    min-height: 100px;
+    font-size: 25px;
+  }
+  .victory-copy .silver-button {
+    min-height: 52px;
+    font-size: 14px;
+  }
+  .final-stats {
+    margin-top: 20px;
+  }
+  .countdown strong {
+    font-size: 115px;
+  }
+}
+@media (pointer: coarse) {
+  .touch-help {
+    display: block;
+  }
+  .game-help > span:not(.touch-help) {
+    display: none;
+  }
+}
+
+/* Match the italic console typography, including fonts without an italic file. */
+.red-button,
+.secondary-stats strong,
+.secondary-stats span,
+.progress-dial strong,
+.next-stage,
+.pause-panel h2,
+.countdown strong,
+.victory-copy .silver-button {
+  font-synthesis: style;
+}
+.presets button {
+  background: #fffffff2;
+  border-radius: 12px;
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+}
+.next-stage {
+  left: 94%;
+  padding-left: 18px;
+}
+.hud {
+  left: 35%;
+  right: 29%;
+  padding-bottom: 7px;
+}
+.hud-brand img {
+  height: 100px;
+}
+@media (max-width: 900px) {
+  .hud {
+    left: 34%;
+    right: 26%;
+  }
+  .hud-brand img {
+    height: 66px;
+  }
+  .next-stage {
+    padding-left: 13px;
+  }
+}
+@media (max-width: 600px) {
+  .hud {
+    left: 38%;
+    right: 24%;
+  }
+  .hud-brand img {
+    height: 38px;
+  }
+  .next-stage {
+    left: 88%;
+    padding-left: 12px;
+  }
+}
+
+.export-note,
+.download-again {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  background: #fffffff5;
+  border-radius: 20px;
+  padding: 8px 14px;
+}
+.final-stats {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  background: #fffffff5;
+  border-radius: 22px;
+  padding: 10px 18px;
+}
+@media (max-width: 600px) {
+  .entry-art {
+    background-image: url("/assets/circuit-entry-mobile.png");
+    background-position: center;
+    background-size: contain;
+  }
+  .hud-actions .icon-button {
+    min-width: 34px;
+    min-height: 38px;
+  }
+  .camera button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  .camera > div {
+    grid-template-columns: repeat(2, 40px);
+  }
+}
+
+.victory {
+  animation: finish-reveal 0.6s ease-out;
+}
+.trophy-card {
+  animation: trophy-arrive 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes finish-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes trophy-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media(min-width:1100px){.secondary-stats{min-width:430px;grid-template-columns:46px auto 46px auto;gap:16px;padding:20px 30px 29px}.secondary-stats>svg{width:43px;height:43px}.secondary-stats strong{font-size:39px}.secondary-stats span{font-size:14px}.piece-count{left:90px;font-size:8px}.camera{padding:12px 24px 22px}.camera button{min-width:76px;min-height:69px}.camera .icon-button svg{width:38px;height:38px}.camera>div{gap:16px}.camera>span{font-size:10px;margin-bottom:14px}.next-stage{width:145px;padding:16px 31px 16px 23px}.next-stage b{font-size:33px}.next-stage span{font-size:14px}.next-stage svg{width:34px;height:34px;top:29px;right:3px}.victory-copy .red-button{min-height:175px;font-size:43px}.victory-copy .silver-button{width:85%;min-height:72px;font-size:23px}}
