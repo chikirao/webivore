@@ -28,7 +28,7 @@ try {
     for (let row = 0; row < 3; row++)
       for (let column = 0; column < 8; column++) {
         const pitch = [0.15, 0.65, 1.3][row],
-          yaw = (column * Math.PI) / 4;
+          yaw = -(column * Math.PI) / 4;
         camera.position.set(
           Math.sin(yaw) * Math.cos(pitch) * 250,
           Math.sin(pitch) * 250,
