@@ -30,13 +30,17 @@ export type Placement = {
 const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
 
 /** Where a bite lands at pickup. Frozen afterwards: old layers never move. */
-export function regularPlacement(index: number, radius: number, aspect: number): Placement {
+export function regularPlacement(
+  index: number,
+  radius: number,
+  aspect: number,
+): Placement {
   const a = clamp(aspect, 0.55, 1.8),
     size = Math.max(10, radius * 1.15);
   return {
     normal: attachmentDirection(index),
     roll: index * 2.117,
-    depth: Math.max(2, radius * 0.68),
+    depth: Math.max(2, radius * 0.82),
     width: size * Math.sqrt(a),
     height: size / Math.sqrt(a),
     radius,
@@ -50,13 +54,17 @@ export function regularPlacement(index: number, radius: number, aspect: number):
  * stretched. It therefore lies inside the live shell band instead of on a
  * separate sphere above it, and hides its frozen inner copy underneath.
  */
-export function priorityPlacement(index: number, radius: number, aspect: number): Placement {
+export function priorityPlacement(
+  index: number,
+  radius: number,
+  aspect: number,
+): Placement {
   const a = clamp(aspect, 0.4, 2.5),
     size = Math.max(10, radius * 1.15);
   return {
     normal: attachmentDirection(index),
     roll: index * 2.117,
-    depth: Math.max(2, radius * 0.68) + radius * 0.03,
+    depth: Math.max(2, radius * 0.82) + radius * 0.014,
     width: Math.min(size * 1.1, size * Math.sqrt(a)),
     height: Math.min(size * 1.1, size / Math.sqrt(a)),
     radius,
@@ -64,18 +72,28 @@ export function priorityPlacement(index: number, radius: number, aspect: number)
 }
 
 /** Local sheet vertices (x, y, z) before orientation: bent toward the centre, lightly crumpled. */
-export function sheet(p: Placement, seed: number) {
-  const out = new Float32Array(VERTS * 3),
-    size = Math.max(p.width, p.height);
+export function sheet(p: Placement, seed: number, edgeLift = 1) {
+  const out = new Float32Array(VERTS * 3);
+  // A lifted edge on selected sheets breaks the silhouette without moving
+  // entire fragments off the dense shell. The same seed survives export/refits.
+  const angle = seed * 2.39996;
+  const lift = (seed % 5 < 2 ? 0.07 : 0.018) * p.radius * edgeLift;
   for (let i = 0; i < VERTS; i++) {
     const u = (i % GRID) / (GRID - 1) - 0.5,
       v = 0.5 - Math.floor(i / GRID) / (GRID - 1);
     const x = u * p.width,
       y = v * p.height;
-    const bend = (x * x + y * y) / (Math.max(10, p.radius) * 2.5);
-    out[i * 3] = x;
-    out[i * 3 + 1] = y;
-    out[i * 3 + 2] = -bend + Math.sin(u * 13 + seed) * Math.sin(v * 11) * size * 0.035;
+    // A spherical patch, including its edges. Tangent planes with only a
+    // quadratic bend made corners stick out and centres look like cavities.
+    const length = Math.hypot(x, y, p.depth);
+    const fold = Math.max(0, u * Math.cos(angle) + v * Math.sin(angle) - 0.16);
+    const r =
+      p.depth +
+      Math.sin(u * 13 + seed) * Math.sin(v * 11) * p.radius * 0.022 +
+      Math.min(1, fold / 0.48) * lift;
+    out[i * 3] = (x / length) * r;
+    out[i * 3 + 1] = (y / length) * r;
+    out[i * 3 + 2] = (p.depth / length) * r - p.depth;
   }
   return out;
 }
@@ -122,6 +140,7 @@ export function worldVertices(p: Placement, local: Float32Array) {
 
 export function vertexRadii(world: Float32Array) {
   const r: number[] = [];
-  for (let i = 0; i < world.length; i += 3) r.push(Math.hypot(world[i], world[i + 1], world[i + 2]));
+  for (let i = 0; i < world.length; i += 3)
+    r.push(Math.hypot(world[i], world[i + 1], world[i + 2]));
   return r;
 }

@@ -57,7 +57,14 @@ export class Game {
   lastSound = -Infinity;
   visualBites = 0;
   /** Recent bites with their world position, projected for HUD feedback. Bounded. */
-  recent: { id: number; big: boolean; label: string; x: number; z: number; time: number }[] = [];
+  recent: {
+    id: number;
+    big: boolean;
+    label: string;
+    x: number;
+    z: number;
+    time: number;
+  }[] = [];
   surface?: WorldSurface;
   collection?: LayeredPile;
   flights: Item[] = [];
@@ -159,8 +166,15 @@ export class Game {
     const first =
       [...this.items]
         .filter((p) => p.threshold <= 15 && p.y < 1800)
-        .sort((a, b) => a.threshold - b.threshold || a.y - b.y)[0] ??
-      [...this.items].sort((a, b) => a.threshold - b.threshold)[0];
+        .sort((a, b) => {
+          const targetY = Math.min(700, level.height / 3);
+          const distance = (p: Item) =>
+            Math.hypot(
+              p.x + p.width / 2 - level.width / 2,
+              p.y + p.height / 2 - targetY,
+            );
+          return distance(a) - distance(b) || a.threshold - b.threshold;
+        })[0] ?? [...this.items].sort((a, b) => a.threshold - b.threshold)[0];
     if (first) {
       const cx = first.x + first.width / 2,
         cy = first.y + first.height / 2;
@@ -185,7 +199,10 @@ export class Game {
                   pos.y - clamp(pos.y, p.y, p.y + p.height),
                 ) > 20,
             ),
-      ) ?? { x: 18, y: 18 };
+      ) ?? {
+        x: clamp(cx, 40, level.width - 40),
+        y: clamp(first.y + first.height + 30, 40, level.height - 40),
+      };
       this.x = spawn.x;
       this.y = spawn.y;
     }
@@ -493,7 +510,10 @@ export class Game {
     this.recent.push({
       id: this.visualBites,
       big: members.length >= 4,
-      label: members.length > 1 ? `${members.length} pieces` : p.text.slice(0, 32) || p.type.toLowerCase(),
+      label:
+        members.length > 1
+          ? `${members.length} pieces`
+          : p.text.slice(0, 32) || p.type.toLowerCase(),
       x: p.x + p.width / 2,
       z: p.y + p.height / 2,
       time: this.time,
@@ -612,7 +632,7 @@ export class Game {
       this.pile.rotateY(dt * 0.24);
     this.pile.position.set(
       this.x + Math.sin(this.heading) * (RABBIT.ballGap * scale + this.radius),
-      Math.max(12, this.radius),
+      Math.max(4, this.radius * 0.85),
       this.y + Math.cos(this.heading) * (RABBIT.ballGap * scale + this.radius),
     );
     if (this.pileShadow) {
@@ -683,14 +703,17 @@ export class Game {
   updateCamera(dt: number) {
     if (this.keys.has("KeyQ")) this.cam.yaw += dt * 1.5;
     if (this.keys.has("KeyE")) this.cam.yaw -= dt * 1.5;
+    const lookAhead = this.count ? (RABBIT.ballGap + this.radius) * 0.55 : 0;
     const look = new THREE.Vector3(
-      this.x + this.vx * 0.15,
+      this.x + this.vx * 0.15 + Math.sin(this.heading) * lookAhead,
       Math.max(15, this.radius * 0.65),
-      this.y + this.vy * 0.15,
+      this.y + this.vy * 0.15 + Math.cos(this.heading) * lookAhead,
     );
     look.add(this.cam.pan);
     this.cam.target.lerp(look, 1 - Math.exp(-6 * dt));
-    const distance = (460 + this.radius * 4.1) / this.cam.userZoom;
+    const portraitFit = Math.max(1, 0.95 / this.camera.aspect);
+    const distance =
+      ((290 + this.radius * 2.7) * portraitFit) / this.cam.userZoom;
     const offset = new THREE.Vector3(
       Math.sin(this.cam.yaw) * Math.cos(this.cam.pitch),
       Math.sin(this.cam.pitch),
@@ -703,7 +726,12 @@ export class Game {
   /** World point → CSS px inside the stage canvas. */
   project(x: number, y: number, z: number) {
     const v = new THREE.Vector3(x, y, z).project(this.camera);
-    return { x: ((v.x + 1) / 2) * this.width, y: ((1 - v.y) / 2) * this.height, behind: v.z > 1 };
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: rect.left + ((v.x + 1) / 2) * this.width,
+      y: rect.top + ((1 - v.y) / 2) * this.height,
+      behind: v.z > 1,
+    };
   }
   drawMap() {
     const c = this.mapContext,

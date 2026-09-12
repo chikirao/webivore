@@ -51,18 +51,25 @@ type Priority = { score: number; aspect: number; index: number };
  * resolution is reduced for old layers. A bounded priority set (graphics first)
  * is additionally drawn refit to the live surface, along each piece's own
  * attachment direction, so late diagrams stay readable without floating.
- * Budget: ceil(bites / 48) + 1 draw calls, 48 × 81 vertices per layer, at most
- * FULL_RES_LAYERS atlases at 1024 × 768 plus one 1024² priority atlas.
+ * Budget: ceil(bites / 48) + 2 draw calls, 48 × 81 vertices per layer, at most
+ * FULL_RES_LAYERS historical atlases at 1024 × 768 plus one support atlas and
+ * one 1024² priority atlas. Old geometry remains bounded by captured bite count.
  */
 export class LayeredPile {
   layers: Layer[] = [];
   count = 0;
   fragments: PackedFragment[] = [];
   private outer: Layer | undefined;
+  private skin: Layer | undefined;
+  private skinPieces: (PackedFragment | undefined)[] = [];
   priorities: Priority[] = [];
   private radius = 5;
   get renderMeshes() {
-    return [...this.layers.map((l) => l.mesh), ...(this.outer ? [this.outer.mesh] : [])];
+    return [
+      ...this.layers.map((l) => l.mesh),
+      ...(this.skin ? [this.skin.mesh] : []),
+      ...(this.outer ? [this.outer.mesh] : []),
+    ];
   }
   /** Current live shell radius the priority copies are fitted to. */
   get shellRadius() {
@@ -108,7 +115,10 @@ export class LayeredPile {
       const u = (i % GRID) / (GRID - 1),
         v = Math.floor(i / GRID) / (GRID - 1);
       uv.set(
-        [(sx + 2 + u * (SLOT - 4)) / (COLS * SLOT), 1 - (sy + 2 + v * (SLOT - 4)) / (ROWS * SLOT)],
+        [
+          (sx + 2 + u * (SLOT - 4)) / (COLS * SLOT),
+          1 - (sy + 2 + v * (SLOT - 4)) / (ROWS * SLOT),
+        ],
         i * 2,
       );
     }
@@ -131,7 +141,13 @@ export class LayeredPile {
     this.fragments.push(f);
     return f;
   }
-  private paint(ctx: CanvasRenderingContext2D, p: Piece, x: number, y: number, cell: number) {
+  private paint(
+    ctx: CanvasRenderingContext2D,
+    p: Piece,
+    x: number,
+    y: number,
+    cell: number,
+  ) {
     const inner = cell - 4;
     ctx.clearRect(x, y, cell, cell);
     for (const r of p.regions ?? [p])
@@ -157,9 +173,18 @@ export class LayeredPile {
     texture.generateMipmaps = false;
     texture.minFilter = THREE.LinearFilter;
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 3), 3));
-    geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 3), 3));
-    geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 2), 2));
+    geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 3), 3),
+    );
+    geometry.setAttribute(
+      "normal",
+      new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 3), 3),
+    );
+    geometry.setAttribute(
+      "uv",
+      new THREE.BufferAttribute(new Float32Array(LAYER_SIZE * VERTS * 2), 2),
+    );
     const indices = new Uint16Array(LAYER_SIZE * INDICES);
     for (let s = 0; s < LAYER_SIZE; s++) {
       let n = s * INDICES;
@@ -193,12 +218,22 @@ export class LayeredPile {
     g.setAttribute("uv", new THREE.BufferAttribute(f.uv.slice(), 2));
     return g;
   }
-  private write(layer: Layer, slot: number, world: Float32Array, uv: Float32Array) {
+  private write(
+    layer: Layer,
+    slot: number,
+    world: Float32Array,
+    uv: Float32Array,
+  ) {
     const g = layer.mesh.geometry,
       pos = g.attributes.position,
       uvs = g.attributes.uv;
     for (let i = 0; i < VERTS; i++) {
-      pos.setXYZ(slot * VERTS + i, world[i * 3], world[i * 3 + 1], world[i * 3 + 2]);
+      pos.setXYZ(
+        slot * VERTS + i,
+        world[i * 3],
+        world[i * 3 + 1],
+        world[i * 3 + 2],
+      );
       uvs.setXY(slot * VERTS + i, uv[i * 2], uv[i * 2 + 1]);
     }
     layer.count = Math.max(layer.count, slot + 1);
@@ -212,7 +247,43 @@ export class LayeredPile {
     this.write(f.layer, f.slot, worldVertices(f.placement, f.positions), f.uv);
     f.layer.mesh.geometry.computeVertexNormals();
     f.layer.mesh.geometry.computeBoundingSphere();
+    this.cover(f);
     this.prioritize(f);
+  }
+  /** A bounded, overlapping support shell made from actual collected pixels.
+   * All original geometry stays frozen. These 48 copies grow under the priority
+   * diagrams, so a sudden large bite cannot leave them hanging above old layers.
+   */
+  private cover(f: PackedFragment) {
+    const slot = f.index % LAYER_SIZE;
+    this.skinPieces[slot] = f;
+    if (!this.skin && this.count >= LAYER_SIZE) {
+      this.skin = this.createLayer();
+      this.layers.pop();
+      this.skin.mesh.material.color.set("#ffffff");
+      this.skinPieces.forEach((piece, s) => {
+        if (piece)
+          this.paint(
+            this.skin!.ctx,
+            piece.piece,
+            (s % COLS) * SLOT,
+            Math.floor(s / COLS) * SLOT,
+            SLOT,
+          );
+      });
+    } else if (this.skin) {
+      this.paint(
+        this.skin.ctx,
+        f.piece,
+        (slot % COLS) * SLOT,
+        Math.floor(slot / COLS) * SLOT,
+        SLOT,
+      );
+    }
+    if (this.skin) {
+      this.skin.texture.needsUpdate = true;
+      this.refit();
+    }
   }
   /** Offer a baked bite a bounded priority slot; graphics displace text, bigger displaces smaller. */
   private prioritize(f: PackedFragment) {
@@ -223,7 +294,10 @@ export class LayeredPile {
     );
     if (slot < 0) return;
     if (!this.outer) {
-      this.outer = this.createLayer([PRIORITY_COLS * PRIORITY_CELL, PRIORITY_COLS * PRIORITY_CELL]);
+      this.outer = this.createLayer([
+        PRIORITY_COLS * PRIORITY_CELL,
+        PRIORITY_COLS * PRIORITY_CELL,
+      ]);
       this.layers.pop();
       this.outer.mesh.material.color.set("#ffffff");
     }
@@ -231,7 +305,11 @@ export class LayeredPile {
       y = Math.floor(slot / PRIORITY_COLS) * PRIORITY_CELL;
     this.paint(this.outer.ctx, f.piece, x, y, PRIORITY_CELL);
     this.outer.texture.needsUpdate = true;
-    this.priorities[slot] = { score, aspect: f.piece.width / f.piece.height, index: f.index };
+    this.priorities[slot] = {
+      score,
+      aspect: f.piece.width / f.piece.height,
+      index: f.index,
+    };
     this.refit();
   }
   /** Placement of one priority copy at the current radius (also used by tests and the trophy). */
@@ -241,6 +319,16 @@ export class LayeredPile {
     return worldVertices(placement, sheet(placement, a.index));
   }
   private refit() {
+    if (this.skin) {
+      this.skinPieces.forEach((f, s) => {
+        if (!f) return;
+        const p = regularPlacement(s, this.radius, 1);
+        p.depth = this.radius * 0.807;
+        this.write(this.skin!, s, worldVertices(p, sheet(p, s, 0)), f.uv);
+      });
+      this.skin.mesh.geometry.computeVertexNormals();
+      this.skin.mesh.geometry.computeBoundingSphere();
+    }
     if (!this.outer) return;
     this.priorities.forEach((_, s) => {
       const uv = new Float32Array(VERTS * 2);
@@ -252,7 +340,9 @@ export class LayeredPile {
         uv.set(
           [
             (x + 2 + u * (PRIORITY_CELL - 4)) / (PRIORITY_COLS * PRIORITY_CELL),
-            1 - (y + 2 + t * (PRIORITY_CELL - 4)) / (PRIORITY_COLS * PRIORITY_CELL),
+            1 -
+              (y + 2 + t * (PRIORITY_CELL - 4)) /
+                (PRIORITY_COLS * PRIORITY_CELL),
           ],
           i * 2,
         );
@@ -263,7 +353,11 @@ export class LayeredPile {
     this.outer.mesh.geometry.computeBoundingSphere();
   }
   dispose() {
-    for (const l of [...this.layers, ...(this.outer ? [this.outer] : [])]) {
+    for (const l of [
+      ...this.layers,
+      ...(this.skin ? [this.skin] : []),
+      ...(this.outer ? [this.outer] : []),
+    ]) {
       l.mesh.geometry.dispose();
       l.mesh.material.dispose();
       l.texture.dispose();
@@ -271,6 +365,8 @@ export class LayeredPile {
     }
     this.layers = [];
     this.outer = undefined;
+    this.skin = undefined;
+    this.skinPieces = [];
     this.priorities = [];
   }
 }
