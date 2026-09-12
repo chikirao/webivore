@@ -54,7 +54,22 @@
   position: absolute;
   inset: -16%;
   background: var(--red);
-  clip-path: polygon(50% 0, 62% 26%, 92% 12%, 80% 42%, 100% 60%, 70% 66%, 74% 100%, 50% 78%, 24% 100%, 30% 66%, 0 60%, 20% 42%, 8% 12%, 38% 26%);
+  clip-path: polygon(
+    50% 0,
+    62% 26%,
+    92% 12%,
+    80% 42%,
+    100% 60%,
+    70% 66%,
+    74% 100%,
+    50% 78%,
+    24% 100%,
+    30% 66%,
+    0 60%,
+    20% 42%,
+    8% 12%,
+    38% 26%
+  );
   z-index: -2;
 }
 .meter-rabbit {
@@ -100,7 +115,11 @@
   background: var(--red);
 }
 .seg.edge {
-  background: linear-gradient(to right, var(--red) calc(var(--f) * 100%), var(--graphite) 0);
+  background: linear-gradient(
+    to right,
+    var(--red) calc(var(--f) * 100%),
+    var(--graphite) 0
+  );
 }
 .meter-tip {
   position: absolute;
@@ -182,7 +201,12 @@
 .meter-sweep {
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 30%, var(--paper) 50%, transparent 70%);
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    var(--paper) 50%,
+    transparent 70%
+  );
   opacity: 0;
   pointer-events: none;
 }
@@ -690,5 +714,1091 @@
   .bracket {
     width: 70px;
     height: 20px;
+  }
+}
+/* Fidelity composition: measured against 1536 × 1024 OVERDRIVE. */
+.playing {
+  background: white;
+}
+.stage {
+  inset: 20.5% 1.5% 8%;
+  width: 97%;
+  height: 71.5%;
+  clip-path: polygon(2% 0, 97% 0, 100% 6%, 100% 91%, 97% 100%, 0 100%, 0 6%);
+}
+.game-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+.hud-top {
+  top: 0;
+  left: 0;
+  width: 77.3%;
+  height: 21.5%;
+  padding: 0;
+  background: white;
+  clip-path: none;
+}
+.hud-top::after {
+  display: none;
+}
+.meter {
+  height: 100%;
+  display: block;
+  isolation: isolate;
+}
+.meter-chrome {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+}
+.meter-shield {
+  position: absolute;
+  left: 1%;
+  top: 3%;
+  width: 16.7%;
+  height: 93%;
+  background: none;
+}
+.meter-shield::before {
+  inset: 0;
+  background: var(--red);
+  clip-path: polygon(
+    0 12%,
+    22% 20%,
+    12% 0,
+    46% 12%,
+    69% 0,
+    69% 25%,
+    100% 15%,
+    88% 50%,
+    100% 78%,
+    75% 74%,
+    62% 100%,
+    46% 85%,
+    5% 100%,
+    14% 70%,
+    0 59%
+  );
+  z-index: -1;
+}
+.meter-rabbit {
+  width: 92%;
+  height: 98%;
+  object-fit: contain;
+  filter: drop-shadow(3px 0 white) drop-shadow(-3px 0 white);
+}
+.meter-readout {
+  position: absolute;
+  left: 17.5%;
+  top: 26%;
+  height: 58%;
+  width: 24%;
+  background: white;
+  transform: skewX(-12deg);
+  padding: 0 2% 0 0;
+  justify-content: start;
+}
+.meter-readout > * {
+  transform: skewX(12deg);
+}
+.meter-percent {
+  font-size: clamp(64px, 8.3vw, 128px);
+  line-height: 0.78;
+  letter-spacing: -0.08em;
+  font-weight: 900;
+}
+.meter-percent small {
+  font-size: 0.47em;
+}
+.meter-caption {
+  margin: 6px 0 0 5px;
+  font-size: 18px;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+.meter-track {
+  position: absolute;
+  left: 39%;
+  top: 44%;
+  width: 46%;
+  height: 28%;
+  margin: 0;
+  color: white;
+}
+.meter-segments {
+  padding: 6px;
+  gap: 3px;
+  transform: skewX(-22deg);
+  clip-path: none;
+  border: 2px solid white;
+}
+.seg {
+  transform: none;
+}
+.meter-ticks {
+  top: 100%;
+}
+.meter-ticks li {
+  font-size: 18px;
+  padding-top: 20px;
+}
+.meter-ticks li::before {
+  background: white;
+  width: 5px;
+  height: 15px;
+}
+.meter-ticks li.reached {
+  color: white;
+}
+.meter-tip {
+  top: -39px;
+  z-index: 2;
+}
+.tip-chevrons {
+  height: 38px;
+}
+.tip-streak {
+  height: 46px;
+  width: 7px;
+  position: absolute;
+  top: 36px;
+  background: white;
+  opacity: 1;
+  box-shadow: 0 0 9px 3px white;
+  transform: skewX(-22deg);
+}
+.meter-next {
+  top: -51px;
+  left: auto !important;
+  right: 3%;
+  transform: none;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 0 0 10px;
+  border-left: 3px solid white;
+  background: none;
+  display: grid;
+  gap: 2px;
+}
+.meter-next b {
+  font:
+    700 25px Arial,
+    sans-serif;
+}
+.meter-next::after {
+  display: none;
+}
+.meter-bite {
+  position: absolute;
+  right: -0.4%;
+  top: 17%;
+  font-size: 25px;
+  width: 7em;
+  height: 6.5em;
+}
+.meter-bite .burst-text {
+  font-size: 1.4em;
+  line-height: 0.88;
+  -webkit-text-stroke: 0;
+}
+.burst svg {
+  overflow: visible;
+}
+.burst-text {
+  font-family: var(--display);
+}
+.meter-flash {
+  top: 82%;
+  left: 43%;
+  z-index: 5;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.hud-map {
+  right: 1.25%;
+  top: 2%;
+  width: 21.5%;
+  height: 20%;
+  padding: 12px 13px 4px;
+  background: var(--ink);
+  border: 5px solid white;
+  outline: 5px solid var(--ink);
+  clip-path: polygon(
+    6% 0,
+    94% 0,
+    100% 10%,
+    100% 80%,
+    87% 100%,
+    7% 100%,
+    0 86%,
+    0 12%
+  );
+  grid-template-columns: minmax(0, 1fr) 52px;
+  grid-template-rows: minmax(0, 1fr) 34px;
+  gap: 4px 8px;
+}
+.map-plate {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: white;
+}
+.map-plate > .plate-body {
+  width: 100%;
+  height: 100%;
+}
+.map-host {
+  width: 100%;
+  height: 100%;
+}
+.map-host canvas {
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  object-fit: fill;
+}
+.map-side {
+  gap: 7px;
+}
+.map-side .glyph-button {
+  width: 50px;
+  height: 54px;
+}
+.map-side .glyph-button svg {
+  width: 34px;
+  height: 34px;
+}
+.site-rail {
+  width: 100%;
+  padding: 0 7px;
+  justify-self: stretch;
+  min-height: 34px;
+}
+.site-name {
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  max-width: 100%;
+}
+.site-note {
+  display: none;
+}
+.hud-stats {
+  left: 1.2%;
+  bottom: 2.5%;
+  width: 37%;
+  height: 14%;
+  background: var(--ink);
+  clip-path: polygon(0 0, 25% 0, 30% 16%, 87% 16%, 100% 76%, 92% 100%, 0 100%);
+}
+.stats-rail {
+  padding: 18px 36px 0 20px;
+  width: 100%;
+  height: 100%;
+}
+.stats-rail > .plate-art {
+  display: none;
+}
+.stats-rail > .plate-body {
+  gap: 20px;
+  width: 100%;
+  justify-content: flex-start;
+}
+.stat-mark {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+.stat .label {
+  font-size: 18px;
+  color: white;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+.stat strong {
+  font-size: 51px;
+}
+.stat-divider {
+  height: 76px;
+}
+.stat-count {
+  display: none;
+}
+.hud-camera {
+  right: 1.6%;
+  bottom: 3%;
+  height: 10%;
+  width: 23.5%;
+}
+.camera-plate {
+  width: 100%;
+  height: 100%;
+  padding: 12px 19px;
+}
+.camera-plate > .plate-body {
+  gap: 7px;
+  width: 100%;
+  justify-items: stretch;
+}
+.camera-label {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.camera-buttons {
+  justify-content: space-between;
+  gap: 7px;
+}
+.camera-reset {
+  padding: 0 9px;
+}
+.reset-text {
+  font-size: 12px;
+}
+.hud-hint {
+  display: none;
+}
+@media (max-width: 1150px) and (min-width: 801px) {
+  .meter-caption {
+    font-size: 13px;
+  }
+  .meter-percent {
+    font-size: 8.2vw;
+  }
+  .meter-bite {
+    font-size: 18px;
+  }
+  .meter-next {
+    font-size: 12px;
+    top: -39px;
+  }
+  .meter-next b {
+    font-size: 18px;
+  }
+  .meter-ticks li {
+    font-size: 14px;
+    padding-top: 12px;
+  }
+  .meter-ticks li::before {
+    height: 9px;
+  }
+  .meter-tip {
+    top: -28px;
+  }
+  .tip-chevrons {
+    height: 28px;
+  }
+  .tip-streak {
+    top: 24px;
+    height: 34px;
+  }
+  .hud-map {
+    padding: 6px;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-rows: minmax(0, 1fr) 28px;
+  }
+  .map-side {
+    gap: 0;
+  }
+  .map-side .glyph-button {
+    width: 44px;
+    height: 44px;
+  }
+  .site-rail {
+    min-height: 28px;
+  }
+  .site-name {
+    font-size: 12px;
+  }
+  .hud-stats {
+    width: 42%;
+    height: 15%;
+  }
+  .stat-mark {
+    width: 46px;
+    height: 46px;
+  }
+  .stat strong {
+    font-size: 36px;
+  }
+  .stat .label {
+    font-size: 13px;
+  }
+  .stat-divider {
+    height: 53px;
+  }
+  .stats-rail > .plate-body {
+    gap: 12px;
+  }
+  .hud-camera {
+    width: 29%;
+    height: 13%;
+  }
+  .camera-plate {
+    padding: 13px 16px;
+  }
+  .camera-label {
+    font-size: 12px;
+  }
+}
+@media (max-width: 800px) {
+  .hud-top {
+    width: 100%;
+    height: 16%;
+    padding: 0;
+  }
+  .meter-shield {
+    width: 18%;
+  }
+  .meter-readout {
+    left: 19%;
+    width: 28%;
+    top: 26%;
+  }
+  .meter-percent {
+    font-size: 11vw;
+  }
+  .meter-caption {
+    font-size: 13px;
+  }
+  .meter-track {
+    left: 48%;
+    width: 47%;
+    top: 45%;
+    height: 26%;
+  }
+  .meter-bite {
+    display: none;
+  }
+  .meter-next {
+    font-size: 11px;
+    top: -35px;
+  }
+  .meter-next b {
+    font-size: 19px;
+  }
+  .meter-tip {
+    top: -29px;
+  }
+  .tip-chevrons {
+    height: 24px;
+  }
+  .tip-streak {
+    height: 30px;
+    top: 26px;
+  }
+  .meter-ticks li {
+    font-size: 13px;
+    padding-top: 12px;
+  }
+  .meter-ticks li::before {
+    height: 9px;
+    width: 3px;
+  }
+  .meter-flash {
+    left: 47%;
+    font-size: 9px;
+    top: 84%;
+  }
+  .hud-map {
+    top: 16.5%;
+    right: 3%;
+    width: 28%;
+    height: 15%;
+    padding: 7px;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-rows: minmax(0, 1fr) 28px;
+  }
+  .map-side {
+    gap: 1px;
+  }
+  .map-side .glyph-button {
+    width: 44px;
+    height: 44px;
+  }
+  .site-rail {
+    min-height: 28px;
+  }
+  .site-name {
+    font-size: 11px;
+  }
+  .stage {
+    top: 16%;
+    left: 2%;
+    width: 96%;
+    height: 70%;
+    bottom: auto;
+  }
+  .game-frame {
+    top: 15.5%;
+    height: 71%;
+    border: 8px solid var(--ink);
+    outline: 5px solid white;
+    left: 1.5%;
+    width: 97%;
+    clip-path: polygon(0 0, 97% 0, 100% 3%, 100% 100%, 3% 100%, 0 97%);
+  }
+  .game-frame > * {
+    display: none;
+  }
+  .hud-stats {
+    left: 1.5%;
+    bottom: 3%;
+    width: 53%;
+    height: 12%;
+    clip-path: polygon(0 0, 85% 0, 100% 25%, 100% 100%, 0 100%);
+  }
+  .stats-rail {
+    padding: 15px;
+  }
+  .stats-rail > .plate-body {
+    gap: 10px;
+  }
+  .stat strong {
+    font-size: 35px;
+  }
+  .stat .label {
+    font-size: 12px;
+  }
+  .stat-mark {
+    width: 45px;
+    height: 45px;
+  }
+  .stat-divider {
+    height: 53px;
+  }
+  .hud-camera {
+    right: 1.5%;
+    bottom: 3%;
+    width: 44%;
+    height: 12%;
+  }
+  .camera-label {
+    font-size: 12px;
+  }
+  .camera-plate {
+    padding: 14px 17px;
+  }
+  .camera-buttons {
+    gap: 5px;
+  }
+  .camera-reset {
+    padding: 0 8px;
+  }
+  .reset-text {
+    font-size: 10px;
+  }
+}
+@media (max-width: 520px) {
+  .hud-top {
+    height: 14.5%;
+  }
+  .meter-percent {
+    font-size: 52px;
+  }
+  .meter-readout {
+    left: 18%;
+    width: 29%;
+    top: 32%;
+  }
+  .meter-caption {
+    font-size: 9px;
+    margin-top: 5px;
+  }
+  .meter-shield {
+    width: 18%;
+    top: 6%;
+  }
+  .meter-track {
+    left: 47%;
+    width: 49%;
+    top: 47%;
+    height: 22%;
+  }
+  .meter-segments {
+    gap: 2px;
+    padding: 3px;
+    border-width: 1px;
+  }
+  .meter-next {
+    top: -28px;
+    font-size: 9px;
+    gap: 0;
+  }
+  .meter-next b {
+    font-size: 15px;
+  }
+  .meter-tip {
+    display: none;
+  }
+  .meter-ticks li {
+    font-size: 10px;
+    padding-top: 10px;
+  }
+  .meter-ticks li::before {
+    height: 7px;
+    width: 2px;
+  }
+  .hud-map {
+    top: 15%;
+    width: 42%;
+    height: 14%;
+    right: 3%;
+    grid-template-rows: minmax(0, 1fr) 22px;
+    gap: 1px;
+    padding: 4px;
+  }
+  .site-rail {
+    min-height: 22px;
+  }
+  .site-name {
+    font-size: 9px;
+  }
+  .map-side .glyph-button {
+    height: 44px;
+  }
+  .map-side .glyph-button svg {
+    width: 24px;
+    height: 24px;
+  }
+  .stage {
+    top: 14.5%;
+    height: 67%;
+    left: 2%;
+    width: 96%;
+  }
+  .game-frame {
+    top: 14.5%;
+    height: 67%;
+    border-width: 5px;
+  }
+  .hud-stats {
+    left: 2%;
+    bottom: 11%;
+    width: 96%;
+    height: 8%;
+    clip-path: polygon(0 0, 93% 0, 100% 45%, 100% 100%, 0 100%);
+  }
+  .stats-rail {
+    padding: 7px 15px;
+  }
+  .stats-rail > .plate-body {
+    gap: 14px;
+  }
+  .stat-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .stat strong {
+    font-size: 28px;
+  }
+  .stat .label {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  .stat-divider {
+    height: 40px;
+  }
+  .hud-camera {
+    left: 2%;
+    right: auto;
+    width: 96%;
+    height: 9%;
+    bottom: 1.5%;
+  }
+  .camera-plate {
+    padding: 8px 16px;
+  }
+  .camera-plate > .plate-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .camera-label {
+    font-size: 10px;
+    width: 80px;
+    white-space: normal;
+  }
+  .camera-buttons {
+    flex: 1;
+  }
+  .glyph-button {
+    width: 44px;
+    height: 44px;
+  }
+  .camera-reset {
+    padding: 0 6px;
+  }
+  .reset-text {
+    display: none;
+  }
+  .meter-flash {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .camera-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .camera-label {
+    display: block;
+  }
+  .hud-camera .glyph-button {
+    flex-shrink: 0;
+  }
+  .map-side .glyph-button > .plate-art {
+    display: none;
+  }
+  .map-side .glyph-button {
+    border: 2px solid white;
+  }
+  .meter-ticks {
+    right: 8px;
+  }
+  .hud-map {
+    height: 14.5%;
+  }
+  .site-name {
+    max-width: 100%;
+  }
+  .site-rail .plate-body {
+    width: 100%;
+  }
+}
+.meter-caption {
+  position: relative;
+  z-index: 2;
+}
+.meter-ticks li {
+  padding-top: 13px;
+}
+.meter-track {
+  top: 43%;
+  height: 25%;
+}
+.tip-streak {
+  height: 44px;
+}
+.meter-readout {
+  top: 28%;
+  height: 56%;
+}
+@media (max-width: 520px) {
+  .meter-readout {
+    top: 32%;
+  }
+  .meter-ticks li {
+    padding-top: 8px;
+  }
+  .meter-track {
+    top: 48%;
+    height: 23%;
+  }
+}
+@media (max-width: 520px) {
+  .meter-track {
+    width: 45%;
+  }
+  .meter-ticks li:last-child {
+    transform: translateX(-85%);
+  }
+  .meter-readout {
+    width: 31%;
+  }
+}
+/* Shared edges: the bottom panel is filled by the same SVG that draws its rim. */
+@media (min-width: 801px) {
+  .hud-stats {
+    left: 1.5%;
+    bottom: 4.5%;
+    height: 10.4%;
+    width: 35%;
+    background: none;
+    clip-path: none;
+  }
+  .stats-rail {
+    padding: 0 0 0 15px;
+  }
+  .stats-rail > .plate-body {
+    gap: 17px;
+  }
+  .stat-mark {
+    width: 66px;
+    height: 66px;
+  }
+  .stat strong {
+    font-size: 49px;
+  }
+  .stat-divider {
+    height: 76px;
+  }
+  .stat .label {
+    font-size: 16px;
+  }
+}
+@media (min-width: 801px) and (max-width: 1150px) {
+  .hud-stats {
+    width: 36%;
+    bottom: 4.2%;
+    height: 11%;
+  }
+  .stats-rail > .plate-body {
+    gap: 11px;
+  }
+  .stat-mark {
+    width: 42px;
+    height: 42px;
+  }
+  .stat strong {
+    font-size: 34px;
+  }
+  .stat-divider {
+    height: 53px;
+  }
+  .stat .label {
+    font-size: 12px;
+  }
+}
+.meter-readout {
+  top: 34%;
+  height: 50%;
+  width: 24%;
+  transform: none;
+  background: none;
+  padding: 0;
+  z-index: 1;
+}
+.meter-readout::before {
+  content: "";
+  position: absolute;
+  inset: -12px -8px -8px -10px;
+  background: white;
+  transform: skewX(-14deg);
+  z-index: -1;
+}
+.meter-readout > * {
+  transform: none;
+}
+.meter-percent {
+  display: flex;
+  align-items: baseline;
+  gap: 0.07em;
+  font-size: clamp(64px, 7.8vw, 120px);
+  letter-spacing: -0.04em;
+  line-height: 0.78;
+}
+.meter-percent small {
+  margin-left: 0;
+  font-size: 0.45em;
+  letter-spacing: 0;
+}
+.meter-caption {
+  margin-top: 10px;
+  margin-left: 2px;
+  line-height: 1;
+}
+.meter-tip {
+  top: 0;
+  height: 100%;
+  width: 7px;
+  display: block;
+  transform: translateX(-50%);
+}
+.meter-tip .tip-chevrons {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 8px;
+  height: 35px;
+  width: auto;
+}
+.meter-tip .tip-streak {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 6px;
+  height: calc(100% - 12px);
+  margin: 0;
+  transform: skewX(-22deg);
+  animation: none;
+  opacity: 1;
+  background: white;
+  box-shadow: 0 0 7px 2px white;
+}
+.map-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+  height: 100%;
+  padding: 2px 0 6px;
+}
+.map-side .glyph-button {
+  position: relative;
+  width: 100%;
+  height: calc(50% - 4px);
+  min-height: 44px;
+  border: 3px solid white;
+  flex: 1;
+  background: var(--ink);
+}
+.map-side .glyph-button > .plate-art {
+  display: none;
+}
+.map-side .glyph-button > .plate-body {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.map-side .glyph-button > .plate-body svg {
+  width: 62%;
+  height: 62%;
+  max-width: 36px;
+  max-height: 36px;
+}
+@media (max-width: 800px) {
+  .meter-readout {
+    top: 36%;
+    left: 19%;
+    width: 28%;
+  }
+  .meter-percent {
+    font-size: 10vw;
+  }
+  .meter-caption {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .map-side {
+    gap: 4px;
+    padding: 0;
+  }
+  .map-side .glyph-button {
+    min-height: 44px;
+    border-width: 2px;
+  }
+  .meter-tip .tip-chevrons {
+    height: 25px;
+  }
+  .meter-tip .tip-streak {
+    top: 4px;
+    height: calc(100% - 8px);
+    width: 4px;
+  }
+}
+@media (max-width: 520px) {
+  .meter-readout {
+    top: 38%;
+    left: 19%;
+    width: 29%;
+  }
+  .meter-readout::before {
+    inset: -8px -4px -5px -6px;
+  }
+  .meter-percent {
+    font-size: 44px;
+    gap: 0.08em;
+  }
+  .meter-percent small {
+    font-size: 0.43em;
+  }
+  .meter-caption {
+    font-size: 9px;
+    margin-top: 8px;
+    letter-spacing: 0;
+  }
+  .hud-map {
+    grid-template-rows: minmax(0, 1fr) 24px;
+    min-height: 128px;
+  }
+  .map-side {
+    min-height: 92px;
+  }
+  .meter-track {
+    left: 48%;
+    width: 43%;
+    height: 22%;
+  }
+  .meter-ticks li:last-child {
+    transform: translateX(-65%);
+  }
+  .map-side .glyph-button > .plate-body svg {
+    max-width: 27px;
+    max-height: 27px;
+  }
+}
+@media (min-width: 801px) {
+  .meter-readout {
+    width: 19.5%;
+  }
+  .meter-track {
+    z-index: 2;
+  }
+}
+@media (min-width: 801px) {
+  .meter-percent {
+    font-size: min(7.8vw, 11.7svh);
+  }
+  .meter-caption {
+    font-size: min(18px, 1.76svh);
+    margin-top: min(10px, 1svh);
+  }
+  .meter-bite {
+    font-size: min(25px, 2.45svh);
+  }
+  .hud-map {
+    min-height: 170px;
+  }
+}
+@media (min-width: 801px) and (max-width: 1150px) {
+  .hud-map {
+    min-height: 153px;
+  }
+}
+@media (min-aspect-ratio: 1.6/1) {
+  .meter-next {
+    top: -38px;
+    font-size: 12px;
+  }
+  .meter-next b {
+    font-size: 20px;
+  }
+  .meter-tip .tip-chevrons {
+    height: 26px;
+  }
+  .meter-ticks li {
+    font-size: 14px;
+  }
+}
+.meter-tip {
+  transition: none;
+}
+@media (max-width: 800px) {
+  .hud-map {
+    height: 17.5%;
+    min-height: 158px;
+    grid-template-rows: minmax(92px, 1fr) 44px;
+  }
+  .site-rail {
+    min-height: 44px;
+  }
+  .site-rail > .plate-body {
+    min-height: 44px;
+  }
+}
+@media (max-width: 520px) {
+  .hud-map {
+    min-height: 158px;
+    height: 18.7%;
+  }
+  .site-name {
+    font-size: 9px;
   }
 }

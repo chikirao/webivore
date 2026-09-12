@@ -1,336 +1,618 @@
-/* Entry screen: logo rail, URL slot with START key, hero rabbit, bottom rail. */
 .entry {
   position: relative;
   height: 100svh;
-  min-height: 560px;
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
-  grid-template-rows: auto 1fr auto auto;
-  grid-template-areas:
-    "head hero"
-    "form hero"
-    "author hero"
-    "rail rail";
-  gap: 0 var(--pad);
-  padding: var(--pad) 0 0 var(--pad);
-  background: var(--paper);
+  min-height: 600px;
   overflow: hidden;
+  background: var(--paper);
+  container-type: size;
+}
+.entry-graphics {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .entry-head {
-  grid-area: head;
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  padding-top: 6px;
+  position: absolute;
+  left: 0;
+  top: 8.7%;
+  width: 68.4%;
+  z-index: 2;
 }
-.logo-rail {
+.wordmark {
+  display: block;
   width: 100%;
-  padding: clamp(10px, 1.2vw, 18px) clamp(26px, 4vw, 60px) clamp(12px, 1.4vw, 22px) clamp(22px, 2.6vw, 40px);
-  justify-content: flex-start;
+  height: auto;
+  overflow: visible;
 }
-.logo-rail .logotype {
-  font-size: clamp(54px, 8.6vw, 132px);
+.wordmark-text {
+  font:
+    174px "Racing Sans One",
+    sans-serif;
+  fill: white;
+  stroke: white;
+  stroke-width: 3;
+  paint-order: stroke fill;
 }
-.logo-accents {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding-left: 34px;
-}
-.logo-accents .hatch-red {
-  width: 120px;
-  height: 16px;
-}
-.logo-accents .ink-bar {
-  height: 8px;
-  width: 42%;
-  background: var(--ink);
-}
-/* Form block */
-.entry-form {
-  grid-area: form;
-  align-self: center;
-  display: grid;
-  justify-items: center;
-  gap: 18px;
-  padding: 10px 0 20px;
-  max-width: 900px;
-}
-.globe {
-  width: clamp(64px, 6.4vw, 96px);
-  height: clamp(64px, 6.4vw, 96px);
-  border-radius: 50%;
-  background: var(--paper);
-  border: 5px solid var(--ink);
-  box-shadow: 0 0 0 3px var(--paper) inset;
-  display: grid;
-  place-items: center;
-  margin-bottom: -6px;
-}
-.globe svg {
-  width: 62%;
-  height: 62%;
-}
-.url-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: stretch;
-  width: 100%;
-}
-.url-slot {
-  min-height: clamp(78px, 8.5vw, 124px);
-  justify-content: stretch;
-  padding: 0;
-}
-.url-slot .plate-body {
-  width: 100%;
-  height: 100%;
-}
-.url-slot input {
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  padding: 0 clamp(20px, 2.6vw, 40px);
-  font-family: var(--display);
-  font-weight: 700;
-  font-style: italic;
-  font-size: clamp(22px, 2.9vw, 42px);
-  letter-spacing: -0.03em;
-  color: var(--ink);
-}
-.url-slot input::placeholder {
-  color: var(--smoke);
-}
-.url-slot:focus-within .plate-art path:last-child {
-  stroke: var(--red);
-}
-.start-key {
-  min-width: clamp(170px, 20vw, 300px);
-  margin-left: -8px;
-  padding: 0 clamp(52px, 6vw, 92px) 0 clamp(22px, 2.6vw, 38px);
-  font-size: clamp(28px, 3.4vw, 50px);
-}
-.entry-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.tick {
-  width: 42px;
-  height: 12px;
-  transform: skewX(-20deg);
-}
-.chip.preset {
-  color: var(--ink);
-}
-.chip.demo {
-  font-size: 19px;
-  min-height: 54px;
-  padding: 0 36px;
-}
-.entry-status {
-  min-height: 24px;
-  text-align: center;
-  max-width: 640px;
-}
-/* Hero */
 .entry-hero {
-  grid-area: hero;
-  position: relative;
-  min-width: 0;
-  overflow: hidden;
+  position: absolute;
+  right: -1%;
+  top: 1%;
+  width: 37%;
+  height: 89%;
+  pointer-events: none;
+  z-index: 3;
 }
 .hero-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+  filter: drop-shadow(-5px 0 white) drop-shadow(5px 0 white);
+}
+.entry-form {
   position: absolute;
-  right: -6%;
-  bottom: -2%;
-  height: 104%;
-  max-height: 900px;
-  width: auto;
-  min-width: 100%;
-  object-fit: cover;
+  left: 1.2%;
+  top: 31.8%;
+  width: 66.2%;
+  height: 52%;
+  z-index: 4;
 }
-.entry-author {
-  grid-area: author;
-  align-self: end;
-  margin: 0 0 22px 6px;
+.globe {
+  position: absolute;
+  left: 37.8%;
+  top: 0;
+  width: 15.4%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 6px solid white;
+  color: white;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 2px white;
 }
-/* Bottom rail */
-.entry-rail {
-  grid-area: rail;
+.globe svg {
+  width: 88%;
+  height: 88%;
+}
+.url-form {
+  position: absolute;
+  top: 21.2%;
+  left: 0;
+  width: 100%;
+  height: 55%;
+}
+.arrow-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.url-form input {
+  position: absolute;
+  left: 7.5%;
+  top: 32%;
+  width: 51%;
+  height: 38%;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  outline: 0;
+  font:
+    clamp(26px, 3.5vw, 60px) "Racing Sans One",
+    sans-serif;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.url-form input::placeholder {
+  color: #999;
+}
+.url-form input:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 0;
+}
+.start-key {
+  position: absolute;
+  left: 64%;
+  top: 30%;
+  width: 30%;
+  height: 46%;
+  font-size: clamp(32px, 5vw, 82px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 0.85;
+  gap: 10px;
+}
+.start-key svg {
+  width: 30%;
+  height: 28px;
+  align-self: flex-end;
+  margin-right: 13%;
+}
+.start-key:hover {
+  filter: drop-shadow(3px 3px 0 #000);
+}
+.entry-actions {
+  position: absolute;
+  left: 24%;
+  top: 71%;
+  width: 42%;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  justify-content: center;
+}
+.tick {
+  width: 46px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.chip.demo {
+  font-size: clamp(22px, 2.6vw, 40px);
+  min-height: 68px;
+  min-width: 270px;
+  padding: 0 40px;
+}
+.entry-presets {
+  position: absolute;
+  top: 85%;
+  left: 22%;
+  width: 47%;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+.preset {
+  font:
+    bold 14px Arial,
+    sans-serif;
+  min-height: 44px;
   display: flex;
   align-items: center;
-  gap: clamp(10px, 1.6vw, 26px);
-  height: clamp(58px, 6.4vw, 84px);
-  padding: 0 var(--pad) 0 var(--pad);
+  gap: 10px;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.preset:hover {
+  color: var(--red);
+}
+.entry-status {
+  position: absolute;
+  top: 95%;
+  left: 10%;
+  width: 67%;
+  text-align: center;
+  background: white;
+}
+.entry-author {
+  position: absolute;
+  left: 2.6%;
+  bottom: 20.6%;
+  font-size: 28px;
+  z-index: 5;
+}
+.entry-help {
+  position: absolute;
+  left: 2.6%;
+  bottom: 11.6%;
+  z-index: 8;
+  font-size: 13px;
+}
+.entry-help summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  font-weight: 700;
+  text-transform: uppercase;
+  list-style: none;
+}
+.entry-help summary svg {
+  width: 23px;
+  height: 23px;
+}
+.entry-help[open] div {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  width: 340px;
+  max-width: 88vw;
+  border: 4px solid var(--ink);
+  padding: 14px 18px;
+  background: white;
+  box-shadow: 7px 7px 0 var(--red);
+  line-height: 1.5;
+}
+.entry-help p {
+  margin: 5px 0;
+}
+.entry-rail {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 93%;
+  height: 10.8%;
+  padding: 20px 3% 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
   background: var(--ink);
-  color: var(--paper);
-  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40%, 100% 100%, 0 100%);
-  margin-left: calc(-1 * var(--pad));
+  color: white;
+  clip-path: polygon(
+    0 0,
+    12% 0,
+    13.5% 18%,
+    100% 18%,
+    100% 34%,
+    95% 100%,
+    0 100%
+  );
 }
 .entry-rail .strip {
-  height: 18px;
+  flex-shrink: 0;
 }
 .hatch-white {
-  width: 110px;
-  background: repeating-linear-gradient(-60deg, var(--paper) 0 9px, transparent 9px 22px);
+  width: 130px;
+  height: 52px;
+  background: repeating-linear-gradient(
+    -50deg,
+    white 0 15px,
+    transparent 15px 31px
+  );
 }
 .entry-rail .checker {
-  width: 150px;
-  height: 22px;
-  background: repeating-conic-gradient(var(--paper) 0 25%, var(--ink) 0 50%) 0 0 / 22px 22px;
+  width: 256px;
+  height: 50px;
+  background: repeating-conic-gradient(white 0 25%, var(--ink) 0 50%) 0 0/32px
+    32px;
 }
 .serial {
-  height: 20px;
-  width: auto;
+  width: 126px;
+  height: 40px;
+  flex-shrink: 0;
 }
 .rail-bar {
   width: 3px;
-  height: 30px;
-  background: var(--paper);
+  height: 44px;
+  background: white;
+  flex-shrink: 0;
 }
 .rail-sound {
-  width: var(--touch);
-  height: var(--touch);
-  color: var(--paper);
+  width: 58px;
+  height: 54px;
+  color: white;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 4px;
 }
 .rail-sound svg {
-  width: 30px;
-  height: 30px;
+  width: 48px;
+  height: 48px;
 }
 .rail-sound:hover {
   color: var(--red);
 }
 .rail-line {
-  flex: 1;
-  height: 3px;
-  background: var(--paper);
+  height: 4px;
   min-width: 30px;
-}
-.rail-hint {
-  margin: 0;
-  color: var(--ash);
-}
-.rail-hint b {
-  color: var(--paper);
+  flex: 1;
+  background: white;
 }
 .rail-chevrons {
-  height: 22px;
-  width: auto;
-  color: var(--paper);
+  width: 130px;
+  height: 50px;
+  flex-shrink: 0;
 }
-.entry-rail .hatch-red.wide {
-  width: 120px;
-  height: 100%;
+.entry-rail .hatch-red {
+  width: 175px;
+  height: 50px;
+  background: repeating-linear-gradient(
+    -50deg,
+    var(--red) 0 27px,
+    transparent 27px 47px
+  );
 }
 .dots-paper {
-  width: 90px;
-  height: 100%;
-  background: radial-gradient(circle, var(--paper) 1.8px, transparent 2.1px) 0 0 / 9px 9px;
+  width: 130px;
+  height: 50px;
+  background: radial-gradient(circle, white 3px, transparent 3.5px) 0 0/16px
+    16px;
 }
-/* Recompose: single column, hero becomes a cropped band under the logo. */
-@media (max-width: 1000px), (max-aspect-ratio: 1/1) {
-  .entry {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(140px, 36vh) 1fr auto auto;
-    grid-template-areas:
-      "head"
-      "hero"
-      "form"
-      "author"
-      "rail";
-    padding-right: var(--pad);
-  }
-  .logo-rail .logotype {
-    font-size: clamp(46px, 11vw, 96px);
-  }
-  .entry-hero {
-    margin: 0 calc(-1 * var(--pad)) 0 0;
-  }
-  .hero-art {
-    right: -2%;
-    bottom: auto;
-    top: -4%;
-    height: 210%;
-    min-width: 0;
-  }
-  .entry-form {
-    align-self: start;
-    max-width: none;
-    width: 100%;
-  }
+@media (max-width: 1150px) and (min-aspect-ratio: 1/1) {
   .entry-rail {
-    margin-right: calc(-1 * var(--pad));
+    gap: 15px;
   }
-  .hatch-white,
-  .entry-rail .checker,
-  .dots-paper {
-    display: none;
+  .entry-rail .checker {
+    width: 16vw;
   }
-}
-@media (max-width: 640px) {
-  .entry {
-    min-height: 620px;
-    grid-template-rows: auto minmax(96px, 22vh) 1fr auto auto;
+  .entry-rail .hatch-white {
+    width: 9vw;
   }
-  .logo-rail {
-    padding: 8px 18px 10px 14px;
+  .entry-rail .serial {
+    width: 9vw;
   }
-  .logo-accents .hatch-red {
-    width: 70px;
+  .entry-rail .rail-chevrons {
+    width: 9vw;
   }
-  .globe {
-    margin-bottom: -2px;
+  .entry-rail .hatch-red {
+    width: 12vw;
   }
-  .url-form {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .url-slot {
-    min-height: 68px;
-  }
-  .url-slot input {
-    font-size: 21px;
-    padding: 0 18px;
-  }
-  .start-key {
-    margin-left: 0;
-    min-height: 62px;
-    justify-self: stretch;
-    padding: 0 62px 0 26px;
-    font-size: 28px;
-  }
-  .tick {
-    display: none;
-  }
-  .entry-actions {
-    gap: 8px;
+  .chip.demo {
+    min-width: 180px;
+    min-height: 54px;
   }
   .entry-author {
-    margin-bottom: 12px;
+    font-size: 24px;
+  }
+  .entry-presets {
+    top: 85%;
+    gap: 15px;
+  }
+  .preset {
+    font-size: 12px;
+  }
+  .entry-help {
+    bottom: 12%;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .entry {
+    min-height: 700px;
+  }
+  .entry-graphics {
+    width: 160%;
+    left: -60%;
+    height: 71%;
+  }
+  .entry-head {
+    top: 5%;
+    width: 99%;
+    z-index: 5;
+  }
+  .entry-hero {
+    top: 22%;
+    right: -2%;
+    width: 57%;
+    height: 45%;
+    z-index: 2;
+  }
+  .entry-form {
+    left: 2%;
+    top: 48%;
+    width: 96%;
+    height: 39%;
+  }
+  .globe {
+    width: 16%;
+    left: 9%;
+    top: -29%;
+  }
+  .url-form {
+    top: 0;
+    height: 59%;
+    z-index: 3;
+  }
+  .entry-actions {
+    top: 57%;
+    left: 21%;
+    width: 58%;
+  }
+  .entry-presets {
+    top: 78%;
+    left: 20%;
+    width: 65%;
+  }
+  .entry-status {
+    top: 95%;
+    width: 86%;
+    left: 5%;
+  }
+  .url-form input {
+    font-size: 4.6vw;
+  }
+  .start-key {
+    font-size: 7vw;
+  }
+  .entry-author {
+    bottom: 16%;
+    font-size: 26px;
+  }
+  .entry-help {
+    bottom: 10%;
+    left: 3%;
   }
   .entry-rail {
-    height: 60px;
-    gap: 12px;
-    clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 40%, 100% 100%, 0 100%);
+    height: 9%;
+    width: 100%;
+    gap: 20px;
+    padding: 12px 25px;
+    clip-path: polygon(0 0, 65% 0, 70% 18%, 100% 18%, 100% 100%, 0 100%);
   }
-  .rail-hint {
-    font-size: 8px;
-    letter-spacing: 0.08em;
-    white-space: normal;
-    line-height: 1.4;
+  .entry-rail .checker {
+    width: 24vw;
   }
-  .rail-chevrons,
-  .entry-rail .hatch-red.wide,
-  .serial {
+  .entry-rail .hatch-white,
+  .entry-rail .serial,
+  .entry-rail .dots-paper {
     display: none;
+  }
+  .entry-rail .hatch-red {
+    width: 15vw;
+  }
+  .rail-chevrons {
+    width: 12vw;
+  }
+  .entry-rail .rail-bar {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .entry {
+    min-height: 700px;
+  }
+  .entry-head {
+    top: 4%;
+    width: 104%;
+    left: -2%;
+  }
+  .entry-hero {
+    top: 19%;
+    right: 0;
+    width: 70%;
+    height: 37%;
+  }
+  .entry-graphics {
+    height: 57%;
+    width: 205%;
+    left: -105%;
+  }
+  .entry-form {
+    top: 47%;
+    height: 36%;
+    width: 96%;
+  }
+  .globe {
+    width: 19%;
+    left: 4%;
+    top: -28%;
+    border-width: 3px;
+  }
+  .url-form {
+    height: 174px;
+    background: var(--ink);
+    clip-path: polygon(8% 0, 100% 0, 100% 74%, 83% 100%, 0 100%, 0 18%);
+  }
+  .url-form .arrow-art {
+    display: none;
+  }
+  .url-form input {
+    left: 2%;
+    top: 5%;
+    width: 96%;
+    height: 44%;
+    padding: 0 24px;
+    font-size: 26px;
+    background: white;
+    clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%, 0 25%);
+  }
+  .start-key {
+    left: 2%;
+    top: 53%;
+    width: 96%;
+    height: 42%;
+    font-size: 38px;
+    background: var(--red);
+    flex-direction: row;
+    gap: 35px;
+    clip-path: polygon(0 0, 100% 0, 100% 48%, 83% 100%, 0 100%);
+  }
+  .start-key svg {
+    width: 50px;
+    height: 24px;
+    align-self: center;
+    margin: 0;
+  }
+  .entry-actions {
+    top: 190px;
+    width: 75%;
+    left: 12.5%;
+    gap: 14px;
+  }
+  .chip.demo {
+    min-width: 185px;
+    min-height: 48px;
+    font-size: 25px;
+  }
+  .tick {
+    width: 32px;
+    min-width: 32px;
+    height: 18px;
+  }
+  .entry-presets {
+    top: 243px;
+    left: 5%;
+    width: 90%;
+    gap: 30px;
+  }
+  .preset {
+    font-size: 12px;
+  }
+  .entry-status {
+    top: 290px;
+    font-size: 12px;
+  }
+  .entry-status .status {
+    font-size: 12px;
+  }
+  .entry-author {
+    bottom: 12%;
+    font-size: 22px;
+  }
+  .entry-help {
+    bottom: 11.2%;
+    left: auto;
+    right: 5%;
+    font-size: 11px;
+  }
+  .entry-help[open] div {
+    left: auto;
+    right: 0;
+  }
+  .entry-rail {
+    height: 8.5%;
+    gap: 13px;
+    padding: 10px 15px;
+  }
+  .entry-rail .checker {
+    width: 85px;
+    height: 30px;
+    background-size: 20px 20px;
+  }
+  .rail-sound {
+    width: 44px;
+    height: 44px;
+  }
+  .rail-sound svg {
+    width: 32px;
+    height: 32px;
+  }
+  .entry-rail .hatch-red {
+    height: 32px;
+    width: 64px;
+  }
+  .rail-chevrons {
+    width: 55px;
+    height: 30px;
+  }
+}
+.wordmark-text {
+  font-family: "Russo One", sans-serif;
+  font-size: 164px;
+  font-style: italic;
+  font-weight: 900;
+  stroke-width: 5px;
+  transform: translate(38px, 0) skewX(-9deg);
+}
+.url-form input {
+  font-family: "Tektur", sans-serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(26px, 3.5vw, 60px);
+}
+@media (max-aspect-ratio: 1/1) {
+  .url-form input {
+    font-size: 4.6vw;
+  }
+}
+@media (max-width: 520px) {
+  .url-form input {
+    font-size: 26px;
   }
 }

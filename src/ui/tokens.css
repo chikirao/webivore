@@ -1,13 +1,13 @@
 /* OVERDRIVE design tokens — one vocabulary for entry, game and finish. */
 :root {
-  --ink: #0b0b0b;
+  --ink: #050505;
   --paper: #ffffff;
-  --red: #ff1d1d;
+  --red: #ff0013;
   --red-deep: #c80e0e;
   --ash: #d9d9d9;
   --graphite: #2b2b2b;
   --smoke: #7a7a7a;
-  --display: "Tektur", Arial, Helvetica, sans-serif;
+  --display: "Russo One", Arial, Helvetica, sans-serif;
   --text: Arial, Helvetica, sans-serif;
   /* Geometry */
   --cut: 18px; /* chamfer size of cut-corner plates */
@@ -97,19 +97,30 @@ a {
 }
 /* Print textures */
 .checker {
-  background: repeating-conic-gradient(var(--ink) 0 25%, var(--paper) 0 50%) 0 0 / 14px 14px;
+  background: repeating-conic-gradient(var(--ink) 0 25%, var(--paper) 0 50%) 0
+    0 / 14px 14px;
 }
 .hatch {
-  background: repeating-linear-gradient(-60deg, var(--ink) 0 8px, transparent 8px 20px);
+  background: repeating-linear-gradient(
+    -60deg,
+    var(--ink) 0 8px,
+    transparent 8px 20px
+  );
 }
 .hatch-red {
-  background: repeating-linear-gradient(-60deg, var(--red) 0 10px, transparent 10px 24px);
+  background: repeating-linear-gradient(
+    -60deg,
+    var(--red) 0 10px,
+    transparent 10px 24px
+  );
 }
 .dots {
-  background: radial-gradient(circle, var(--red) 1.6px, transparent 1.9px) 0 0 / 8px 8px;
+  background: radial-gradient(circle, var(--red) 1.6px, transparent 1.9px) 0 0 /
+    8px 8px;
 }
 .dots-ink {
-  background: radial-gradient(circle, var(--ink) 1.6px, transparent 1.9px) 0 0 / 8px 8px;
+  background: radial-gradient(circle, var(--ink) 1.6px, transparent 1.9px) 0 0 /
+    8px 8px;
 }
 .brand-cursor {
   position: fixed;
@@ -144,4 +155,17 @@ a {
   .brand-cursor {
     display: none;
   }
+}
+
+@font-face {
+  font-family: "Russo One";
+  src: url("/fonts/RussoOne-Regular.ttf") format("truetype");
+  font-weight: 400 900;
+  font-display: swap;
+}
+.display,
+.key,
+.chip,
+.logotype {
+  font-style: italic;
 }

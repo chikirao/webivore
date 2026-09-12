@@ -4,11 +4,13 @@ import { DownloadSimpleIcon, PlayIcon } from "@phosphor-icons/react";
 import type { Game } from "./game";
 import { Plate } from "./ui/Plate";
 import { Meter } from "./ui/Meter";
-import { Bracket, metres, time } from "./Hud";
+import { metres, time } from "./Hud";
+import { ArrowArt, EntryGraphics } from "./ui/OverdriveArt";
 import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
 import "./ui/finish.css";
 
-export const siteLabel = (url: string) => (url.startsWith("demo:") ? "the small internet" : new URL(url).hostname);
+export const siteLabel = (url: string) =>
+  url.startsWith("demo:") ? "the small internet" : new URL(url).hostname;
 const SIZE = 512,
   FRAMES = 48;
 
@@ -30,20 +32,34 @@ export class TrophyScene {
     this.renderer.setClearColor(0xffffff, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     for (const f of game.collection?.fragments ?? []) game.collection?.bake(f);
-    for (const mesh of game.collection?.renderMeshes ?? []) this.ball.add(new THREE.Mesh(mesh.geometry, mesh.material));
-    // Ball occupies the right-hand ~62% of the square; camera bounds are in ball units.
+    for (const mesh of game.collection?.renderMeshes ?? [])
+      this.ball.add(new THREE.Mesh(mesh.geometry, mesh.material));
+    // Ball fills the left of the square, leaving the right for the rabbit.
     const r = Math.max(12, game.radius);
-    const view = r * 1.72;
-    this.camera = new THREE.OrthographicCamera(-view, view, view, -view, 0.1, view * 20);
+    const view = r * 1.38;
+    this.camera = new THREE.OrthographicCamera(
+      -view,
+      view,
+      view,
+      -view,
+      0.1,
+      view * 20,
+    );
     this.camera.position.set(0, view * 0.35, view * 4);
     this.camera.lookAt(0, 0, 0);
-    this.ball.position.set(view * 0.2, -view * 0.16, 0);
-    this.scene.add(this.ball, new THREE.HemisphereLight(0xffffff, 0x888888, 2.4));
+    this.ball.position.set(-view * 0.25, -view * 0.33, 0);
+    this.scene.add(
+      this.ball,
+      new THREE.HemisphereLight(0xffffff, 0x888888, 2.4),
+    );
     const light = new THREE.DirectionalLight(0xffffff, 2.5);
     light.position.set(-r, r * 2, r * 2);
     this.scene.add(light);
-    this.rabbit.src = "/assets/rabbit-victory.png";
-    this.fonts = Promise.all([document.fonts.load("italic 700 52px Tektur"), this.rabbit.decode().catch(() => undefined)]);
+    this.rabbit.src = "/assets/rabbit-victory-trim.png";
+    this.fonts = Promise.all([
+      document.fonts.load("italic 700 52px Russo One"),
+      this.rabbit.decode(),
+    ]);
   }
   draw(canvas: HTMLCanvasElement, angle: number) {
     const c = canvas.getContext("2d")!;
@@ -51,7 +67,12 @@ export class TrophyScene {
     c.fillRect(0, 0, SIZE, SIZE);
     // Corner accents
     c.fillStyle = "#0b0b0b";
-    for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+    for (const [sx, sy] of [
+      [1, 1],
+      [-1, 1],
+      [1, -1],
+      [-1, -1],
+    ]) {
       c.save();
       c.translate(sx > 0 ? 0 : SIZE, sy > 0 ? 0 : SIZE);
       c.scale(sx, sy);
@@ -70,21 +91,35 @@ export class TrophyScene {
     c.strokeStyle = "#ff1d1d";
     c.lineWidth = 7;
     c.lineCap = "round";
-    for (const [a0, a1] of [[-2.6, -2.1], [-0.55, -0.1], [1.4, 1.75]]) {
+    for (const [a0, a1] of [
+      [-2.6, -2.1],
+      [-0.55, -0.1],
+      [1.4, 1.75],
+    ]) {
       c.beginPath();
-      c.arc(300, 300, 186, a0, a1);
+      c.arc(252, 310, 205, a0, a1);
       c.stroke();
     }
     // Rabbit beside the ball: head and pose stay clear of the ball throughout the turn.
-    if (this.rabbit.complete && this.rabbit.naturalWidth) c.drawImage(this.rabbit, 26, 118, 236, 266);
+    // Full pose at right, rendered after the ball so neither head nor feet disappear.
     this.ball.rotation.set(0.2, angle, 0.08);
     this.renderer.render(this.scene, this.camera);
     c.drawImage(this.renderer.domElement, 0, 0);
+    if (this.rabbit.complete && this.rabbit.naturalWidth) {
+      const h = 310,
+        w = (h * this.rabbit.naturalWidth) / this.rabbit.naturalHeight;
+      c.drawImage(this.rabbit, 300, 130, w, h);
+    }
     // Paper shards
     c.fillStyle = "#fff";
     c.strokeStyle = "#0b0b0b";
     c.lineWidth = 3;
-    for (const [x, y, s, r] of [[92, 392, 16, 0.4], [438, 118, 12, -0.5], [470, 402, 14, 0.2], [150, 458, 10, -0.9]]) {
+    for (const [x, y, s, r] of [
+      [92, 392, 16, 0.4],
+      [438, 118, 12, -0.5],
+      [470, 402, 14, 0.2],
+      [150, 458, 10, -0.9],
+    ]) {
       c.save();
       c.translate(x, y);
       c.rotate(r + angle * 0.3);
@@ -95,15 +130,20 @@ export class TrophyScene {
       c.restore();
     }
     // Logotype and site
-    c.font = "italic 700 54px Tektur, Arial, sans-serif";
+    c.save();
+    c.fillStyle = "#050505";
+    c.transform(1, 0, -0.2, 1, 0, 0);
+    c.fillRect(38, 26, 462, 71);
+    c.restore();
+    c.font = "italic 700 62px Russo One, Arial, sans-serif";
     c.textAlign = "left";
     c.textBaseline = "alphabetic";
     c.lineJoin = "round";
     c.lineWidth = 8;
     c.strokeStyle = "#0b0b0b";
-    c.strokeText("WEBIVORE", 30, 76);
+    c.strokeText("WEBIVORE", 30, 79, 447);
     c.fillStyle = "#fff";
-    c.fillText("WEBIVORE", 30, 76);
+    c.fillText("WEBIVORE", 30, 79, 447);
     c.fillStyle = "#ff1d1d";
     for (let i = 0; i < 4; i++) {
       c.beginPath();
@@ -116,9 +156,11 @@ export class TrophyScene {
     }
     const site = siteLabel(this.game.level.url);
     c.fillStyle = "#0b0b0b";
-    c.font = "700 20px Arial, sans-serif";
-    while (c.measureText(site).width > 250 && parseInt(c.font) > 11) c.font = `700 ${parseInt(c.font) - 1}px Arial, sans-serif`;
-    c.fillText(site, 100, 111);
+    let siteSize = 20;
+    c.font = `700 ${siteSize}px Arial, sans-serif`;
+    while (c.measureText(site).width > 250 && siteSize > 11)
+      c.font = `700 ${--siteSize}px Arial, sans-serif`;
+    c.fillText(site, 34, 128);
     c.font = "700 10px Arial, sans-serif";
     c.textAlign = "right";
     c.fillText(`chikirao · ${this.game.count} pieces`, SIZE - 30, SIZE - 24);
@@ -146,7 +188,8 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
     let raf = 0;
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const tick = (now: number) => {
-      if (canvas.current && !running.current) s.draw(canvas.current, reduced ? 0.6 : now * 0.00055);
+      if (canvas.current && !running.current)
+        s.draw(canvas.current, reduced ? 0.6 : now * 0.00055);
       raf = requestAnimationFrame(tick);
     };
     void s.fonts.then(() => {
@@ -165,14 +208,20 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
     running.current = true;
     setProgress(0);
     setError("");
-    const w = new Worker(new URL("./gif.worker.ts", import.meta.url), { type: "module" });
+    const w = new Worker(new URL("./gif.worker.ts", import.meta.url), {
+      type: "module",
+    });
     worker.current = w;
     const output = document.createElement("canvas");
     output.width = output.height = SIZE;
     const request = (data: unknown, transfer: Transferable[] = []) =>
       new Promise<any>((resolve, reject) => {
-        w.onmessage = (e) => (e.data.type === "error" ? reject(new Error(e.data.message)) : resolve(e.data));
-        w.onerror = () => reject(new Error("GIF encoder interrupted. Please try again."));
+        w.onmessage = (e) =>
+          e.data.type === "error"
+            ? reject(new Error(e.data.message))
+            : resolve(e.data);
+        w.onerror = () =>
+          reject(new Error("GIF encoder interrupted. Please try again."));
         w.postMessage(data, transfer);
       });
     try {
@@ -181,13 +230,19 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
       for (let i = 0; i < FRAMES; i++) {
         if (!mounted.current) return;
         scene.current.draw(output, (i * Math.PI * 2) / FRAMES);
-        const pixels = output.getContext("2d")!.getImageData(0, 0, SIZE, SIZE).data;
-        await request({ type: "frame", pixels: pixels.buffer, delay: 8 }, [pixels.buffer]);
+        const pixels = output
+          .getContext("2d")!
+          .getImageData(0, 0, SIZE, SIZE).data;
+        await request({ type: "frame", pixels: pixels.buffer, delay: 8 }, [
+          pixels.buffer,
+        ]);
         setProgress(Math.round(((i + 1) / FRAMES) * 100));
       }
       const result = await request({ type: "finish" });
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-      const url = URL.createObjectURL(new Blob([result.bytes], { type: "image/gif" }));
+      const url = URL.createObjectURL(
+        new Blob([result.bytes], { type: "image/gif" }),
+      );
       urlRef.current = url;
       setDownload(url);
       const a = document.createElement("a");
@@ -204,14 +259,21 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
   }
   const site = siteLabel(game.level.url);
   return (
-    <div className="finish" role="dialog" aria-modal="true" aria-labelledby="finish-title">
-      <Bracket corner="tl" />
-      <Bracket corner="tr" />
-      <Bracket corner="bl" />
-      <Bracket corner="br" />
+    <div
+      className="finish"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="finish-title"
+    >
+      <EntryGraphics />
       <header className="finish-top">
         <div className="finish-meter">
-          <Meter percent={100} count={game.count} total={game.items.length} complete />
+          <Meter
+            percent={100}
+            count={game.count}
+            total={game.items.length}
+            complete
+          />
         </div>
         <Burst className="cleared">
           Site
@@ -221,21 +283,42 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
       </header>
       <section className="finish-main">
         <div className="trophy-frame">
-          <canvas ref={canvas} width={SIZE} height={SIZE} aria-label={`Your collected ${site} ball rotating beside the celebrating rabbit`} />
+          <canvas
+            ref={canvas}
+            width={SIZE}
+            height={SIZE}
+            aria-label={`Your collected ${site} ball rotating beside the celebrating rabbit`}
+          />
         </div>
         <div className="finish-actions">
-          <Plate shape="slant" cut={40} className="yours-rail">
-            <h2 id="finish-title" className="logotype">
-              All yours
-            </h2>
-          </Plate>
-          <p className="finish-site">{site}</p>
-          <Plate as="button" shape="key" fill="var(--red)" className="key export-key" disabled={progress !== null} onClick={() => void exportGif()}>
-            <DownloadSimpleIcon weight="bold" />
-            {progress === null ? "Export GIF" : <span role="status">Packing {progress}%</span>}
-            <Chevrons className="chev" />
-          </Plate>
-          <Plate as="button" shape="chip" className="chip again-chip" onClick={onLeave}>
+          <h2 id="finish-title" className="yours-rail">
+            <span>All</span>
+            <strong>Yours</strong>
+          </h2>
+          <button
+            className="key export-key"
+            disabled={progress !== null}
+            onClick={() => void exportGif()}
+            autoFocus
+          >
+            <ArrowArt input={false} />
+            <span className="export-body">
+              <DownloadSimpleIcon weight="fill" />
+              {progress === null ? (
+                "Export GIF"
+              ) : (
+                <span role="status">Packing {progress}%</span>
+              )}
+              <Chevrons className="chev" />
+            </span>
+          </button>
+          <Plate
+            as="button"
+            shape="chip"
+            line={null}
+            className="chip again-chip"
+            onClick={onLeave}
+          >
             Play again
             <PlayIcon weight="fill" />
           </Plate>
@@ -245,7 +328,11 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
             <i />
           </p>
           {download && (
-            <a className="download-again" href={download} download="webivore-trophy.gif">
+            <a
+              className="download-again"
+              href={download}
+              download="webivore-trophy.gif"
+            >
               Download again
             </a>
           )}

@@ -43,7 +43,14 @@
   justify-self: center;
   padding: 10px;
   background: var(--ink);
-  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 40px, 100% 100%, 40px 100%, 0 calc(100% - 40px));
+  clip-path: polygon(
+    0 0,
+    calc(100% - 40px) 0,
+    100% 40px,
+    100% 100%,
+    40px 100%,
+    0 calc(100% - 40px)
+  );
   animation: trophy-arrive 0.7s var(--ease);
 }
 .trophy-frame::before {
@@ -51,14 +58,28 @@
   position: absolute;
   inset: 10px;
   background: var(--paper);
-  clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+  clip-path: polygon(
+    0 0,
+    calc(100% - 32px) 0,
+    100% 32px,
+    100% 100%,
+    32px 100%,
+    0 calc(100% - 32px)
+  );
 }
 .trophy-frame canvas {
   position: relative;
   display: block;
   width: 100%;
   height: 100%;
-  clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 32px 100%, 0 calc(100% - 32px));
+  clip-path: polygon(
+    0 0,
+    calc(100% - 32px) 0,
+    100% 32px,
+    100% 100%,
+    32px 100%,
+    0 calc(100% - 32px)
+  );
 }
 .finish-actions {
   display: grid;
@@ -155,7 +176,8 @@
   margin-left: auto;
   width: 140px;
   height: 22px;
-  background: repeating-conic-gradient(var(--paper) 0 25%, var(--ink) 0 50%) 0 0 / 22px 22px;
+  background: repeating-conic-gradient(var(--paper) 0 25%, var(--ink) 0 50%) 0
+    0 / 22px 22px;
 }
 @keyframes finish-reveal {
   from {
@@ -253,5 +275,683 @@
   .finish-rail .hatch-red,
   .dots-paper {
     display: none;
+  }
+}
+/* Three states share the same measured rails and typography. */
+.finish {
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 600px;
+}
+.finish > .entry-graphics {
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 1;
+  clip-path: polygon(77% 0, 100% 0, 100% 87%, 81% 87%, 91% 48%, 72% 46%);
+}
+.finish-top {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 21%;
+  padding: 0;
+  display: block;
+  border: 0;
+}
+.finish-meter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 80%;
+  height: 100%;
+}
+.finish .meter-shield {
+  width: 16%;
+}
+.finish .meter-readout {
+  left: 17%;
+  width: 25%;
+  top: 30%;
+  height: 57%;
+}
+.finish .meter-percent {
+  font-size: clamp(78px, 8.2vw, 126px);
+}
+.finish .meter-track {
+  left: 41%;
+  top: 38%;
+  height: 34%;
+  width: 57%;
+  margin: 0;
+}
+.finish .meter-caption {
+  margin-top: 10px;
+}
+.finish .meter-ticks,
+.finish .meter-tip {
+  display: none;
+}
+.cleared {
+  position: absolute;
+  right: 1.6%;
+  top: 3%;
+  font-size: clamp(25px, 3vw, 46px);
+  width: 6.2em;
+  height: 4.5em;
+}
+.cleared .burst-text {
+  font-size: 1.15em;
+  -webkit-text-stroke: 0;
+  line-height: 0.92;
+}
+.finish-main {
+  position: absolute;
+  top: 22%;
+  bottom: 15.7%;
+  left: 1.3%;
+  right: 1.3%;
+  display: grid;
+  grid-template-columns: 44% minmax(0, 1fr);
+  gap: 24px;
+  padding: 0;
+  align-items: center;
+}
+.trophy-frame {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  max-width: 65svh;
+  max-height: 65svh;
+  padding: 10px;
+  justify-self: start;
+  clip-path: polygon(
+    9% 0,
+    92% 0,
+    100% 8%,
+    100% 89%,
+    89% 100%,
+    8% 100%,
+    0 92%,
+    0 10%
+  );
+}
+.trophy-frame::before {
+  clip-path: polygon(
+    8% 0,
+    92% 0,
+    100% 8%,
+    100% 90%,
+    90% 100%,
+    8% 100%,
+    0 92%,
+    0 9%
+  );
+}
+.trophy-frame canvas {
+  clip-path: polygon(
+    8% 0,
+    92% 0,
+    100% 8%,
+    100% 90%,
+    90% 100%,
+    8% 100%,
+    0 92%,
+    0 9%
+  );
+}
+.finish-actions {
+  position: relative;
+  height: 100%;
+  display: block;
+  min-width: 0;
+}
+.yours-rail {
+  position: absolute;
+  left: 0;
+  top: 4%;
+  width: 100%;
+  height: 28%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transform: rotate(-3deg) skewX(-12deg);
+  font: 900 clamp(68px, 8.9vw, 140px)/1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: -0.07em;
+  white-space: nowrap;
+}
+.yours-rail span {
+  color: var(--ink);
+  width: 34%;
+  letter-spacing: -0.08em;
+}
+.yours-rail strong {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: var(--ink);
+  height: 100%;
+  width: 66%;
+  font: inherit;
+  font-size: 1.04em;
+  letter-spacing: -0.045em;
+  border: 7px solid var(--ink);
+}
+.yours-rail::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 3%;
+  width: 30%;
+  height: 10px;
+  background: repeating-linear-gradient(
+    -55deg,
+    var(--red) 0 25px,
+    var(--ink) 25px 46px
+  );
+}
+.export-key {
+  position: absolute;
+  top: 33%;
+  left: 0;
+  width: 100%;
+  height: 45%;
+  padding: 0;
+  max-width: none;
+  min-height: 0;
+  white-space: nowrap;
+}
+.export-body {
+  position: absolute;
+  left: 6%;
+  right: 14%;
+  top: 33%;
+  height: 36%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  font-size: clamp(35px, 4.4vw, 70px);
+}
+.export-body > svg:first-child {
+  width: 1.5em;
+  height: 1.5em;
+  flex-shrink: 0;
+}
+.export-body > .chev {
+  position: absolute;
+  width: 78px;
+  height: 32px;
+  right: -4%;
+  bottom: -20px;
+}
+.export-body > [role="status"] {
+  font-size: 0.57em;
+}
+.export-key:hover:not(:disabled) {
+  filter: drop-shadow(4px 5px 0 #0003);
+}
+.export-key:focus-visible {
+  outline-offset: -12px;
+}
+.again-chip {
+  position: absolute;
+  left: 22%;
+  top: 75%;
+  min-height: 72px;
+  width: 52%;
+  font-size: clamp(24px, 2.5vw, 40px);
+  padding: 0 28px;
+  margin: 0;
+}
+.export-note {
+  position: absolute;
+  top: 90%;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  justify-content: center;
+  gap: 24px;
+  font-size: 18px;
+  letter-spacing: 0.09em;
+}
+.download-again {
+  position: absolute;
+  top: 96%;
+  left: 30%;
+  font-size: 13px;
+}
+.finish-actions > .status {
+  position: absolute;
+  top: 96%;
+  left: 10%;
+}
+.finish-rail {
+  position: absolute;
+  bottom: 2.8%;
+  left: 1.2%;
+  width: 97.6%;
+  height: 9%;
+  padding: 0 42px;
+  gap: 24px;
+  clip-path: polygon(5% 0, 94% 0, 100% 0, 100% 50%, 96% 100%, 0 100%, 0 45%);
+}
+.finish-rail .author {
+  font-size: 38px;
+}
+.rail-mark {
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+}
+.rail-value {
+  font-size: clamp(26px, 3.2vw, 48px);
+  white-space: nowrap;
+}
+.finish-rail .rail-bar {
+  height: 58px;
+}
+.rail-pieces {
+  font-size: 12px;
+  color: white;
+  letter-spacing: 0;
+  max-width: 80px;
+}
+.checker-paper {
+  width: 190px;
+  height: 48px;
+  background-size: 32px 32px;
+  flex-shrink: 0;
+}
+.finish-rail .hatch-white {
+  height: 50px;
+  width: 150px;
+}
+.finish-rail .hatch-red {
+  height: 50px;
+  width: 180px;
+  min-width: 80px;
+  background: repeating-linear-gradient(
+    -50deg,
+    var(--red) 0 26px,
+    transparent 26px 46px
+  );
+}
+.finish-rail .dots-paper {
+  min-width: 90px;
+  height: 50px;
+}
+@media (max-width: 1150px) and (min-aspect-ratio: 1/1) {
+  .finish-main {
+    top: 23%;
+    bottom: 16%;
+    gap: 20px;
+  }
+  .finish .meter-percent {
+    font-size: 8vw;
+  }
+  .finish .meter-caption {
+    font-size: 14px;
+  }
+  .yours-rail {
+    font-size: 8.5vw;
+  }
+  .export-body {
+    gap: 15px;
+    font-size: 4.1vw;
+  }
+  .export-body > .chev {
+    width: 52px;
+    height: 24px;
+  }
+  .again-chip {
+    min-height: 54px;
+  }
+  .export-note {
+    font-size: 13px;
+    gap: 12px;
+  }
+  .finish-rail {
+    gap: 15px;
+    padding: 0 25px;
+  }
+  .finish-rail .author {
+    font-size: 28px;
+  }
+  .rail-mark {
+    width: 42px;
+    height: 42px;
+  }
+  .finish-rail .rail-bar {
+    height: 40px;
+  }
+  .checker-paper {
+    width: 110px;
+    height: 36px;
+    background-size: 24px 24px;
+  }
+  .finish-rail .hatch-white {
+    width: 85px;
+    height: 36px;
+  }
+  .finish-rail .hatch-red {
+    width: 110px;
+    height: 36px;
+  }
+  .finish-rail .dots-paper {
+    display: none;
+  }
+  .rail-pieces {
+    font-size: 10px;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .finish {
+    min-height: 700px;
+    overflow: auto;
+  }
+  .finish-top {
+    height: 14%;
+  }
+  .finish-meter {
+    width: 100%;
+  }
+  .finish .meter-shield {
+    width: 16%;
+  }
+  .finish .meter-readout {
+    left: 18%;
+    width: 30%;
+  }
+  .finish .meter-percent {
+    font-size: 10vw;
+  }
+  .finish .meter-caption {
+    font-size: 12px;
+  }
+  .finish .meter-track {
+    left: 46%;
+    width: 48%;
+    top: 42%;
+    height: 30%;
+  }
+  .cleared {
+    display: none;
+  }
+  .finish-main {
+    top: 15%;
+    bottom: 10%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .trophy-frame {
+    width: min(52svh, 88vw);
+    height: min(52svh, 88vw);
+    max-width: none;
+    max-height: none;
+    flex-shrink: 0;
+    padding: 9px;
+    align-self: center;
+  }
+  .finish-actions {
+    height: 29svh;
+    width: 92%;
+    flex-shrink: 0;
+  }
+  .yours-rail {
+    top: 0;
+    height: 29%;
+    font-size: 10vw;
+    left: 2%;
+    width: 96%;
+  }
+  .yours-rail span {
+    width: 34%;
+  }
+  .export-key {
+    top: 22%;
+    height: 59%;
+  }
+  .export-body {
+    font-size: 5.8vw;
+    gap: 20px;
+  }
+  .export-body > .chev {
+    width: 52px;
+    height: 24px;
+    bottom: -14px;
+  }
+  .again-chip {
+    top: 77%;
+    left: 27%;
+    width: 46%;
+    min-height: 46px;
+    font-size: 22px;
+  }
+  .export-note {
+    top: 99%;
+    font-size: 12px;
+    gap: 12px;
+  }
+  .finish-rail {
+    bottom: 1.5%;
+    height: 7%;
+    gap: 16px;
+    padding: 0 24px;
+  }
+  .finish-rail .author {
+    font-size: 28px;
+  }
+  .rail-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .rail-value {
+    font-size: 26px;
+  }
+  .finish-rail .rail-bar {
+    height: 36px;
+  }
+  .checker-paper {
+    display: none;
+  }
+  .finish-rail .hatch-red {
+    width: 120px;
+    min-width: 70px;
+    height: 36px;
+  }
+  .finish-rail .dots-paper {
+    display: none;
+  }
+  .rail-pieces {
+    max-width: none;
+    font-size: 11px;
+  }
+  .download-again {
+    top: 109%;
+    left: 35%;
+    font-size: 11px;
+  }
+}
+@media (max-width: 520px) {
+  .finish {
+    min-height: 720px;
+  }
+  .finish-top {
+    height: 12%;
+  }
+  .finish .meter-readout {
+    top: 33%;
+  }
+  .finish .meter-percent {
+    font-size: 45px;
+  }
+  .finish .meter-caption {
+    font-size: 9px;
+    margin-top: 6px;
+  }
+  .finish .meter-track {
+    top: 45%;
+    height: 25%;
+    left: 48%;
+    width: 47%;
+  }
+  .finish-main {
+    top: 13%;
+    bottom: 11%;
+    gap: 12px;
+  }
+  .trophy-frame {
+    width: min(86vw, 40svh);
+    height: min(86vw, 40svh);
+    padding: 7px;
+  }
+  .finish-actions {
+    width: 100%;
+    height: 30svh;
+  }
+  .yours-rail {
+    height: 26%;
+    font-size: 11.7vw;
+    left: 3%;
+    width: 94%;
+  }
+  .yours-rail strong {
+    border-width: 3px;
+  }
+  .yours-rail::after {
+    height: 5px;
+    bottom: -3px;
+  }
+  .export-key {
+    top: 22%;
+    height: 58%;
+  }
+  .export-body {
+    font-size: 6.4vw;
+    gap: 9px;
+    left: 7%;
+    right: 16%;
+  }
+  .export-body > .chev {
+    width: 40px;
+    height: 18px;
+    bottom: -13px;
+  }
+  .again-chip {
+    top: 80%;
+    min-height: 44px;
+    font-size: 18px;
+    left: 22%;
+    width: 56%;
+  }
+  .export-note {
+    top: 102%;
+    font-size: 10px;
+    gap: 8px;
+    letter-spacing: 0.07em;
+  }
+  .export-note i {
+    width: 15px;
+  }
+  .finish-rail {
+    left: 2%;
+    width: 96%;
+    bottom: 1.5%;
+    height: 7%;
+    padding: 0 16px;
+    gap: 10px;
+  }
+  .finish-rail .author {
+    font-size: 19px;
+  }
+  .rail-mark {
+    width: 27px;
+    height: 27px;
+  }
+  .rail-value {
+    font-size: 20px;
+  }
+  .finish-rail .rail-bar {
+    width: 2px;
+    height: 28px;
+  }
+  .rail-pieces {
+    display: none;
+  }
+  .finish-rail .hatch-red {
+    display: none;
+  }
+  .download-again {
+    top: 112%;
+  }
+  .finish-actions > .status {
+    top: 111%;
+    font-size: 11px;
+  }
+}
+.finish .meter-readout::before {
+  inset: -12px -3px -8px -12px;
+}
+.finish .meter-percent {
+  font-size: clamp(70px, 8vw, 123px);
+  gap: 0.055em;
+}
+.finish .meter-percent small {
+  font-size: 0.43em;
+}
+.finish .meter-readout {
+  top: 34%;
+  width: 24%;
+}
+@media (max-aspect-ratio: 1/1) {
+  .finish .meter-percent {
+    font-size: 9.5vw;
+  }
+  .finish .meter-readout {
+    top: 36%;
+    width: 28%;
+  }
+}
+@media (max-width: 520px) {
+  .finish .meter-percent {
+    font-size: 39px;
+  }
+  .finish .meter-readout {
+    top: 39%;
+    width: 30%;
+  }
+  .finish .meter-readout::before {
+    inset: -7px -4px -5px -9px;
+  }
+  .finish .meter-caption {
+    margin-top: 8px;
+  }
+}
+@media (min-aspect-ratio: 1/1) {
+  .yours-rail {
+    top: 8%;
+    height: 24%;
+  }
+  .export-key {
+    top: 30%;
+  }
+  .again-chip {
+    top: 71%;
+  }
+  .export-note {
+    top: 86%;
+  }
+}
+@media (min-width: 521px) and (max-aspect-ratio: 1/1) {
+  .trophy-frame {
+    width: min(44svh, 88vw);
+    height: min(44svh, 88vw);
   }
 }

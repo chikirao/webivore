@@ -1,13 +1,18 @@
-import { GlobeIcon, PlayIcon, SpeakerHighIcon, SpeakerSlashIcon } from "@phosphor-icons/react";
+import {
+  GlobeIcon,
+  PlayIcon,
+  SpeakerHighIcon,
+  SpeakerSlashIcon,
+  QuestionIcon,
+} from "@phosphor-icons/react";
 import { Plate } from "./ui/Plate";
-import { Chevrons, RabbitHero, Serial } from "./ui/marks";
+import { Chevrons, Serial } from "./ui/marks";
+import { ArrowArt, EntryGraphics, Wordmark } from "./ui/OverdriveArt";
 import "./ui/entry.css";
-
 export const PRESETS: [string, string][] = [
   ["Wikipedia", "https://en.wikipedia.org/wiki/Internet"],
   ["Hacker News", "https://news.ycombinator.com"],
 ];
-
 export function Entry({
   url,
   setUrl,
@@ -29,19 +34,21 @@ export function Entry({
 }) {
   return (
     <main className="entry">
+      <EntryGraphics />
       <header className="entry-head">
-        <Plate shape="tag" cut={34} className="logo-rail">
-          <h1 className="logotype">Webivore</h1>
-        </Plate>
-        <div className="logo-accents" aria-hidden="true">
-          <span className="strip hatch-red" />
-          <span className="strip ink-bar" />
-        </div>
+        <h1 className="sr-only">WEBIVORE</h1>
+        <Wordmark />
       </header>
-
+      <aside className="entry-hero" aria-hidden="true">
+        <img
+          className="hero-art"
+          src="/assets/overdrive-entry-rabbit.png"
+          alt=""
+        />
+      </aside>
       <section className="entry-form" aria-label="Choose a website">
         <div className="globe" aria-hidden="true">
-          <GlobeIcon weight="bold" />
+          <GlobeIcon weight="regular" />
         </div>
         <form
           className="url-form"
@@ -50,43 +57,46 @@ export function Entry({
             onStart();
           }}
         >
+          <ArrowArt />
           <label className="sr-only" htmlFor="url">
             Paste a website address
           </label>
-          <Plate shape="cut" cut={26} corners={["tl", "br"]} fill="var(--paper)" line="var(--ink)" lineWidth={4} inset={0} className="url-slot">
-            <input
-              id="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="paste a website"
-              autoComplete="url"
-              inputMode="url"
-              spellCheck={false}
-              required
-              disabled={loading}
-            />
-          </Plate>
-          <Plate as="button" shape="key" fill="var(--red)" className="start-key key" type="submit" disabled={loading}>
-            {loading ? "Loading" : "Start"}
-            <Chevrons className="chev" />
-          </Plate>
+          <input
+            id="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="paste a website"
+            autoComplete="url"
+            inputMode="url"
+            spellCheck={false}
+            required
+            disabled={loading}
+          />
+          <button className="start-key key" type="submit" disabled={loading}>
+            <span>{loading ? "Loading" : "Start"}</span>
+            <Chevrons />
+          </button>
         </form>
         <div className="entry-actions">
           <span className="strip hatch tick" aria-hidden="true" />
-          <Plate as="button" shape="chip" className="chip demo" onClick={onDemo} disabled={loading}>
+          <Plate
+            as="button"
+            shape="chip"
+            line={null}
+            className="chip demo"
+            onClick={onDemo}
+            disabled={loading}
+          >
             Demo
             <PlayIcon weight="fill" />
           </Plate>
+          <span className="strip hatch tick" aria-hidden="true" />
+        </div>
+        <div className="entry-presets">
           {PRESETS.map(([name, href]) => (
-            <Plate
+            <button
               key={name}
-              as="button"
-              shape="chip"
-              fill="var(--paper)"
-              line="var(--ink)"
-              lineWidth={3}
-              inset={0}
-              className="chip chip-quiet preset"
+              className="preset"
               disabled={loading}
               onClick={() => {
                 setUrl(href);
@@ -94,9 +104,9 @@ export function Entry({
               }}
             >
               {name}
-            </Plate>
+              <span aria-hidden="true">↗</span>
+            </button>
           ))}
-          <span className="strip hatch tick" aria-hidden="true" />
         </div>
         <div className="entry-status">
           {loading && (
@@ -111,35 +121,47 @@ export function Entry({
           )}
         </div>
       </section>
-
-      <aside className="entry-hero" aria-hidden="true">
-        <RabbitHero className="hero-art" />
-      </aside>
-
       <a className="author entry-author" href="/">
         chikirao
       </a>
-
+      <details className="entry-help">
+        <summary>
+          <QuestionIcon weight="bold" />
+          How to play
+        </summary>
+        <div>
+          <p>
+            <b>WASD / arrows</b> — walk and collect smaller pieces.
+          </p>
+          <p>
+            <b>Drag</b> orbit · <b>right-drag</b> pan · <b>scroll</b> zoom.
+          </p>
+          <p>
+            <b>Space</b> follow · <b>Q / E</b> turn · <b>Esc</b> pause.
+          </p>
+        </div>
+      </details>
       <footer className="entry-rail">
-        <span className="strip hatch-white" aria-hidden="true" />
-        <span className="strip checker" aria-hidden="true" />
+        <span className="strip hatch-white" />
+        <span className="strip checker" />
         <Serial className="serial" />
-        <span className="rail-bar" aria-hidden="true" />
+        <i className="rail-bar" />
         <button
           className="rail-sound"
           onClick={() => setMuted(!muted)}
           aria-label={muted ? "Enable sound" : "Mute sound"}
           aria-pressed={muted}
         >
-          {muted ? <SpeakerSlashIcon weight="fill" /> : <SpeakerHighIcon weight="fill" />}
+          {muted ? (
+            <SpeakerSlashIcon weight="fill" />
+          ) : (
+            <SpeakerHighIcon weight="fill" />
+          )}
         </button>
-        <span className="rail-line" aria-hidden="true" />
-        <p className="hint rail-hint">
-          <b>WASD</b> walk · <b>drag</b> orbit · <b>scroll</b> zoom · <b>space</b> follow
-        </p>
+        <span className="rail-line" />
         <Chevrons className="rail-chevrons" />
-        <span className="strip hatch-red wide" aria-hidden="true" />
-        <span className="strip dots-paper" aria-hidden="true" />
+        <span className="strip hatch-red wide" />
+        <span className="strip dots-paper" />
       </footer>
     </main>
   );
