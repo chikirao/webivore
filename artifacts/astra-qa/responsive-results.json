@@ -1,0 +1,625 @@
+{
+  "checks": [
+    {
+      "state": "entry",
+      "name": "desktop",
+      "width": 1536,
+      "height": 1024,
+      "scrollWidth": 1536,
+      "controls": [
+        {
+          "name": "",
+          "x": 94.671875,
+          "y": 532.203125,
+          "width": 518.578125,
+          "height": 111.265625,
+          "unobstructed": true
+        },
+        {
+          "name": "Start",
+          "x": 669.1875,
+          "y": 526.34375,
+          "width": 305.046875,
+          "height": 134.703125,
+          "unobstructed": true
+        },
+        {
+          "name": "Demo",
+          "x": 340.984375,
+          "y": 703.671875,
+          "width": 270,
+          "height": 68,
+          "unobstructed": true
+        },
+        {
+          "name": "Wikipedia↗",
+          "x": 372.609375,
+          "y": 778.21875,
+          "width": 85.484375,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Hacker News↗",
+          "x": 482.09375,
+          "y": 778.21875,
+          "width": 107.421875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "How to play",
+          "x": 39.921875,
+          "y": 861.21875,
+          "width": 122.296875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 611,
+          "y": 943.703125,
+          "width": 58,
+          "height": 54,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "game",
+      "name": "desktop",
+      "width": 1536,
+      "height": 1024,
+      "scrollWidth": 1536,
+      "controls": [
+        {
+          "name": "Pause",
+          "x": 1446.8125,
+          "y": 39.46875,
+          "width": 52,
+          "height": 62.890625,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 1446.8125,
+          "y": 109.359375,
+          "width": 52,
+          "height": 62.90625,
+          "unobstructed": true
+        },
+        {
+          "name": "the small internet",
+          "x": 1204.578125,
+          "y": 182.265625,
+          "width": 294.234375,
+          "height": 34,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom out",
+          "x": 1206.046875,
+          "y": 931.578125,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom in",
+          "x": 1257.046875,
+          "y": 931.578125,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Follow character",
+          "x": 1308.046875,
+          "y": 931.578125,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Reset camera",
+          "x": 1359.046875,
+          "y": 931.578125,
+          "width": 96.8125,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "finish",
+      "name": "desktop",
+      "width": 1536,
+      "height": 1024,
+      "scrollWidth": 1536,
+      "controls": [
+        {
+          "name": "Export GIF",
+          "x": 702.234375,
+          "y": 422.75,
+          "width": 813.8125,
+          "height": 296.21875,
+          "unobstructed": true
+        },
+        {
+          "name": "Play again",
+          "x": 881.265625,
+          "y": 692.640625,
+          "width": 423.171875,
+          "height": 72,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "entry",
+      "name": "laptop",
+      "width": 1024,
+      "height": 768,
+      "scrollWidth": 1024,
+      "controls": [
+        {
+          "name": "",
+          "x": 63.109375,
+          "y": 399.15625,
+          "width": 345.703125,
+          "height": 83.453125,
+          "unobstructed": true
+        },
+        {
+          "name": "Start",
+          "x": 446.109375,
+          "y": 394.765625,
+          "width": 203.359375,
+          "height": 101.03125,
+          "unobstructed": true
+        },
+        {
+          "name": "Demo",
+          "x": 227.328125,
+          "y": 527.75,
+          "width": 180,
+          "height": 54,
+          "unobstructed": true
+        },
+        {
+          "name": "Wikipedia↗",
+          "x": 229.09375,
+          "y": 583.671875,
+          "width": 74.703125,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Hacker News↗",
+          "x": 318.796875,
+          "y": 583.671875,
+          "width": 93.515625,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "How to play",
+          "x": 26.609375,
+          "y": 631.84375,
+          "width": 122.296875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 411.140625,
+          "y": 701.53125,
+          "width": 58,
+          "height": 54,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "game",
+      "name": "laptop",
+      "width": 1024,
+      "height": 768,
+      "scrollWidth": 1024,
+      "controls": [
+        {
+          "name": "Pause",
+          "x": 956.203125,
+          "y": 28.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 956.203125,
+          "y": 79.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "the small internet",
+          "x": 802.046875,
+          "y": 129.953125,
+          "width": 198.15625,
+          "height": 28,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom out",
+          "x": 734.234375,
+          "y": 683.546875,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom in",
+          "x": 785.234375,
+          "y": 683.546875,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Follow character",
+          "x": 836.234375,
+          "y": 683.546875,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Reset camera",
+          "x": 887.234375,
+          "y": 683.546875,
+          "width": 96.8125,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "finish",
+      "name": "laptop",
+      "width": 1024,
+      "height": 768,
+      "scrollWidth": 1024,
+      "controls": [
+        {
+          "name": "Export GIF",
+          "x": 472.140625,
+          "y": 317.171875,
+          "width": 538.5625,
+          "height": 210.8125,
+          "unobstructed": true
+        },
+        {
+          "name": "Play again",
+          "x": 590.609375,
+          "y": 509.25,
+          "width": 280.046875,
+          "height": 54,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "entry",
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "controls": [
+        {
+          "name": "",
+          "x": 70.640625,
+          "y": 566.90625,
+          "width": 376,
+          "height": 89.53125,
+          "unobstructed": true
+        },
+        {
+          "name": "Start",
+          "x": 487.203125,
+          "y": 562.1875,
+          "width": 221.171875,
+          "height": 108.375,
+          "unobstructed": true
+        },
+        {
+          "name": "Demo",
+          "x": 248.96875,
+          "y": 719.140625,
+          "width": 270,
+          "height": 68,
+          "unobstructed": true
+        },
+        {
+          "name": "Wikipedia↗",
+          "x": 293.96875,
+          "y": 803.015625,
+          "width": 85.484375,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Hacker News↗",
+          "x": 403.453125,
+          "y": 803.015625,
+          "width": 107.421875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "How to play",
+          "x": 23.03125,
+          "y": 877.609375,
+          "width": 122.296875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 229.3125,
+          "y": 950.921875,
+          "width": 58,
+          "height": 54,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "game",
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "controls": [
+        {
+          "name": "Pause",
+          "x": 688.96875,
+          "y": 180.953125,
+          "width": 44,
+          "height": 51.59375,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 688.96875,
+          "y": 236.546875,
+          "width": 44,
+          "height": 51.59375,
+          "unobstructed": true
+        },
+        {
+          "name": "the small internet",
+          "x": 541.9375,
+          "y": 292.140625,
+          "width": 191.03125,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom out",
+          "x": 470.359375,
+          "y": 920.34375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom in",
+          "x": 519.359375,
+          "y": 920.34375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Follow character",
+          "x": 568.359375,
+          "y": 920.34375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Reset camera",
+          "x": 617.359375,
+          "y": 920.34375,
+          "width": 87.34375,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "finish",
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "controls": [
+        {
+          "name": "Export GIF",
+          "x": 39.890625,
+          "y": 683.46875,
+          "width": 688.203125,
+          "height": 175.1875,
+          "unobstructed": true
+        },
+        {
+          "name": "Play again",
+          "x": 225.703125,
+          "y": 846.78125,
+          "width": 316.5625,
+          "height": 46,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "entry",
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "controls": [
+        {
+          "name": "",
+          "x": 15.28125,
+          "y": 405.359375,
+          "width": 359.40625,
+          "height": 76.546875,
+          "unobstructed": true
+        },
+        {
+          "name": "Start",
+          "x": 15.28125,
+          "y": 488.890625,
+          "width": 359.40625,
+          "height": 73.078125,
+          "unobstructed": true
+        },
+        {
+          "name": "Demo",
+          "x": 100.59375,
+          "y": 586.671875,
+          "width": 188.78125,
+          "height": 48,
+          "unobstructed": true
+        },
+        {
+          "name": "Wikipedia↗",
+          "x": 95.875,
+          "y": 639.671875,
+          "width": 74.703125,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Hacker News↗",
+          "x": 200.578125,
+          "y": 639.671875,
+          "width": 93.515625,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "How to play",
+          "x": 262.09375,
+          "y": 705.484375,
+          "width": 108.40625,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 113,
+          "y": 786.125,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "game",
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "controls": [
+        {
+          "name": "Pause",
+          "x": 325.3125,
+          "y": 135.59375,
+          "width": 44,
+          "height": 45.5,
+          "unobstructed": true
+        },
+        {
+          "name": "Mute sound",
+          "x": 325.3125,
+          "y": 185.09375,
+          "width": 44,
+          "height": 45.5,
+          "unobstructed": true
+        },
+        {
+          "name": "the small internet",
+          "x": 223.515625,
+          "y": 231.59375,
+          "width": 145.796875,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom out",
+          "x": 115.796875,
+          "y": 771.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Zoom in",
+          "x": 184.59375,
+          "y": 771.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Follow character",
+          "x": 253.390625,
+          "y": 771.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        },
+        {
+          "name": "Reset camera",
+          "x": 322.1875,
+          "y": 771.359375,
+          "width": 44,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    },
+    {
+      "state": "finish",
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "controls": [
+        {
+          "name": "Export GIF",
+          "x": 5.0625,
+          "y": 512.796875,
+          "width": 379.875,
+          "height": 146.84375,
+          "unobstructed": true
+        },
+        {
+          "name": "Play again",
+          "x": 88.625,
+          "y": 659.65625,
+          "width": 212.71875,
+          "height": 44,
+          "unobstructed": true
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

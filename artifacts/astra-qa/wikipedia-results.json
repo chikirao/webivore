@@ -1,0 +1,188 @@
+{
+  "done": true,
+  "count": 1515,
+  "total": 1515,
+  "percent": 100.00000000000017,
+  "mass": 5028810.300000011,
+  "expectedMass": 5028810.300000002,
+  "unique": 1515,
+  "radius": 206.73311541151685,
+  "layers": 14,
+  "renderMeshes": 16,
+  "priorityGraphics": 16,
+  "graphics": [
+    {
+      "id": 414,
+      "text": "Page semi-protected",
+      "size": [
+        20,
+        20
+      ],
+      "at": 8.132866666666647,
+      "percent": 0.27213195932246625
+    },
+    {
+      "id": 821,
+      "text": "The Free Encyclopedia",
+      "size": [
+        140,
+        11
+      ],
+      "at": 24.499133333333216,
+      "percent": 5.105505769426218
+    },
+    {
+      "id": 1076,
+      "text": "Wikipedia",
+      "size": [
+        140,
+        22
+      ],
+      "at": 24.582466666666544,
+      "percent": 5.105505769426218
+    },
+    {
+      "id": 840,
+      "text": "IMG",
+      "size": [
+        40,
+        40
+      ],
+      "at": 26.499033333333095,
+      "percent": 5.905369904289288
+    },
+    {
+      "id": 1310,
+      "text": "Visualization of Internet routing paths",
+      "size": [
+        150,
+        150
+      ],
+      "at": 32.21549999999944,
+      "percent": 9.314376006587478
+    },
+    {
+      "id": 382,
+      "text": "IMG",
+      "size": [
+        16,
+        16
+      ],
+      "at": 33.348833333332706,
+      "percent": 10.740137682266516
+    },
+    {
+      "id": 380,
+      "text": "icon",
+      "size": [
+        15,
+        15
+      ],
+      "at": 36.79883333333251,
+      "percent": 15.268429393727573
+    },
+    {
+      "id": 1311,
+      "text": "IMG",
+      "size": [
+        150,
+        150
+      ],
+      "at": 50.015133333331754,
+      "percent": 25.471026417520616
+    },
+    {
+      "id": 1317,
+      "text": "IMG",
+      "size": [
+        252,
+        367
+      ],
+      "at": 54.08173333333153,
+      "percent": 30.97855570332405
+    },
+    {
+      "id": 1313,
+      "text": "IMG",
+      "size": [
+        252,
+        153
+      ],
+      "at": 65.91503333333078,
+      "percent": 44.614806806293636
+    },
+    {
+      "id": 1315,
+      "text": "IMG",
+      "size": [
+        252,
+        341
+      ],
+      "at": 75.94789999999685,
+      "percent": 60.77711064185502
+    },
+    {
+      "id": 1312,
+      "text": "IMG",
+      "size": [
+        252,
+        146
+      ],
+      "at": 99.68119999999547,
+      "percent": 68.44801841103451
+    },
+    {
+      "id": 1314,
+      "text": "A scatter plot showing Internet usage per capita v",
+      "size": [
+        252,
+        179
+      ],
+      "at": 99.7145333333288,
+      "percent": 69.96532360745442
+    },
+    {
+      "id": 1316,
+      "text": "IMG",
+      "size": [
+        332,
+        266
+      ],
+      "at": 101.53113333332867,
+      "percent": 74.68897365247601
+    },
+    {
+      "id": 1319,
+      "text": "Internet users by language",
+      "size": [
+        562,
+        450
+      ],
+      "at": 104.14793333332855,
+      "percent": 84.23044412711297
+    },
+    {
+      "id": 1320,
+      "text": "Website content languages",
+      "size": [
+        562,
+        450
+      ],
+      "at": 160.34796666668595,
+      "percent": 95.15797603262163
+    },
+    {
+      "id": 1318,
+      "text": "IMG",
+      "size": [
+        362,
+        256.15625
+      ],
+      "at": 162.33126666668755,
+      "percent": 98.06226932043964
+    }
+  ],
+  "errors": [],
+  "gif": "512 x 512; 48 frames; loop=0; animated",
+  "method": "real keyboard input; no direct pickup or completion mutation"
+}

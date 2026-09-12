@@ -1,0 +1,794 @@
+[
+  {
+    "radius": 0,
+    "cells": [
+      {
+        "azimuth": 0,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "radius": 60,
+    "cells": [
+      {
+        "azimuth": 0,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "radius": 200,
+    "cells": [
+      {
+        "azimuth": 0,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "radius": 360,
+    "cells": [
+      {
+        "azimuth": 0,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 18,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 50,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 0,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 45,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 90,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 135,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 180,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 225,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 270,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      },
+      {
+        "azimuth": 315,
+        "elevation": 82,
+        "components": 1,
+        "floorLoss": 0,
+        "headVisible": 1,
+        "pass": true
+      }
+    ],
+    "passed": true
+  }
+]
