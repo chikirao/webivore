@@ -1,0 +1,941 @@
+{
+  "version": 1,
+  "views": [
+    {
+      "head": {
+        "x": 24,
+        "y": 50,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 0,
+      "bodyColumn": 0,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 23,
+        "y": 51,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 1,
+      "bodyColumn": 1,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 3,
+        "y": -17,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 2,
+      "bodyColumn": 6,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 6,
+        "y": -23,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 5,
+      "bodyColumn": 3,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -27,
+        "y": 36,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 4,
+      "bodyColumn": 4,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -31,
+        "y": 27,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 3,
+      "bodyColumn": 5,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 0,
+        "y": -12,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 6,
+      "bodyColumn": 2,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -21,
+        "y": 43,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 7,
+      "bodyColumn": 7,
+      "headRow": 0,
+      "bodyRow": 0,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 24,
+        "y": 55,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 0,
+      "bodyColumn": 0,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 13,
+        "y": 48,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 1,
+      "bodyColumn": 1,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 1,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 2,
+      "bodyColumn": 6,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 6,
+        "y": -8,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 5,
+      "bodyColumn": 3,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -21,
+        "y": 48,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 4,
+      "bodyColumn": 4,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -29,
+        "y": 2,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 3,
+      "bodyColumn": 5,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -2,
+        "y": -7,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 6,
+      "bodyColumn": 2,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -14,
+        "y": 50,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 7,
+      "bodyColumn": 7,
+      "headRow": 1,
+      "bodyRow": 1,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 23,
+        "y": 36,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 0,
+      "bodyColumn": 0,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 14,
+        "y": 31,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 1,
+      "bodyColumn": 1,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 2,
+      "bodyColumn": 6,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 8,
+        "y": 14,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 5,
+      "bodyColumn": 3,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -17,
+        "y": 29,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 4,
+      "bodyColumn": 4,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -19,
+        "y": 3,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 3,
+      "bodyColumn": 5,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": 0,
+        "y": 3,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 6,
+      "bodyColumn": 2,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    },
+    {
+      "head": {
+        "x": -4,
+        "y": 32,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "body": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "leftHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "rightHand": {
+        "x": 0,
+        "y": 0,
+        "scale": 1,
+        "rotation": 0,
+        "visible": true,
+        "front": false
+      },
+      "headColumn": 7,
+      "bodyColumn": 7,
+      "headRow": 2,
+      "bodyRow": 2,
+      "ground": 0
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { demoLevel } from "./demo";
 import type { Level } from "./shared";
 import { BrandCursor } from "./BrandCursor";
 import { RabbitLab } from "./RabbitLab";
+import { RabbitEditor } from "./RabbitEditor";
 import { Entry } from "./Entry";
 import { Hud } from "./Hud";
 import { Finish, siteLabel } from "./Finish";
@@ -72,7 +73,10 @@ function App() {
         mapHost.current,
       );
     } catch (e) {
-      setStats({ ...initial, error: `3D graphics could not start: ${(e as Error).message}` });
+      setStats({
+        ...initial,
+        error: `3D graphics could not start: ${(e as Error).message}`,
+      });
       return;
     }
     g.paused = true;
@@ -109,7 +113,8 @@ function App() {
     try {
       const full = /^https?:\/\//i.test(value) ? value : `https://${value}`;
       const parsed = new URL(full);
-      if (!parsed.hostname.includes(".")) throw new Error("Enter a public website, for example example.com.");
+      if (!parsed.hostname.includes("."))
+        throw new Error("Enter a public website, for example example.com.");
       const r = await fetch("/api/snapshot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,33 +141,56 @@ function App() {
     return (
       <>
         <BrandCursor />
-        <Entry url={url} setUrl={setUrl} loading={loading} error={error} onStart={(v) => void load(v)} onDemo={() => setLevel(demoLevel())} muted={muted} setMuted={setMuted} />
+        <Entry
+          url={url}
+          setUrl={setUrl}
+          loading={loading}
+          error={error}
+          onStart={(v) => void load(v)}
+          onDemo={() => setLevel(demoLevel())}
+          muted={muted}
+          setMuted={setMuted}
+        />
       </>
     );
   const site = siteLabel(level.url);
   return (
     <main className="playing">
       <BrandCursor />
-      <canvas ref={canvas} className="stage" aria-label="3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to follow." />
-      <Hud
-        stats={stats}
-        level={level}
-        site={site}
-        paused={paused}
-        muted={muted}
-        countdown={countdown}
-        mapHost={mapHost}
-        onPause={togglePause}
-        onMute={() => setMuted(!muted)}
-        onLeave={leave}
-        onZoom={(f) => game.current?.zoom(f)}
-        onRecenter={() => game.current?.recenter()}
-        onReset={() => game.current?.resetCamera()}
-        viewport={viewport}
+      <canvas
+        ref={canvas}
+        className="stage"
+        aria-label="3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to follow."
       />
+      <div inert={stats.done}>
+        <Hud
+          stats={stats}
+          level={level}
+          site={site}
+          paused={paused}
+          muted={muted}
+          countdown={countdown}
+          mapHost={mapHost}
+          onPause={togglePause}
+          onMute={() => setMuted(!muted)}
+          onLeave={leave}
+          onZoom={(f) => game.current?.zoom(f)}
+          onRecenter={() => game.current?.recenter()}
+          onReset={() => game.current?.resetCamera()}
+          viewport={viewport}
+        />
+      </div>
       {!stats.ready && !stats.error && (
         <div className="overlay">
-          <Plate shape="cut" cut={30} fill="var(--paper)" line="var(--ink)" lineWidth={4} inset={0} className="panel">
+          <Plate
+            shape="cut"
+            cut={30}
+            fill="var(--paper)"
+            line="var(--ink)"
+            lineWidth={4}
+            inset={0}
+            className="panel"
+          >
             <h2 className="display">Making a meal.</h2>
             <p role="status">Building your 3D world…</p>
           </Plate>
@@ -170,10 +198,24 @@ function App() {
       )}
       {stats.error && (
         <div className="overlay">
-          <Plate shape="cut" cut={30} fill="var(--paper)" line="var(--ink)" lineWidth={4} inset={0} className="panel">
+          <Plate
+            shape="cut"
+            cut={30}
+            fill="var(--paper)"
+            line="var(--ink)"
+            lineWidth={4}
+            inset={0}
+            className="panel"
+          >
             <h2 className="display">Oops.</h2>
             <p role="alert">{stats.error}</p>
-            <Plate as="button" shape="key" fill="var(--red)" className="key" onClick={leave}>
+            <Plate
+              as="button"
+              shape="key"
+              fill="var(--red)"
+              className="key"
+              onClick={leave}
+            >
               Back to websites
               <Chevrons className="chev" />
             </Plate>
@@ -182,10 +224,25 @@ function App() {
       )}
       {paused && !stats.done && stats.ready && (
         <div className="overlay">
-          <Plate shape="cut" cut={30} fill="var(--paper)" line="var(--ink)" lineWidth={4} inset={0} className="panel">
+          <Plate
+            shape="cut"
+            cut={30}
+            fill="var(--paper)"
+            line="var(--ink)"
+            lineWidth={4}
+            inset={0}
+            className="panel"
+          >
             <span className="label">Paused</span>
             <h2 className="display">Still hungry?</h2>
-            <Plate as="button" shape="key" fill="var(--red)" className="key" onClick={togglePause} autoFocus>
+            <Plate
+              as="button"
+              shape="key"
+              fill="var(--red)"
+              className="key"
+              onClick={togglePause}
+              autoFocus
+            >
               Keep walking
               <PlayIcon weight="fill" />
             </Plate>
@@ -195,10 +252,20 @@ function App() {
           </Plate>
         </div>
       )}
-      {stats.done && game.current && <Finish game={game.current} onLeave={leave} />}
+      {stats.done && game.current && (
+        <Finish game={game.current} onLeave={leave} />
+      )}
     </main>
   );
 }
 const appRoot = createRoot(document.getElementById("root")!);
-appRoot.render(new URLSearchParams(location.search).get("lab") === "rabbit" ? <RabbitLab /> : <App />);
+appRoot.render(
+  location.pathname === "/rabbit-editor" ? (
+    <RabbitEditor />
+  ) : new URLSearchParams(location.search).get("lab") === "rabbit" ? (
+    <RabbitLab />
+  ) : (
+    <App />
+  ),
+);
 if (import.meta.hot) import.meta.hot.dispose(() => appRoot.unmount());

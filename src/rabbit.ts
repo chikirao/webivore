@@ -1,5 +1,11 @@
 import * as THREE from "three";
 import { rabbitFrame } from "./rabbit-frame";
+import {
+  readRabbitSettings,
+  RABBIT_GAME_KEY,
+  type RabbitSettings,
+  type PartTuning,
+} from "./rabbit-settings";
 
 /**
  * The generated head and body atlases (8 azimuths × 3 elevations) are composed
@@ -10,7 +16,8 @@ import { rabbitFrame } from "./rabbit-frame";
  * feet. The sheet is drawn as a camera-facing quad whose depth follows a
  * vertical plane through the feet: the feet sit on the page, the head keeps
  * its true height against the ball, and the floor never swallows the sprite.
- * Hands remain the mascot's floating spheres, placed on the ball surface.
+ * Head/body stay sprite-based. The user's preferred outlined ball-contact hands
+ * are restored from the earlier implementation and can be tuned per view.
  */
 export const RABBIT = {
   /** Gap between the rabbit's origin and the ball surface, in rabbit-scale units. */
@@ -29,8 +36,8 @@ const CELL = 250,
   INSET = 3,
   /** Composite pixels per body pixel; head pixels are scaled by headSize / bodySize on top. */
   SHEET_SCALE = 0.8,
-  SHEET_W = 340,
-  SHEET_H = 420,
+  SHEET_W = 512,
+  SHEET_H = 640,
   ANCHOR_Y = SHEET_H - 12;
 export type Frame = { column: number; row: number };
 export type SheetMetrics = {
@@ -79,11 +86,22 @@ function mask(image: HTMLImageElement, column: number, row: number): Mask {
   const c = document.createElement("canvas");
   c.width = c.height = CELL;
   const ctx = c.getContext("2d", { willReadFrequently: true })!;
-  ctx.drawImage(image, column * STRIDE + INSET, row * STRIDE + INSET, CELL, CELL, 0, 0, CELL, CELL);
+  ctx.drawImage(
+    image,
+    column * STRIDE + INSET,
+    row * STRIDE + INSET,
+    CELL,
+    CELL,
+    0,
+    0,
+    CELL,
+    CELL,
+  );
   return { data: ctx.getImageData(0, 0, CELL, CELL).data, w: CELL, h: CELL };
 }
 function extent(m: Mask, y: number): [number, number] | null {
-  let a = -1, b = -1;
+  let a = -1,
+    b = -1;
   for (let x = 0; x < m.w; x++)
     if (m.data[(y * m.w + x) * 4 + 3] > 110) {
       if (a < 0) a = x;
@@ -92,7 +110,8 @@ function extent(m: Mask, y: number): [number, number] | null {
   return a < 0 ? null : [a, b];
 }
 function rows(m: Mask) {
-  let top = -1, bottom = -1;
+  let top = -1,
+    bottom = -1;
   for (let y = 0; y < m.h; y++) {
     const e = extent(m, y);
     if (e && e[1] - e[0] >= 3) {
@@ -108,16 +127,25 @@ export function measureBody(m: Mask, elevation: number) {
   const rim = extent(m, Math.min(bottom, top + 5))!;
   const width = rim[1] - rim[0];
   return {
-    neck: { x: (rim[0] + rim[1]) / 2, y: top + (width * Math.sin(elevation)) / 2 },
+    neck: {
+      x: (rim[0] + rim[1]) / 2,
+      y: top + (width * Math.sin(elevation)) / 2,
+    },
     feet: bottom,
     top,
   };
 }
 /** The head sphere: widest row in the lower part of the silhouette, below the ears. */
-export function measureHead(m: Mask) {
+export function measureHead(m: Mask, lowerStart = 0.4) {
   const { top, bottom } = rows(m);
-  let best = -1, at = top, centre = m.w / 2;
-  for (let y = Math.round(top + (bottom - top) * 0.4); y <= bottom; y++) {
+  let best = -1,
+    at = top,
+    centre = m.w / 2;
+  for (
+    let y = Math.round(top + (bottom - top) * lowerStart);
+    y <= bottom;
+    y++
+  ) {
     const e = extent(m, y);
     if (e && e[1] - e[0] > best) {
       best = e[1] - e[0];
@@ -141,7 +169,16 @@ export class Rabbit {
   /** Height of the sheet above the feet anchor in unscaled world units: the depth plane's top. */
   stature = (ANCHOR_Y * RABBIT.bodySize) / (CELL * SHEET_SCALE);
   private disposables: { dispose(): void }[] = [];
-  constructor() {
+  private sources?: [HTMLImageElement, HTMLImageElement];
+  private bodyMetrics: ReturnType<typeof measureBody>[] = [];
+  private headMetrics: ReturnType<typeof measureHead>[] = [];
+  private repairedHeads: {
+    image: HTMLImageElement;
+    metrics: ReturnType<typeof measureHead>;
+  }[] = [];
+  constructor(
+    public settings: RabbitSettings = readRabbitSettings(RABBIT_GAME_KEY),
+  ) {
     this.sheet.width = SHEET_W * 8;
     this.sheet.height = SHEET_H * 3;
     this.texture = new THREE.CanvasTexture(this.sheet);
@@ -198,20 +235,61 @@ export class Rabbit {
       hand.position.set(side * 16, 20, 8);
       this.root.add(hand);
       this.hands.push(hand);
-      this.disposables.push(hand.geometry, hand.material, outline.geometry, outline.material);
+      this.disposables.push(
+        hand.geometry,
+        hand.material,
+        outline.geometry,
+        outline.material,
+      );
     }
     const loader = new THREE.TextureLoader();
     this.ready = Promise.all([
       loader.loadAsync("/assets/rabbit-body.png"),
       loader.loadAsync("/assets/rabbit-head.png"),
-    ]).then(([body, head]) => {
-      this.compose(body.image as HTMLImageElement, head.image as HTMLImageElement);
+      ...["low", "mid", "high"].map((name) =>
+        loader.loadAsync(`/assets/rabbit-head-135-${name}.png`),
+      ),
+    ]).then(([body, head, ...repairs]) => {
+      this.repairedHeads = repairs.map((texture) => {
+        const image = texture.image as HTMLImageElement;
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+        ctx.drawImage(image, 0, 0);
+        const metrics = measureHead(
+          {
+            data: ctx.getImageData(0, 0, canvas.width, canvas.height).data,
+            w: canvas.width,
+            h: canvas.height,
+          },
+          0.65,
+        );
+        texture.dispose();
+        return { image, metrics };
+      });
+      this.compose(
+        body.image as HTMLImageElement,
+        head.image as HTMLImageElement,
+      );
       body.dispose();
       head.dispose();
     });
   }
-  /** Build the 24 composites. Called once; exported for the diagnostic lab. */
+  configure(settings: RabbitSettings) {
+    this.settings = settings;
+    if (this.sources) this.compose(...this.sources);
+  }
+  /** Recompose from cached source measurements: editor and game use the same rig. */
   compose(body: HTMLImageElement, head: HTMLImageElement) {
+    if (!this.sources) {
+      this.sources = [body, head];
+      for (let r = 0; r < 3; r++)
+        for (let c = 0; c < 8; c++) {
+          this.bodyMetrics.push(measureBody(mask(body, c, r), RABBIT.rows[r]));
+          this.headMetrics.push(measureHead(mask(head, c, r)));
+        }
+    }
     const ctx = this.sheet.getContext("2d")!;
     ctx.clearRect(0, 0, this.sheet.width, this.sheet.height);
     const k = (RABBIT.headSize / RABBIT.bodySize) * SHEET_SCALE;
@@ -219,9 +297,11 @@ export class Rabbit {
     for (let row = 0; row < 3; row++)
       for (let column = 0; column < 8; column++) {
         const elevation = RABBIT.rows[row];
-        const b = measureBody(mask(body, column, row), elevation);
-        const h = measureHead(mask(head, column, row));
-        const ox = column * SHEET_W, oy = row * SHEET_H;
+        const tuning = this.settings.views[row * 8 + column];
+        const b = this.bodyMetrics[tuning.bodyRow * 8 + tuning.bodyColumn];
+        const h = this.headMetrics[tuning.headRow * 8 + tuning.headColumn];
+        const ox = column * SHEET_W,
+          oy = row * SHEET_H;
         // Body: feet on the anchor line, neck axis on the cell centre line.
         const bx = SHEET_W / 2 - b.neck.x * SHEET_SCALE,
           by = ANCHOR_Y - (b.feet + 1) * SHEET_SCALE;
@@ -234,34 +314,115 @@ export class Rabbit {
         ctx.beginPath();
         ctx.rect(ox, oy, SHEET_W, SHEET_H);
         ctx.clip();
-        ctx.drawImage(body, column * STRIDE + INSET, row * STRIDE + INSET, CELL, CELL, ox + bx, oy + by, CELL * SHEET_SCALE, CELL * SHEET_SCALE);
-        ctx.drawImage(head, column * STRIDE + INSET, row * STRIDE + INSET, CELL, CELL, ox + hx, oy + hy, CELL * k, CELL * k);
+        ctx.translate(0, -tuning.ground);
+        const part = (
+          p: PartTuning,
+          x: number,
+          y: number,
+          draw: () => void,
+        ) => {
+          if (!p.visible) return;
+          ctx.save();
+          ctx.translate(ox + x + p.x, oy + y - p.y);
+          ctx.rotate((-p.rotation * Math.PI) / 180);
+          ctx.scale(p.scale, p.scale);
+          draw();
+          ctx.restore();
+        };
+        part(tuning.body, neck.x, ANCHOR_Y, () =>
+          ctx.drawImage(
+            body,
+            tuning.bodyColumn * STRIDE + INSET,
+            tuning.bodyRow * STRIDE + INSET,
+            CELL,
+            CELL,
+            bx - neck.x,
+            by - ANCHOR_Y,
+            CELL * SHEET_SCALE,
+            CELL * SHEET_SCALE,
+          ),
+        );
+        // The lowest row's complete black jaw extends a few pixels below y=256.
+        // Sample through y=267 (the next ears start later), keeping the calibrated
+        // centre/scale unchanged. The former 250px crop cut that outline off.
+        const headHeight = tuning.headRow === 0 ? 264 : CELL;
+        part(tuning.head, neck.x, neck.y - lift, () => {
+          // The user's calibrated 135° views use source column 5. Replace its
+          // illustration while retaining that source's head size and pivot.
+          const repair =
+            tuning.headColumn === 5
+              ? this.repairedHeads[tuning.headRow]
+              : undefined;
+          if (repair) {
+            const scale = (h.radius / repair.metrics.radius) * k;
+            ctx.drawImage(
+              repair.image,
+              -repair.metrics.centre.x * scale,
+              -repair.metrics.centre.y * scale,
+              repair.image.naturalWidth * scale,
+              repair.image.naturalHeight * scale,
+            );
+          } else
+            ctx.drawImage(
+              head,
+              tuning.headColumn * STRIDE + INSET,
+              tuning.headRow * STRIDE + INSET,
+              CELL,
+              headHeight,
+              hx - neck.x,
+              hy - neck.y + lift,
+              CELL * k,
+              headHeight * k,
+            );
+        });
         ctx.restore();
-        this.metrics.push({ feet: ANCHOR_Y - 1, headLift: lift, neck, headRadius: h.radius * k });
+        this.metrics.push({
+          feet: ANCHOR_Y - 1,
+          headLift: lift,
+          neck,
+          headRadius: h.radius * k,
+        });
       }
     this.texture.needsUpdate = true;
   }
   /** Ball centre and radius in rabbit-local units, mirroring Game.animateWorld. */
   static ballLocal(radius: number, scale: number) {
     return {
-      center: new THREE.Vector3(0, Math.max(12, radius) / scale, (RABBIT.ballGap * scale + radius) / scale),
-      radius: radius / scale,
+      center: new THREE.Vector3(
+        0,
+        Math.max(4, radius * 0.85) / scale,
+        (RABBIT.ballGap * scale + radius) / scale,
+      ),
+      radius: (radius * 0.83) / scale,
     };
   }
   /** Nearest atlas frame with hysteresis: no flicker on an azimuth or row boundary. */
   pick(cameraAzimuth: number, heading: number, elevation: number): Frame {
     const nearest = rabbitFrame(cameraAzimuth, heading, elevation);
     const relative = heading - cameraAzimuth;
-    const diff = Math.atan2(Math.sin(relative - (this.frame.column * Math.PI) / 4), Math.cos(relative - (this.frame.column * Math.PI) / 4));
-    const column = Math.abs(diff) > Math.PI / 8 + 0.09 ? nearest.column : this.frame.column;
+    const diff = Math.atan2(
+      Math.sin(relative - (this.frame.column * Math.PI) / 4),
+      Math.cos(relative - (this.frame.column * Math.PI) / 4),
+    );
+    const column =
+      Math.abs(diff) > Math.PI / 8 + 0.09 ? nearest.column : this.frame.column;
     const edges = [0.35, 1.03];
     let row = this.frame.row;
     if (row < 2 && elevation > edges[row] + 0.05) row++;
     else if (row > 0 && elevation < edges[row - 1] - 0.05) row--;
     return { column, row };
   }
-  update(camera: THREE.Camera, heading: number, radius: number, scale: number, time: number, speed: number) {
-    const delta = camera.position.clone().sub(this.root.getWorldPosition(new THREE.Vector3()));
+  update(
+    camera: THREE.Camera,
+    heading: number,
+    radius: number,
+    scale: number,
+    time: number,
+    speed: number,
+  ) {
+    const delta = camera.position
+      .clone()
+      .sub(this.root.getWorldPosition(new THREE.Vector3()));
     const elevation = Math.atan2(delta.y, Math.hypot(delta.x, delta.z));
     this.frame = this.pick(Math.atan2(delta.x, delta.z), heading, elevation);
     const { column, row } = this.frame;
@@ -271,25 +432,52 @@ export class Rabbit {
       mesh.material.uniforms.offset.value.set(column / 8, 1 - (row + 1) / 3);
       mesh.material.uniforms.bob.value = bob;
     }
-    if (radius > 0) {
-      // Hands rest on the near side of the ball at chest height, spread apart.
-      const ball = Rabbit.ballLocal(radius, scale);
-      const y = THREE.MathUtils.clamp(ball.center.y - ball.radius * 0.15, 14, 40);
-      const dy = THREE.MathUtils.clamp((y - ball.center.y) / ball.radius, -0.92, 0.5);
-      const k = Math.sqrt(1 - dy * dy);
-      this.hands.forEach((h, i) => {
-        const side = i ? 1 : -1;
-        const dir = new THREE.Vector3(side * Math.sin(0.62) * k, dy, -Math.cos(0.62) * k);
-        h.position.copy(ball.center).addScaledVector(dir, ball.radius + RABBIT.hand.radius * 0.4);
-        if (Math.abs(h.position.x) < 13) h.position.x = side * 13;
-      });
-    } else {
-      this.hands.forEach((h, i) => {
-        const side = i ? 1 : -1;
-        h.position.set(side * 16, 20 + bob + Math.sin(time * 2 + i) * 0.6, 8 + m * 5);
-      });
-    }
+    const view = this.settings.views[row * 8 + column];
+    const localCamera = this.root.worldToLocal(camera.position.clone());
+    const azimuth = Math.atan2(localCamera.x, localCamera.z),
+      unit = RABBIT.bodySize / (CELL * SHEET_SCALE);
+    this.hands.forEach((hand, i) => {
+      const side = i ? 1 : -1,
+        p = i ? view.rightHand : view.leftHand;
+      if (radius > 0) {
+        const ball = Rabbit.ballLocal(radius, scale);
+        const y = THREE.MathUtils.clamp(
+          ball.center.y - ball.radius * 0.15,
+          14,
+          40,
+        );
+        const dy = THREE.MathUtils.clamp(
+            (y - ball.center.y) / ball.radius,
+            -0.92,
+            0.5,
+          ),
+          k = Math.sqrt(1 - dy * dy);
+        const dir = new THREE.Vector3(
+          side * Math.sin(0.62) * k,
+          dy,
+          -Math.cos(0.62) * k,
+        );
+        hand.position
+          .copy(ball.center)
+          .addScaledVector(dir, ball.radius + RABBIT.hand.radius * 0.4);
+        if (Math.abs(hand.position.x) < 13) hand.position.x = side * 13;
+      } else
+        hand.position.set(
+          side * 16,
+          20 + bob + Math.sin(time * 2 + i) * 0.6,
+          8 + m * 5,
+        );
+      hand.position.x += p.x * unit * Math.cos(azimuth);
+      hand.position.z -= p.x * unit * Math.sin(azimuth);
+      hand.position.y += (p.y + view.ground) * unit;
+      hand.scale.setScalar(p.scale);
+      hand.visible = p.visible;
+      (hand.material as THREE.Material).depthTest = !p.front;
+      ((hand.children[0] as THREE.Mesh).material as THREE.Material).depthTest =
+        !p.front;
+    });
   }
+
   dispose() {
     for (const d of this.disposables) d.dispose();
     this.root.removeFromParent();

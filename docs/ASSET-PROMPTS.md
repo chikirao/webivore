@@ -20,3 +20,17 @@ Use case: stylized-concept. Wide 3:2 game title-screen key art. Reference image 
 
 Use case: stylized-concept. Isolated celebration character for videogame victory screen, transparent alpha background. Exact rabbit identity from reference: giant white shiny plastic head, thick black outline, one tall ear and one folded, angular black slanted eyes, small white pear torso, stubby feet and two detached circular floating hands. Full body in a jubilant small jump with feet apart, both round hands raised, head tilted playfully. Proud happy victorious body language with a tiny sharp confident smile and angular squint eyes, never round eyes. Front three-quarter view. Clean old prerendered 3D console game mascot, black white gray only. No ball or accessories, no text, no ground, no colored background, no extra arms (hands floating circles only), preserve character proportions. Ample transparent padding all sides.
 
+
+## Astra assets — 2026-09-12
+
+UI chrome is React/CSS/SVG and real text. The concept PNGs are QA references only.
+
+- `public/assets/overdrive-entry-rabbit.png`: generated portrait cutout, 1003 x 1568 RGBA. Original identity: `docs/references/01-red-rabbit.png`; pose crop: `artifacts/astra-qa/entry-rabbit-reference.png`. Final generation prompt and alpha inspection: `artifacts/astra-qa/entry-rabbit-generation.txt` and `entry-rabbit-alpha-preview.png`. No mouth, nose, smile, or rasterized UI text.
+- `public/assets/rabbit-badge.png`: cropped original front head cell for progress meter.
+- `public/assets/rabbit-victory-trim.png`: existing victory source trimmed to its alpha bounds, rendered with preserved aspect ratio beside the real trophy ball. The historical victory prompt above mentions a smile; that is obsolete and is not a requirement for any current or future rabbit asset.
+- `public/assets/rabbit-head.png`, `rabbit-body.png`: original 8 x 3 atlases retained. Runtime composites are editable through `/rabbit-editor`; the user calibration lives in `src/rabbit-user-settings.json`.
+- Three regenerated 135-degree head candidates: `artifacts/astra-qa/rabbit-repair/head-135-{low,mid,high}-raw.png`. Built-in ImageGen, one generation for each camera height. The neighboring 90/180-degree heads and matching body were provided with the original rabbit. Prompt: isolated white volumetric head, thick continuous black outline, rear three-quarter 135 degrees looking diagonally away to screen-right, camera elevation respectively 10/40/75 degrees; one straight ear and one folded ear, no eyes visible from behind, no mouth/nose/smile/text/body; full silhouette with 8% padding; actual alpha requested. RGB outputs contain a checkerboard; do not use these raw candidates directly in production.
+
+No separate mobile character bitmap is required: the portrait cutout is art-directed into a smaller area above the primary URL/Start action. It is not stretched to fit the desktop composition.
+
+2026-09-13: the user explicitly approved Python removal of the generated checkerboard. `scripts/extract-rabbit-heads.py` flood-fills the exterior of the closed black contour and writes alpha; interior illustration pixels are preserved. Production files: `public/assets/rabbit-head-135-low.png`, `rabbit-head-135-mid.png`, `rabbit-head-135-high.png`. Alpha ranges from 0 to 255, with padding on all sides. Inspected over saturated red in `artifacts/astra-qa/rabbit-repair/heads-alpha-preview.png`. Runtime replacement retains the calibrated source head radius/pivot and uses the original per-view offsets.
