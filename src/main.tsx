@@ -1,6 +1,6 @@
 import "@fontsource/tektur/700.css";
 import "./style.css";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Game, type Stats } from "./game";
 import { demoLevel } from "./demo";
@@ -14,6 +14,7 @@ import { Finish, siteLabel } from "./Finish";
 import { Plate } from "./ui/Plate";
 import { Chevrons } from "./ui/marks";
 import { PlayIcon } from "@phosphor-icons/react";
+import { TouchControls, useTouchControls } from "./TouchControls";
 
 const initial: Stats = {
   count: 0,
@@ -54,6 +55,11 @@ function App() {
     game = useRef<Game | null>(null);
   const pauseRef = useRef(false);
   const viewport = useViewport();
+  const touchControls = useTouchControls();
+  const moveStick = useCallback(
+    (x: number, y: number) => game.current?.setStick(x, y),
+    [],
+  );
   useEffect(() => {
     if (!level || !canvas.current) return;
     setStats(initial);
@@ -105,6 +111,7 @@ function App() {
     if (game.current) {
       game.current.muted = muted;
       game.current.paused = paused || countdown !== null;
+      if (game.current.paused) game.current.clearPointerInput();
     }
   }, [muted, paused, countdown]);
   async function load(value = url) {
@@ -155,13 +162,23 @@ function App() {
     );
   const site = siteLabel(level.url);
   return (
-    <main className="playing">
+    <main className={`playing${touchControls ? " touch-playing" : ""}`}>
       <BrandCursor />
       <canvas
         ref={canvas}
         className="stage"
-        aria-label="3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to follow."
+        aria-label={
+          touchControls
+            ? "3D website world. Joystick to walk; swipe to rotate camera."
+            : "3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to follow."
+        }
       />
+      {touchControls &&
+        stats.ready &&
+        !stats.done &&
+        !stats.error &&
+        !paused &&
+        countdown === null && <TouchControls onMove={moveStick} />}
       <div inert={stats.done}>
         <Hud
           stats={stats}

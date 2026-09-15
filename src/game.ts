@@ -118,7 +118,6 @@ export class Game {
   audio?: AudioContext;
   handlers: (() => void)[] = [];
   drag?: { x: number; y: number; pan: boolean; id: number };
-  touch?: { x: number; y: number; id: number };
   stick = { x: 0, y: 0 };
   reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   textures: THREE.Texture[] = [];
@@ -350,8 +349,11 @@ export class Game {
     }) as EventListener);
     on(window, "blur", (() => {
       this.keys.clear();
-      this.stick = { x: 0, y: 0 };
-      if (!this.paused && !this.done) this.onPause();
+      this.clearPointerInput();
+      if (!this.paused && !this.done) {
+        this.paused = true;
+        this.onPause();
+      }
     }) as EventListener);
     on(
       this.canvas,
@@ -364,25 +366,16 @@ export class Game {
     );
     on(this.canvas, "contextmenu", (e) => e.preventDefault());
     on(this.canvas, "pointerdown", ((e: PointerEvent) => {
+      if (this.drag || this.paused || this.done || !this.ready || this.error)
+        return;
+      e.preventDefault();
       this.canvas.setPointerCapture(e.pointerId);
-      if (
-        e.pointerType === "touch" &&
-        e.clientX < this.canvas.getBoundingClientRect().left + this.width / 2
-      ) {
-        this.touch = { x: e.clientX, y: e.clientY, id: e.pointerId };
-      } else {
-        const pan = e.button === 2 || e.shiftKey;
-        this.drag = { x: e.clientX, y: e.clientY, id: e.pointerId, pan };
-        if (pan) this.cam.free = true;
-      }
+      const pan = e.pointerType !== "touch" && (e.button === 2 || e.shiftKey);
+      this.drag = { x: e.clientX, y: e.clientY, id: e.pointerId, pan };
+      if (pan) this.cam.free = true;
     }) as EventListener);
     on(this.canvas, "pointermove", ((e: PointerEvent) => {
-      if (this.touch?.id === e.pointerId) {
-        this.stick = {
-          x: clamp((e.clientX - this.touch.x) / 60, -1, 1),
-          y: clamp((e.clientY - this.touch.y) / 60, -1, 1),
-        };
-      } else if (this.drag?.id === e.pointerId) {
+      if (this.drag?.id === e.pointerId) {
         const dx = e.clientX - this.drag.x,
           dy = e.clientY - this.drag.y;
         if (this.drag.pan) {
@@ -400,20 +393,41 @@ export class Game {
       }
     }) as EventListener);
     const release = ((e: PointerEvent) => {
-      if (this.touch?.id === e.pointerId) {
-        this.touch = undefined;
-        this.stick = { x: 0, y: 0 };
-      }
       if (this.drag?.id === e.pointerId) this.drag = undefined;
     }) as EventListener;
     on(this.canvas, "pointerup", release);
     on(this.canvas, "pointercancel", release);
+    on(this.canvas, "lostpointercapture", release);
+    on(window, "resize", (() => this.clearPointerInput()) as EventListener);
+    on(document, "visibilitychange", (() => {
+      if (document.hidden) {
+        this.keys.clear();
+        this.clearPointerInput();
+        if (!this.paused && !this.done) {
+          this.paused = true;
+          this.onPause();
+        }
+      }
+    }) as EventListener);
     on(this.canvas, "webglcontextlost", ((e: Event) => {
       e.preventDefault();
       this.error =
         "The graphics context was interrupted. Reload the world to continue.";
       this.paused = true;
     }) as EventListener);
+  }
+  setStick(x: number, y: number) {
+    if (this.paused || this.done || !this.ready || this.error)
+      return this.clearPointerInput();
+    const length = Math.max(1, Math.hypot(x, y));
+    this.stick = { x: x / length, y: y / length };
+  }
+  clearPointerInput() {
+    const id = this.drag?.id;
+    this.drag = undefined;
+    if (id !== undefined && this.canvas.hasPointerCapture(id))
+      this.canvas.releasePointerCapture(id);
+    this.stick = { x: 0, y: 0 };
   }
   zoom(factor: number) {
     this.cam.userZoom = clamp(this.cam.userZoom * factor, 0.3, 2.8);

@@ -359,7 +359,7 @@ export function Hud({
           <b>Q/E</b> turn · <b>space</b> follow · <b>esc</b> pause
         </span>
         <span className="touch-hint">
-          <b>left thumb</b> walk · <b>right thumb</b> look
+          <b>joystick</b> walk · <b>swipe</b> look
         </span>
       </p>
       {stats.ready && !stats.done && (
