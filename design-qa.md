@@ -90,4 +90,18 @@ Both decoded as 512 × 512, 48 frames, loop=0, with differing frames proving ani
 
 Remaining P3 differences: exact display glyph shapes/weight, small decorative lightning/halftone rhythm, icon stroke style, mascot ear/lighting details. Real demo/Wikipedia page and ball content are not identical to the illustrated references. Comparisons and overlays document these limits; no pixel-perfect claim is made.
 
+## Touch controls follow-up — 2026-09-15
+
+The previously deferred mobile controls are now implemented. Capability detection uses touch-point support, coarse-pointer media queries and observed touch input, not viewport width or user-agent branding. A narrow mouse-only desktop keeps keyboard/mouse controls. Touch-enabled tablets with desktop user agents still receive the joystick.
+
+The visible lower-left joystick controls camera-relative movement, with radial clamping and a 12% centre dead zone. Swiping anywhere else on the canvas rotates the camera. Each control owns its pointer independently, so two fingers work together and releasing the joystick does not cancel the camera finger. Pointer cancellation/capture loss, pause, blur, page hiding, resize and unmount clear input. Controls are absent during loading/countdown, pause, errors and completion. Mouse orbit/pan and keyboard input remain available.
+
+`tests/touch-controls.mjs` passed Chromium touch-event checks for phone (390×844, 844×390), tablet (768×1024, 1024×768) and a mouse-only desktop (1536×1024, narrowed to 390×844). It checks actual movement, simultaneous camera rotation, independent release, centre dead zone, cancellation, pause/blur reset, orientation bounds and 44px minimum landscape button targets. Pause while a touch is held uses mouse activation to exercise hybrid input. No page errors. These are browser emulation tests, not physical iOS/Android hardware tests.
+
+Visual checks: [phone](artifacts/touch-qa/phone.png), [phone landscape](artifacts/touch-qa/phone-landscape.png), [tablet](artifacts/touch-qa/tablet.png), [tablet landscape](artifacts/touch-qa/tablet-landscape.png), [two fingers](artifacts/touch-qa/phone-two-fingers.png), [results](artifacts/touch-qa/results.json). The short landscape layout was adjusted to keep camera buttons and the site button inside the screen and at least 44px. Reduced motion adds no joystick animation; knob position follows input directly.
+
+Final build and all 20 unit tests passed after the touch changes. Desktop mouse orbit/pan and keyboard movement also passed the browser regression.
+
+Hosting scope is documented in [HOSTING.md](docs/HOSTING.md): demo/game/GIF are client-side; arbitrary website capture requires the Node/Playwright API. GitHub Pages can host a static edition or the frontend with a separately hosted API, but cannot run the current complete product by itself.
+
 final result: passed

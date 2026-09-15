@@ -1,0 +1,31 @@
+{
+  "results": [
+    {
+      "name": "phone",
+      "joystick": "visible",
+      "deadZone": "passed",
+      "movement": "passed",
+      "twoFingers": "passed",
+      "leftFieldCamera": "passed",
+      "releaseCancelPauseBlur": "passed",
+      "landscape": "passed"
+    },
+    {
+      "name": "tablet",
+      "joystick": "visible",
+      "deadZone": "passed",
+      "movement": "passed",
+      "twoFingers": "passed",
+      "leftFieldCamera": "passed",
+      "releaseCancelPauseBlur": "passed",
+      "landscape": "passed"
+    },
+    {
+      "name": "desktop",
+      "joystick": "hidden at desktop and phone widths",
+      "keyboard": "passed",
+      "mouseOrbitPan": "passed"
+    }
+  ],
+  "errors": []
+}
