@@ -8,9 +8,14 @@ import { metres, time } from "./Hud";
 import { ArrowArt, EntryGraphics } from "./ui/OverdriveArt";
 import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
 import "./ui/finish.css";
+import { appUrl } from "./paths";
 
 export const siteLabel = (url: string) =>
-  url.startsWith("demo:") ? "the small internet" : new URL(url).hostname;
+  url.startsWith("demo:")
+    ? "the small internet"
+    : url.startsWith("local-")
+      ? decodeURIComponent(url.split(":").slice(1).join(":"))
+      : new URL(url).hostname;
 const SIZE = 512,
   FRAMES = 48;
 
@@ -55,7 +60,7 @@ export class TrophyScene {
     const light = new THREE.DirectionalLight(0xffffff, 2.5);
     light.position.set(-r, r * 2, r * 2);
     this.scene.add(light);
-    this.rabbit.src = "/assets/rabbit-victory-trim.png";
+    this.rabbit.src = appUrl("assets/rabbit-victory-trim.png");
     this.fonts = Promise.all([
       document.fonts.load("italic 700 52px Russo One"),
       this.rabbit.decode(),
@@ -171,7 +176,15 @@ export class TrophyScene {
   }
 }
 
-export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
+export function Finish({
+  game,
+  onLeave,
+  onExportLevel,
+}: {
+  game: Game;
+  onLeave: () => void;
+  onExportLevel: () => void;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null),
     scene = useRef<TrophyScene | null>(null),
     worker = useRef<Worker | null>(null);
@@ -247,7 +260,7 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
       setDownload(url);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `webivore-${game.level.url.startsWith("demo:") ? "demo" : new URL(game.level.url).hostname}.gif`;
+      a.download = `webivore-${siteLabel(game.level.url).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "level"}.gif`;
       a.click();
     } catch (e) {
       if (mounted.current) setError((e as Error).message);
@@ -322,6 +335,9 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
             Play again
             <PlayIcon weight="fill" />
           </Plate>
+          <button className="level-export" onClick={onExportLevel}>
+            Level file ↓
+          </button>
           <p className="label export-note">
             <i />
             512 × 512 / looping GIF
@@ -344,7 +360,7 @@ export function Finish({ game, onLeave }: { game: Game; onLeave: () => void }) {
         </div>
       </section>
       <footer className="finish-rail">
-        <a className="author" href="/">
+        <a className="author" href={appUrl("")}>
           chikirao
         </a>
         <i className="rail-bar" />

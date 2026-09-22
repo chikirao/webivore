@@ -140,11 +140,11 @@
 }
 .entry-actions {
   position: absolute;
-  left: 24%;
+  left: 10%;
   top: 71%;
-  width: 42%;
+  width: 70%;
   display: flex;
-  gap: 28px;
+  gap: 12px;
   align-items: center;
   justify-content: center;
 }
@@ -156,7 +156,7 @@
 .chip.demo {
   font-size: clamp(22px, 2.6vw, 40px);
   min-height: 68px;
-  min-width: 270px;
+  min-width: 210px;
   padding: 0 40px;
 }
 .entry-presets {
@@ -614,5 +614,249 @@
 @media (max-width: 520px) {
   .url-form input {
     font-size: 26px;
+  }
+}
+/* Fit the label to the actual arrow, including short landscape windows. */
+.start-key {
+  container-type: size;
+  left: 67%;
+  width: 25%;
+  top: 32%;
+  height: 38%;
+  gap: 4px;
+}
+.start-key > span {
+  font-size: min(29cqw, 52cqh);
+  line-height: 1;
+  white-space: nowrap;
+}
+.start-key.is-loading > span {
+  font-size: min(20cqw, 48cqh);
+}
+.start-key svg {
+  height: 20%;
+  margin-right: 16%;
+  flex-shrink: 0;
+}
+@media (max-width: 520px) {
+  .start-key {
+    left: 2%;
+    top: 53%;
+    width: 96%;
+    height: 42%;
+    gap: 24px;
+  }
+  .start-key > span,
+  .start-key.is-loading > span {
+    font-size: min(12cqw, 54cqh);
+  }
+  .start-key svg {
+    height: 24px;
+    margin: 0;
+  }
+}
+@media (min-aspect-ratio: 1/1) and (max-height: 700px) {
+  .entry-actions {
+    top: 70%;
+  }
+  .chip.demo {
+    min-height: 44px;
+    min-width: 185px;
+    font-size: 26px;
+  }
+}
+
+/* Local import extends the same hard-edged OVERDRIVE control language. */
+.chip.import {
+  min-width: 220px;
+  min-height: 68px;
+  padding: 0 30px;
+  gap: 12px;
+  font-size: clamp(18px, 1.9vw, 30px);
+}
+.status-cancel {
+  margin-left: 8px;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.turnstile-block {
+  position: relative;
+  z-index: 10;
+  border: 3px solid var(--ink);
+  background: white;
+  padding: 10px;
+  box-shadow: 5px 5px 0 var(--red);
+}
+.turnstile-block p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.import-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 66%);
+}
+.import-sheet {
+  width: min(660px, calc(100vw - 40px));
+  max-height: min(760px, 92svh);
+  padding: 32px;
+  color: var(--ink);
+  box-shadow: 12px 12px 0 var(--red);
+}
+.import-sheet > .plate-body {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-height: calc(min(760px, 92svh) - 64px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.import-sheet > .plate-body > div {
+  position: relative;
+  min-width: 0;
+}
+.import-sheet h2 {
+  margin: 4px 0 8px;
+  padding-right: 52px;
+  font-size: clamp(42px, 8vw, 74px);
+  line-height: 0.9;
+}
+.import-sheet p {
+  max-width: 56ch;
+}
+.import-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--ink);
+  background: white;
+}
+.import-close svg {
+  width: 24px;
+  height: 24px;
+}
+.import-options {
+  display: grid;
+  gap: 8px;
+  margin: 24px 0 12px;
+}
+.import-options button {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border: 3px solid var(--ink);
+  background: white;
+  text-align: left;
+}
+.import-options button:hover,
+.import-options button:focus-visible {
+  background: var(--red);
+  color: white;
+}
+.import-options svg {
+  width: 34px;
+  height: 34px;
+}
+.import-options b,
+.import-options small {
+  display: block;
+}
+.import-options b {
+  font: italic 700 20px "Tektur", sans-serif;
+}
+.import-options small {
+  margin-top: 3px;
+  font: 13px Arial, sans-serif;
+}
+.import-drop {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 3px dashed var(--ink);
+  font-weight: 700;
+}
+.import-drop.is-dragging {
+  background: var(--red);
+  color: white;
+}
+.import-drop svg {
+  width: 28px;
+  height: 28px;
+}
+.import-progress,
+.import-error {
+  margin: 14px 0 0;
+  font-weight: 800;
+}
+.import-error {
+  color: #b31308;
+}
+.import-cancel {
+  min-height: 44px;
+  margin-top: 12px;
+  text-decoration: underline;
+  font-weight: 800;
+}
+@media (max-aspect-ratio: 1/1) {
+  .entry-actions {
+    left: 8%;
+    width: 84%;
+  }
+  .chip.import {
+    min-width: 170px;
+    min-height: 54px;
+  }
+}
+@media (max-width: 520px) {
+  .entry-actions {
+    left: 3%;
+    width: 94%;
+    gap: 8px;
+  }
+  .chip.demo {
+    min-width: 145px;
+  }
+  .chip.import {
+    min-width: 155px;
+    min-height: 48px;
+    padding: 0 12px;
+    font-size: 17px;
+  }
+  .import-sheet {
+    width: calc(100vw - 32px);
+    max-height: calc(100svh - 32px);
+    padding: 24px 18px;
+    box-shadow: 7px 7px 0 var(--red);
+  }
+  .import-sheet > .plate-body {
+    max-height: calc(100svh - 80px);
+  }
+  .import-drop {
+    display: none;
+  }
+  .import-options button {
+    min-height: 66px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .import-backdrop,
+  .import-sheet {
+    scroll-behavior: auto;
+    animation: none !important;
+    transition: none !important;
   }
 }

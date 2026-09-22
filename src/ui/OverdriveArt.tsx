@@ -129,12 +129,6 @@ export function EntryGraphics() {
         stroke="var(--ink)"
         strokeWidth="13"
       />
-      <path
-        d="M280 425h23m-37 53 55-55 M649 422l60 63"
-        fill="none"
-        stroke="white"
-        strokeWidth="5"
-      />
     </svg>
   );
 }

@@ -2,6 +2,15 @@
 
 3D-игра, в которой белый заяц собирает страницу сайта в многослойный бумажный шар. Вход — иллюстрация и URL; после прохождения можно сохранить настоящий вращающийся трофей как квадратную GIF.
 
+## Публичная версия
+
+- Основной адрес: [webivore.chikirao.ru](https://webivore.chikirao.ru/)
+- Резервный GitHub Pages: [chikirao.github.io/webivore](https://chikirao.github.io/webivore/)
+- Быстрый Cloudflare setup: [`docs/CLOUDFLARE-RU.md`](docs/CLOUDFLARE-RU.md)
+- Полная инструкция deployment: [`docs/FREE-DEPLOYMENT.md`](docs/FREE-DEPLOYMENT.md)
+
+Demo, импорт `.webivore.json`, локального HTML и PNG/JPEG/WebP выполняются полностью в браузере. Публичные URL используют отдельный бесплатный Cloudflare Worker; локальные файлы ему не отправляются.
+
 ## Запуск
 
 Node.js 22.12+ (проверено на Node 24):

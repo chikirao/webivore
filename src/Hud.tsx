@@ -5,6 +5,7 @@ import {
   CrosshairIcon,
   MinusIcon,
   PauseIcon,
+  QuestionIcon,
   PlayIcon,
   PlusIcon,
   SpeakerHighIcon,
@@ -159,6 +160,7 @@ export function Hud({
   onZoom,
   onRecenter,
   onReset,
+  onHint,
   viewport,
 }: {
   stats: Stats;
@@ -174,6 +176,7 @@ export function Hud({
   onZoom: (f: number) => void;
   onRecenter: () => void;
   onReset: () => void;
+  onHint: () => void;
   viewport: { width: number; height: number };
 }) {
   return (
@@ -294,6 +297,18 @@ export function Hud({
         </Plate>
       </div>
       <div className="hud-camera">
+        <button
+          className="guide-button"
+          onClick={onHint}
+          aria-label="Guide to nearest collectible"
+          aria-pressed={stats.guiding}
+          aria-keyshortcuts="H"
+          title="Guide to nearest collectible (H)"
+          disabled={!stats.ready || stats.done}
+        >
+          <QuestionIcon weight="bold" />
+          <span>H</span>
+        </button>
         <Plate
           shape="cut"
           cut={22}
@@ -356,7 +371,8 @@ export function Hud({
       <p className="hint hud-hint">
         <span className="keys-hint">
           <b>WASD</b> walk · <b>drag</b> orbit · <b>right-drag</b> pan ·{" "}
-          <b>Q/E</b> turn · <b>space</b> follow · <b>esc</b> pause
+          <b>Q/E</b> turn · <b>space</b> follow · <b>esc</b> pause � <b>H</b>{" "}
+          hint
         </span>
         <span className="touch-hint">
           <b>joystick</b> walk · <b>swipe</b> look

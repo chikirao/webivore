@@ -13,6 +13,7 @@ import {
   type PartTuning,
 } from "./rabbit-settings";
 import "./ui/rabbit-editor.css";
+import { appUrl } from "./paths";
 
 const pitches = [0.18, 0.7, 1.31];
 const parts = [
@@ -382,7 +383,7 @@ export function RabbitEditor() {
           <span>WEBIVORE / DEV</span>
           <h1>Настройка зайца</h1>
         </div>
-        <a href="/">Вернуться в игру ↗</a>
+        <a href={appUrl("")}>Вернуться в игру ↗</a>
       </header>
       <section
         className="rig-preview"

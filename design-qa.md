@@ -105,3 +105,17 @@ Final build and all 20 unit tests passed after the touch changes. Desktop mouse 
 Hosting scope is documented in [HOSTING.md](docs/HOSTING.md): demo/game/GIF are client-side; arbitrary website capture requires the Node/Playwright API. GitHub Pages can host a static edition or the frontend with a separately hosted API, but cannot run the current complete product by itself.
 
 final result: passed
+
+## 2026-09-22 — loading layout, local minimap and optional pickup guide
+
+See [UI navigation QA](docs/UI-NAVIGATION-QA.md) for behavior, tested viewport sizes, touch/browser results and remaining limits. Added in-game `?` / `H` guidance, first-three/returning-one tutorial, centered non-distorting minimap; corrected loading label and globe rails.
+
+## 2026-09-22 — free-release entry and local import
+
+`npm run qa:free-release -- http://localhost:5176/` passed Chromium checks at 1536×1024, 1024×768, 768×1024 and 390×844. It exercises entry, the import sheet, focus wrapping/Escape focus restoration, demo startup and game layout at every viewport. The 1536×1024 run additionally imports the malicious local HTML fixture and the OVERDRIVE PNG fixture, verifies that neither local path calls `/api`, starts each generated Level, and checks that the pause screen exposes portable-level export. There were no page errors or horizontal overflow.
+
+Evidence is in `artifacts/free-release/`: `desktop-entry.png`, `desktop-import.png`, `desktop-html-game.png`, `desktop-image-game.png`, plus entry/import/game captures for laptop, tablet and phone. The in-app browser was also used manually at its narrow mobile viewport to select the same HTML and PNG files and inspect the resulting game, pause and export controls.
+
+The first mobile pass exposed an internal horizontal scrollbar and a hidden file input in the Tab order. The sheet now sizes inside its viewport, clips horizontal overflow only within its scroll body, keeps the close control inside the panel, excludes the hidden picker from sequential focus, wraps Tab/Shift+Tab, closes on Escape and restores focus to **IMPORT FILE**. The dialog keeps the existing black/white/red OVERDRIVE plates and does not introduce a parallel visual system.
+
+Limits: browser automation emulates tablet/phone touch capabilities; it is not physical-device testing. No live Cloudflare deployment or live Browser Run quota was consumed. Worker behavior, cache/quota/CORS/Turnstile/security and session cleanup are covered by the isolated Worker tests and a Wrangler dry-run; live YouTube is deliberately not a release gate because the local video/auth fallback fixtures are deterministic.

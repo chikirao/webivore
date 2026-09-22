@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0; url=https://example.com/escape">
+    <title>WEBIVORE local import fixture</title>
+    <script>window.__webivoreFixtureExecuted = true</script>
+  </head>
+  <body onload="window.__webivoreFixtureExecuted = true">
+    <main>
+      <h1>Local pages stay private</h1>
+      <p>This page has headings, paragraphs, links and list items for the safe canonical renderer.</p>
+      <h2>Import checklist</h2>
+      <ul>
+        <li>Scripts are removed</li>
+        <li>Remote resources are ignored</li>
+        <li>The result remains playable</li>
+      </ul>
+      <a href="javascript:window.__webivoreFixtureExecuted=true">Unsafe link</a>
+      <img src="https://example.com/tracker.png" onerror="window.__webivoreFixtureExecuted=true" alt="Remote tracker placeholder">
+      <form action="https://example.com/collect"><button formaction="https://example.com/collect">Submit</button></form>
+      <iframe srcdoc="<script>window.top.__webivoreFixtureExecuted=true</script>"></iframe>
+    </main>
+  </body>
+</html>

@@ -141,6 +141,23 @@
   font-size: 14px;
   font-weight: 700;
 }
+.level-export {
+  position: absolute;
+  right: 0;
+  top: 75%;
+  width: 20%;
+  min-height: 48px;
+  padding: 0 8px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  font: italic 700 13px "Tektur", sans-serif;
+  text-transform: uppercase;
+}
+.level-export:hover,
+.level-export:focus-visible {
+  background: var(--red);
+  color: white;
+}
 .finish-rail {
   --mark-line: var(--ink);
   display: flex;
@@ -894,6 +911,15 @@
   .finish-actions > .status {
     top: 111%;
     font-size: 11px;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .level-export {
+    top: 79%;
+    right: 0;
+    width: 20%;
+    min-height: 44px;
+    font-size: 10px;
   }
 }
 .finish .meter-readout::before {

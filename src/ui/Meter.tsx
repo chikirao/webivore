@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Burst, Chevrons } from "./marks";
+import { appUrl } from "../paths";
 
 const SEGMENTS = 12;
 /**
@@ -61,7 +62,11 @@ export function Meter({
         />
       </svg>
       <div className="meter-shield">
-        <img className="meter-rabbit" src="/assets/rabbit-badge.png" alt="" />
+        <img
+          className="meter-rabbit"
+          src={appUrl("assets/rabbit-badge.png")}
+          alt=""
+        />
       </div>
       <div className="meter-readout">
         <strong className="display meter-percent">

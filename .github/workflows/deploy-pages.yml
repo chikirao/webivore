@@ -1,0 +1,58 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Build project Pages artifact
+        env:
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+          VITE_SNAPSHOT_API_URL: ${{ vars.VITE_SNAPSHOT_API_URL }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
+        run: |
+          if [ -z "$VITE_BASE_PATH" ]; then
+            if [ -s public/CNAME ]; then
+              export VITE_BASE_PATH="/"
+            else
+              export VITE_BASE_PATH="/${GITHUB_REPOSITORY#*/}/"
+            fi
+          fi
+          npm run build:pages
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,19 @@
+{
+  "name": "WEBIVORE",
+  "short_name": "WEBIVORE",
+  "description": "Walk into a website. Roll it into a trophy.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff0013",
+  "icons": [
+    {
+      "src": "assets/webivore-favicon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

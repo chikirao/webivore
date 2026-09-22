@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { appUrl } from "./paths";
 import { rabbitFrame } from "./rabbit-frame";
 import {
   readRabbitSettings,
@@ -244,10 +245,10 @@ export class Rabbit {
     }
     const loader = new THREE.TextureLoader();
     this.ready = Promise.all([
-      loader.loadAsync("/assets/rabbit-body.png"),
-      loader.loadAsync("/assets/rabbit-head.png"),
+      loader.loadAsync(appUrl("assets/rabbit-body.png")),
+      loader.loadAsync(appUrl("assets/rabbit-head.png")),
       ...["low", "mid", "high"].map((name) =>
-        loader.loadAsync(`/assets/rabbit-head-135-${name}.png`),
+        loader.loadAsync(appUrl(`assets/rabbit-head-135-${name}.png`)),
       ),
     ]).then(([body, head, ...repairs]) => {
       this.repairedHeads = repairs.map((texture) => {

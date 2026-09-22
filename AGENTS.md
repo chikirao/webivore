@@ -4,24 +4,24 @@
 
 WEBIVORE is a browser-based 3D game for the `chikirao / vault` portfolio. A rabbit walks over a captured website, collects page fragments into a growing paper ball, and exports the finished rotating ball as a 512 × 512 GIF.
 
-The current implementation is a functional first version. The next visual direction is **OVERDRIVE**, the second, more vector-friendly concept trio:
+The current branch contains an incomplete Claude attempt at **OVERDRIVE**. Its game-mechanics changes may be useful, but its visual implementation is not accepted. The next task is a fidelity-focused Astra rebuild from the same concept trio:
 
 - `docs/concepts/04-overdrive-entry.png`
 - `docs/concepts/05-overdrive-game.png`
 - `docs/concepts/06-overdrive-finish.png`
 
-Treat these as composition and visual-language references, not raster backgrounds to paste behind HTML. Rebuild the interface with editable vectors, CSS, text, and real controls. The user may attach the same three images directly to a task. The older CIRCUIT trio (`01`–`03`) and generated assets remain useful history and a rollback point, but are no longer the target direction.
+Treat these images as the source of truth for desktop composition, scale, proportion and hierarchy. Do not paste them behind HTML. Rebuild the interface with editable vectors, CSS, text and real controls, while using high-quality supplied or generated raster assets for complex rabbit illustrations. The older CIRCUIT trio (`01`–`03`) remains useful history and `main` is the rollback point.
 
 The portfolio source at `C:\Users\UserPC\Documents\my\_portfolio` is read-only design context. Do not modify it. `docs/PORTFOLIO-DESIGN.md` contains the existing analysis.
 
 ## Before changing code
 
-This repository was initialized after the first working prototype and may have no commits. Before any redesign:
+The repository now has a protected baseline and two Claude commits:
 
-1. Inspect `git status`, `.gitignore`, and the complete file list for secrets or generated files.
-2. Run `npm run build` and `npm test` and record the baseline.
-3. Commit the entire current working prototype as a recovery point. Do not mix redesign changes into this commit.
-4. Create a separate branch for the new version, for example `claude/vector-overdrive-v2`.
+1. `a5bf528` (`main`) — initial working prototype.
+2. `5c4dbcd` — sprite-rabbit and shell work.
+3. `1723c30` (`claude/vector-overdrive-v2`) — incomplete OVERDRIVE UI attempt.
+4. Before the next redesign, inspect current Git state and create `astra/overdrive-fidelity-v3` from the current head. Preserve untracked tests until reviewed.
 
 Never discard user changes with `git reset --hard`, `git checkout --`, or broad deletion. If Git author identity is missing, ask the user instead of inventing one.
 
@@ -69,7 +69,7 @@ Build a crisp, editable, vector-led PS2/Y2K interface from the OVERDRIVE trio: b
 
 Use authored SVG files/components, CSS geometry, masks/clip paths, typography, and the existing icon package where appropriate. Do not trace or embed the reference PNGs as production backgrounds. Do not replace real controls with a static mockup. Avoid generic glass panels, soft rounded dashboard cards, neon gradients, filler labels, repeated pills and ornamental metrics.
 
-All key UI art must be editable and resolution-independent. Raster imagery is acceptable for the rabbit sprite atlas, captured website pixels and other genuinely pictorial content. Add new raster generation only if the user explicitly requests it.
+All key UI chrome must be editable and resolution-independent. Raster imagery is appropriate for the rabbit sprite atlas, captured website pixels and complex mascot illustrations. The current Astra task explicitly authorizes ImageGen for missing rabbit/interface illustrations, but not for entire screens, buttons, frames, meters or text.
 
 Design all three states as one system:
 
@@ -91,4 +91,3 @@ npm test
 Use the existing in-browser visual lab or the user's chosen browser for interactive QA. Check entry, loading/error, initial game, steep/high/low camera angles, late game with large graphics, completion, GIF export and replay. Inspect desktop, tablet and mobile. Tests must verify behavior rather than snapshot implementation details.
 
 Do not claim the redesign is complete until the four rabbit camera failures above, ball cavities, finish occlusion, responsive layouts and real Wikipedia completion have been observed and fixed. Update `design-qa.md` with the exact states, viewport sizes and remaining limitations.
-

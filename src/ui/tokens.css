@@ -159,7 +159,7 @@ a {
 
 @font-face {
   font-family: "Russo One";
-  src: url("/fonts/RussoOne-Regular.ttf") format("truetype");
+  src: url("../../public/fonts/RussoOne-Regular.ttf") format("truetype");
   font-weight: 400 900;
   font-display: swap;
 }

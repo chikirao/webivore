@@ -1,13 +1,19 @@
 import {
   GlobeIcon,
   PlayIcon,
+  UploadSimpleIcon,
   SpeakerHighIcon,
   SpeakerSlashIcon,
   QuestionIcon,
 } from "@phosphor-icons/react";
+import { useCallback, useState } from "react";
 import { Plate } from "./ui/Plate";
 import { Chevrons, Serial } from "./ui/marks";
 import { ArrowArt, EntryGraphics, Wordmark } from "./ui/OverdriveArt";
+import { ImportDialog } from "./ImportDialog";
+import { TurnstileWidget } from "./TurnstileWidget";
+import type { ImportKind } from "./local-import";
+import { appUrl } from "./paths";
 import "./ui/entry.css";
 export const PRESETS: [string, string][] = [
   ["Wikipedia", "https://en.wikipedia.org/wiki/Internet"],
@@ -20,8 +26,16 @@ export function Entry({
   error,
   onStart,
   onDemo,
+  onImport,
+  onCancel,
   muted,
   setMuted,
+  loadingMessage,
+  importError,
+  notice,
+  turnstileNeeded,
+  turnstileSiteKey,
+  onTurnstileToken,
 }: {
   url: string;
   setUrl: (v: string) => void;
@@ -29,9 +43,22 @@ export function Entry({
   error: string;
   onStart: (value?: string) => void;
   onDemo: () => void;
+  onImport: (file: File, kind?: ImportKind) => void;
+  onCancel: () => void;
   muted: boolean;
   setMuted: (m: boolean) => void;
+  loadingMessage: string;
+  importError: string;
+  notice: string;
+  turnstileNeeded: boolean;
+  turnstileSiteKey: string;
+  onTurnstileToken: (token: string) => void;
 }) {
+  const [importOpen, setImportOpen] = useState(false);
+  const closeImport = useCallback(() => {
+    setImportOpen(false);
+    queueMicrotask(() => document.getElementById("open-import")?.focus());
+  }, []);
   return (
     <main className="entry">
       <EntryGraphics />
@@ -42,7 +69,7 @@ export function Entry({
       <aside className="entry-hero" aria-hidden="true">
         <img
           className="hero-art"
-          src="/assets/overdrive-entry-rabbit.png"
+          src={appUrl("assets/overdrive-entry-rabbit.png")}
           alt=""
         />
       </aside>
@@ -72,7 +99,11 @@ export function Entry({
             required
             disabled={loading}
           />
-          <button className="start-key key" type="submit" disabled={loading}>
+          <button
+            className={`start-key key${loading ? " is-loading" : ""}`}
+            type="submit"
+            disabled={loading}
+          >
             <span>{loading ? "Loading" : "Start"}</span>
             <Chevrons />
           </button>
@@ -89,6 +120,18 @@ export function Entry({
           >
             Demo
             <PlayIcon weight="fill" />
+          </Plate>
+          <Plate
+            id="open-import"
+            as="button"
+            shape="chip"
+            line={null}
+            className="chip import"
+            onClick={() => setImportOpen(true)}
+            disabled={loading}
+          >
+            Import file
+            <UploadSimpleIcon weight="bold" />
           </Plate>
           <span className="strip hatch tick" aria-hidden="true" />
         </div>
@@ -111,7 +154,8 @@ export function Entry({
         <div className="entry-status">
           {loading && (
             <p className="status" role="status">
-              Cutting the page into bites… <b>up to 55 seconds.</b>
+              {loadingMessage || "Cutting the page into bites…"} <b>up to 55 seconds.</b>{" "}
+              <button type="button" className="status-cancel" onClick={onCancel}>Cancel</button>
             </p>
           )}
           {error && (
@@ -119,9 +163,13 @@ export function Entry({
               {error}
             </p>
           )}
+          {!error && notice && <p className="status" role="status">{notice}</p>}
+          {turnstileNeeded && !loading && (
+            <TurnstileWidget siteKey={turnstileSiteKey} onToken={onTurnstileToken} />
+          )}
         </div>
       </section>
-      <a className="author entry-author" href="/">
+      <a className="author entry-author" href={appUrl("")}>
         chikirao
       </a>
       <details className="entry-help">
@@ -137,7 +185,8 @@ export function Entry({
             <b>Drag</b> orbit · <b>right-drag</b> pan · <b>scroll</b> zoom.
           </p>
           <p>
-            <b>Space</b> follow · <b>Q / E</b> turn · <b>Esc</b> pause.
+            <b>Space</b> follow · <b>Q / E</b> turn · <b>Esc</b> pause &middot;{" "}
+            <b>H</b> toggle pickup hint.
           </p>
         </div>
       </details>
@@ -163,6 +212,15 @@ export function Entry({
         <span className="strip hatch-red wide" />
         <span className="strip dots-paper" />
       </footer>
+      <ImportDialog
+        open={importOpen}
+        busy={loading}
+        status={importOpen && loading ? loadingMessage : ""}
+        error={importError}
+        onClose={closeImport}
+        onCancel={onCancel}
+        onImport={onImport}
+      />
     </main>
   );
 }

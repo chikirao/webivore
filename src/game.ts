@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { PickupGuide, nearestCollectible, localMap } from "./navigation";
 import { maxCollectionRadius, type Level, type Piece } from "./shared";
 import { PickupIndex, combinedPiece } from "./grouping";
 import { Rabbit, RABBIT } from "./rabbit";
@@ -26,6 +27,7 @@ export type Stats = {
   ready: boolean;
   error: string;
   pickups: PickupEvent[];
+  guiding: boolean;
 };
 type Item = Piece & {
   gone: boolean;
@@ -123,6 +125,18 @@ export class Game {
   textures: THREE.Texture[] = [];
   geometries: THREE.BufferGeometry[] = [];
   materials: THREE.Material[] = [];
+  guide = new PickupGuide(
+    (() => {
+      try {
+        return localStorage;
+      } catch {
+        return undefined;
+      }
+    })(),
+  );
+  guideArrows = new THREE.Group();
+  guideTarget?: ReturnType<typeof nearestCollectible<Item>>;
+  guideCheckedAt = -Infinity;
   mapCanvas = document.createElement("canvas");
   mapContext = this.mapCanvas.getContext("2d")!;
   constructor(
@@ -221,6 +235,7 @@ export class Game {
     );
     this.pileShadow.rotation.x = -Math.PI / 2;
     this.scene.add(this.pileShadow);
+    this.buildGuide();
     this.bind();
     this.mapCanvas.className = "world-map";
     this.mapCanvas.width = 240;
@@ -340,6 +355,8 @@ export class Game {
       if (e.repeat) return;
       if (e.code === "Space") this.recenter();
       if (e.code === "KeyR") this.resetCamera();
+      if (e.code === "KeyH" && !e.ctrlKey && !e.metaKey && !e.altKey)
+        this.toggleHint();
       if (e.code === "Escape") this.onPause();
       if (e.code === "Equal") this.zoom(1.15);
       if (e.code === "Minus") this.zoom(0.87);
@@ -489,6 +506,8 @@ export class Game {
       this.area += member.growthValue;
       this.surface.erase(member);
     }
+    this.guide.collected(this.count);
+    this.guideCheckedAt = -Infinity;
     p.gone = true;
     p.pickedAt = this.time;
     this.visualBites++;
@@ -747,40 +766,108 @@ export class Game {
       behind: v.z > 1,
     };
   }
+  toggleHint() {
+    if (!this.ready || this.done) return;
+    this.guide.toggle();
+    this.guideCheckedAt = -Infinity;
+  }
+  buildGuide() {
+    const shape = new THREE.Shape();
+    shape.moveTo(-9, -7);
+    shape.lineTo(0, 1);
+    shape.lineTo(9, -7);
+    shape.lineTo(9, 0);
+    shape.lineTo(0, 8);
+    shape.lineTo(-9, 0);
+    shape.closePath();
+    const geometry = this.ownGeometry(new THREE.ShapeGeometry(shape));
+    const black = this.ownMaterial(
+      new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide }),
+    );
+    const white = this.ownMaterial(
+      new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }),
+    );
+    for (let i = 0; i < 48; i++) {
+      const arrow = new THREE.Group();
+      const halo = new THREE.Mesh(geometry, white);
+      halo.rotation.x = Math.PI / 2;
+      halo.scale.setScalar(1.4);
+      const ink = new THREE.Mesh(geometry, black);
+      ink.rotation.x = Math.PI / 2;
+      ink.position.y = 0.4;
+      arrow.add(halo, ink);
+      this.guideArrows.add(arrow);
+    }
+    this.scene.add(this.guideArrows);
+  }
+  updateGuide() {
+    this.guideArrows.visible =
+      this.guide.enabled && this.ready && !this.done && !this.paused;
+    if (!this.guideArrows.visible) return;
+    if (this.time - this.guideCheckedAt >= 0.15) {
+      this.guideTarget = nearestCollectible(
+        this.items,
+        this.x,
+        this.y,
+        this.capacity,
+      );
+      this.guideCheckedAt = this.time;
+    }
+    const target = this.guideTarget;
+    if (!target || target.item.gone) {
+      this.guideArrows.visible = false;
+      return;
+    }
+    const dx = target.x - this.x,
+      dy = target.y - this.y;
+    const length = Math.hypot(dx, dy);
+    const phase = this.reduced ? 0 : (this.time * 38) % 30;
+    this.guideArrows.children.forEach((arrow, i) => {
+      const distance = 22 + i * 30 + phase;
+      arrow.visible = distance < length;
+      if (!arrow.visible) return;
+      arrow.position.set(
+        this.x + (dx * distance) / length,
+        3,
+        this.y + (dy * distance) / length,
+      );
+      arrow.rotation.y = Math.atan2(dx, dy);
+    });
+  }
   drawMap() {
-    const c = this.mapContext,
-      w = 216,
-      h = 118,
-      x = 12,
-      y = 26;
-    c.clearRect(0, 0, 240, 156);
+    const c = this.mapContext;
+    // Match the real CSS aspect ratio so a tall site never distorts its fragments.
+    const w = Math.max(1, this.mapCanvas.clientWidth),
+      h = Math.max(1, this.mapCanvas.clientHeight);
+    const dpr = Math.min(devicePixelRatio, 2);
+    const bw = Math.round(w * dpr),
+      bh = Math.round(h * dpr);
+    if (this.mapCanvas.width !== bw || this.mapCanvas.height !== bh) {
+      this.mapCanvas.width = bw;
+      this.mapCanvas.height = bh;
+    }
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.fillStyle = "#dddddd";
+    c.fillRect(0, 0, w, h);
+    const m = localMap(w, h, this.x, this.y);
+    c.save();
+    c.translate(m.x, m.y);
+    c.scale(m.scale, m.scale);
     c.fillStyle = "#ffffff";
-    c.fillRect(0, 0, 240, 156);
-    c.fillStyle = "#000000";
-    c.font = "9px monospace";
-    c.fillText("YOU ARE HERE", 10, 15);
-    c.fillStyle = "#ececec";
-    c.fillRect(x, y, w, h);
+    c.fillRect(0, 0, this.level.width, this.level.height);
     for (const p of this.items) {
       if (p.gone) continue;
       c.fillStyle = p.threshold <= this.capacity ? "#111111" : "#c9c9c9";
-      c.fillRect(
-        x + (p.x / this.level.width) * w,
-        y + (p.y / this.level.height) * h,
-        Math.max(1, (p.width / this.level.width) * w),
-        Math.max(1, (p.height / this.level.height) * h),
-      );
+      for (const r of p.regions ?? [p]) c.fillRect(r.x, r.y, r.width, r.height);
     }
-    c.fillStyle = "#ff1717";
+    c.restore();
     c.beginPath();
-    c.arc(
-      x + (this.x / this.level.width) * w,
-      y + (this.y / this.level.height) * h,
-      3.5,
-      0,
-      Math.PI * 2,
-    );
+    c.arc(w / 2, h / 2, 4, 0, Math.PI * 2);
+    c.fillStyle = "#ff1717";
     c.fill();
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = 1.5;
+    c.stroke();
   }
   frame = (now: number) => {
     if (this.disposed) return;
@@ -803,6 +890,7 @@ export class Game {
         remaining -= step;
       }
     }
+    this.updateGuide();
     this.animateWorld(dt);
     this.updateCamera(dt);
     this.surface?.flush();
@@ -811,6 +899,7 @@ export class Game {
       this.reportAt = now;
       this.drawMap();
       this.report({
+        guiding: this.guide.enabled,
         count: this.count,
         percent: this.total ? (100 * this.mass) / this.total : 0,
         radius: this.radius,

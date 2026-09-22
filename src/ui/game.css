@@ -1802,3 +1802,41 @@
     font-size: 9px;
   }
 }
+/* A separate, reachable control leaves the minimap window unchanged. */
+.guide-button {
+  position: absolute;
+  right: 8px;
+  top: -55px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  outline: 2px solid black;
+  background: black;
+  color: white;
+}
+.guide-button[aria-pressed="true"] {
+  background: var(--red);
+}
+.guide-button svg {
+  width: 30px;
+  height: 30px;
+}
+.guide-button span {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font: bold 10px Arial;
+}
+.guide-button:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
+}
+.touch-playing .guide-button span {
+  display: none;
+}
+.map-host canvas {
+  padding: 0;
+}

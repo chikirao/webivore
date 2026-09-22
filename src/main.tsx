@@ -15,6 +15,10 @@ import { Plate } from "./ui/Plate";
 import { Chevrons } from "./ui/marks";
 import { PlayIcon } from "@phosphor-icons/react";
 import { TouchControls, useTouchControls } from "./TouchControls";
+import { importLocalFile, type ImportKind } from "./local-import";
+import { downloadLevelFile, levelSource, type LevelSource } from "./level-file";
+import { loadRemoteLevel, SnapshotError } from "./remote-level";
+import { routeAt } from "./paths";
 
 const initial: Stats = {
   count: 0,
@@ -29,6 +33,7 @@ const initial: Stats = {
   ready: false,
   error: "",
   pickups: [],
+  guiding: true,
 };
 
 function useViewport() {
@@ -44,15 +49,22 @@ function useViewport() {
 function App() {
   const [url, setUrl] = useState(""),
     [loading, setLoading] = useState(false),
+    [loadingMessage, setLoadingMessage] = useState(""),
     [error, setError] = useState(""),
+    [importError, setImportError] = useState(""),
+    [notice, setNotice] = useState(""),
+    [turnstileNeeded, setTurnstileNeeded] = useState(false),
+    [pendingUrl, setPendingUrl] = useState(""),
     [level, setLevel] = useState<Level | null>(null),
+    [source, setSource] = useState<LevelSource | null>(null),
     [stats, setStats] = useState(initial),
     [muted, setMuted] = useState(false),
     [paused, setPaused] = useState(false),
     [countdown, setCountdown] = useState<number | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null),
     mapHost = useRef<HTMLDivElement>(null),
-    game = useRef<Game | null>(null);
+    game = useRef<Game | null>(null),
+    operation = useRef<AbortController | null>(null);
   const pauseRef = useRef(false);
   const viewport = useViewport();
   const touchControls = useTouchControls();
@@ -114,26 +126,96 @@ function App() {
       if (game.current.paused) game.current.clearPointerInput();
     }
   }, [muted, paused, countdown]);
-  async function load(value = url) {
+  const cancel = useCallback(() => {
+    operation.current?.abort(new DOMException("Cancelled", "AbortError"));
+    operation.current = null;
+    setLoading(false);
+    setLoadingMessage("");
+  }, []);
+  async function load(value = url, turnstileToken?: string) {
+    operation.current?.abort();
+    const controller = new AbortController();
+    operation.current = controller;
     setLoading(true);
+    setLoadingMessage(
+      turnstileToken
+        ? "Verification accepted. Capturing the page…"
+        : "Checking the level cache…",
+    );
     setError("");
+    setNotice("");
+    setTurnstileNeeded(false);
     try {
-      const full = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-      const parsed = new URL(full);
-      if (!parsed.hostname.includes("."))
-        throw new Error("Enter a public website, for example example.com.");
-      const r = await fetch("/api/snapshot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: full }),
+      const result = await loadRemoteLevel(value, {
+        signal: controller.signal,
+        turnstileToken,
       });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || "Could not load website.");
-      setLevel(data);
-    } catch (e) {
-      setError((e as Error).message);
+      if (controller.signal.aborted) return;
+      setSource({
+        kind: "remote",
+        url: result.level.url,
+        degraded: result.degraded,
+      });
+      setNotice(
+        result.degraded
+          ? "This site used a safe simplified media or sign-in fallback."
+          : result.cache === "hit"
+            ? "Loaded from the shared level cache."
+            : "New level captured and cached.",
+      );
+      setLevel(result.level);
+    } catch (reason) {
+      if (controller.signal.aborted) return;
+      const failure = reason as Error;
+      if (
+        failure instanceof SnapshotError &&
+        failure.code === "TURNSTILE_REQUIRED"
+      ) {
+        setPendingUrl(value);
+        setTurnstileNeeded(true);
+      } else setError(failure.message);
     } finally {
-      setLoading(false);
+      if (operation.current === controller) {
+        operation.current = null;
+        setLoading(false);
+        setLoadingMessage("");
+      }
+    }
+  }
+  async function importFile(file: File, kind?: ImportKind) {
+    operation.current?.abort();
+    const controller = new AbortController();
+    operation.current = controller;
+    setLoading(true);
+    setLoadingMessage(
+      kind === "level"
+        ? "Validating portable level…"
+        : kind === "html"
+          ? "Building a safe local page…"
+          : "Cutting the image into playable fragments…",
+    );
+    setError("");
+    setImportError("");
+    setNotice("");
+    setTurnstileNeeded(false);
+    try {
+      const imported = await importLocalFile(file, kind, controller.signal);
+      if (controller.signal.aborted) return;
+      setSource(imported.source);
+      setNotice(
+        imported.notice ??
+          "Local level ready. The file never left this browser.",
+      );
+      setLevel(imported.level);
+    } catch (reason) {
+      if (!controller.signal.aborted)
+        setImportError((reason as Error).message);
+    } finally {
+      if (operation.current === controller) {
+        operation.current = null;
+        setLoading(false);
+        setLoadingMessage("");
+      }
     }
   }
   const togglePause = () => {
@@ -141,7 +223,9 @@ function App() {
     setPaused(!paused);
   };
   const leave = () => {
+    cancel();
     setLevel(null);
+    setSource(null);
     setStats(initial);
   };
   if (!level)
@@ -154,9 +238,24 @@ function App() {
           loading={loading}
           error={error}
           onStart={(v) => void load(v)}
-          onDemo={() => setLevel(demoLevel())}
+          onDemo={() => {
+            const demo = demoLevel();
+            setSource(levelSource(demo));
+            setNotice("Demo runs entirely in this browser.");
+            setLevel(demo);
+          }}
+          onImport={(file, kind) => void importFile(file, kind)}
+          onCancel={cancel}
           muted={muted}
           setMuted={setMuted}
+          loadingMessage={loadingMessage}
+          importError={importError}
+          notice={notice}
+          turnstileNeeded={turnstileNeeded}
+          turnstileSiteKey={String(
+            import.meta.env.VITE_TURNSTILE_SITE_KEY ?? "",
+          )}
+          onTurnstileToken={(token) => void load(pendingUrl || url, token)}
         />
       </>
     );
@@ -194,6 +293,7 @@ function App() {
           onZoom={(f) => game.current?.zoom(f)}
           onRecenter={() => game.current?.recenter()}
           onReset={() => game.current?.resetCamera()}
+          onHint={() => game.current?.toggleHint()}
           viewport={viewport}
         />
       </div>
@@ -266,18 +366,32 @@ function App() {
             <Plate as="button" shape="chip" className="chip" onClick={leave}>
               Choose another website
             </Plate>
+            <Plate
+              as="button"
+              shape="chip"
+              className="chip"
+              onClick={() => downloadLevelFile(level, source ?? undefined)}
+            >
+              Export level
+            </Plate>
           </Plate>
         </div>
       )}
       {stats.done && game.current && (
-        <Finish game={game.current} onLeave={leave} />
+        <Finish
+          game={game.current}
+          onLeave={leave}
+          onExportLevel={() =>
+            downloadLevelFile(level, source ?? undefined)
+          }
+        />
       )}
     </main>
   );
 }
 const appRoot = createRoot(document.getElementById("root")!);
 appRoot.render(
-  location.pathname === "/rabbit-editor" ? (
+  routeAt(location.pathname, "rabbit-editor", import.meta.env.BASE_URL) ? (
     <RabbitEditor />
   ) : new URLSearchParams(location.search).get("lab") === "rabbit" ? (
     <RabbitLab />

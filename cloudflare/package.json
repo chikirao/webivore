@@ -1,0 +1,22 @@
+{
+  "name": "webivore-snapshot-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "dev": "wrangler dev --remote",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260922.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "wrangler": "^4.136.2"
+  }
+}

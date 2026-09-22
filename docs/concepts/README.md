@@ -1,6 +1,6 @@
 # UI exploration — 11 September 2026
 
-Status: CIRCUIT selected by the user on 11 September 2026 — the first three images (entry, game, finish). See [the saved design decision](SELECTED.md). Selection is resolved; use this trio as the basis for subsequent implementation. The earlier coded UI is NOT accepted as final, and the selected concepts have not yet been implemented. OVERDRIVE remains an unselected alternative.
+Status: OVERDRIVE (`04`–`06`) is the current target. The first Claude implementation was rejected for low fidelity; the next pass must use direct same-viewport comparisons against these images. CIRCUIT (`01`–`03`) remains the earlier working direction and `main` rollback point. See [the decision history](SELECTED.md) and `docs/ASTRA-OVERDRIVE-RECOVERY-PROMPT.md`.
 
 Displayed UI concept order (exclude the preceding character-fix images):
 

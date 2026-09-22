@@ -42,7 +42,23 @@ export async function safeFetch(
   value: string,
   budget: { bytes: number },
   signal: AbortSignal,
+  request: {
+    method?: string;
+    body?: Buffer;
+    headers?: Record<string, string>;
+    byteLimit?: number;
+  } = {},
 ) {
+  signal.throwIfAborted();
+  if (budget.bytes >= 24_000_000)
+    throw new Error("Page resource budget exceeded.");
+  if (request.body && request.body.length > 64_000)
+    throw new Error("Request body budget exceeded.");
+  if (
+    request.method &&
+    !["GET", "HEAD", "POST", "OPTIONS"].includes(request.method)
+  )
+    throw new Error("Request method blocked.");
   const u = validateURL(value);
   let answers = await dns.lookup(u.hostname, { all: true, family: 4 });
   // VPN fake-IP ranges are never used as destinations. Resolve again through
@@ -70,6 +86,7 @@ export async function safeFetch(
   if (!answers.length || answers.some((a) => !isPublicIP(a.address)))
     throw new Error("Destination is not a public IPv4 address.");
   const address = answers[0].address;
+  signal.throwIfAborted();
   return new Promise<{
     status: number;
     headers: Record<string, string>;
@@ -79,10 +96,22 @@ export async function safeFetch(
       u,
       {
         signal,
-        method: "GET",
+        method: request.method ?? "GET",
         headers: {
-          "user-agent": "Mozilla/5.0 Webivore/0.1",
-          accept: "*/*",
+          ...Object.fromEntries(
+            Object.entries(request.headers ?? {}).filter(([key]) =>
+              [
+                "user-agent",
+                "accept",
+                "accept-language",
+                "content-type",
+                "origin",
+                "referer",
+              ].includes(key),
+            ),
+          ),
+          "user-agent":
+            request.headers?.["user-agent"] ?? "Mozilla/5.0 Webivore/0.1",
           "accept-encoding": "identity",
         },
         lookup: ((_host: unknown, opts: { all?: boolean }, cb: Function) =>
@@ -91,13 +120,26 @@ export async function safeFetch(
             : cb(null, address, 4)) as any,
       },
       (res) => {
+        const limit = Math.min(24_000_000, request.byteLimit ?? 24_000_000);
+        const declared = Number(res.headers["content-length"]);
+        if (
+          declared > 6_000_000 ||
+          (Number.isFinite(declared) && budget.bytes + declared > limit)
+        ) {
+          reject(new Error("Page resource budget exceeded."));
+          res.destroy();
+          req.destroy();
+          return;
+        }
         const chunks: Buffer[] = [];
         let size = 0;
         res.on("data", (chunk: Buffer) => {
           size += chunk.length;
           budget.bytes += chunk.length;
-          if (size > 6_000_000 || budget.bytes > 24_000_000) {
-            req.destroy(new Error("Page resource budget exceeded."));
+          if (size > 6_000_000 || budget.bytes > limit) {
+            const error = new Error("Page resource budget exceeded.");
+            reject(error);
+            req.destroy(error);
             return;
           }
           chunks.push(chunk);
@@ -124,6 +166,6 @@ export async function safeFetch(
     );
     req.on("error", reject);
     req.setTimeout(8000, () => req.destroy(new Error("Resource timeout.")));
-    req.end();
+    req.end(request.body);
   });
 }

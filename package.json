@@ -5,8 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k \"tsx watch server/index.ts\" \"vite --host 0.0.0.0\"",
-    "build": "tsc --noEmit && vite build",
-    "test": "tsx --test tests/*.test.ts"
+    "build": "tsc --noEmit && vite build && node scripts/prepare-pages.mjs",
+    "build:pages": "npm run build",
+    "test": "tsx --test tests/*.test.ts",
+    "qa:free-release": "node tests/free-release-qa.mjs",
+    "cf:install": "npm --prefix cloudflare install",
+    "cf:check": "npm --prefix cloudflare run check",
+    "cf:test": "npm --prefix cloudflare test",
+    "cf:verify": "npm run cf:check && npm run cf:test",
+    "cf:dev": "npm --prefix cloudflare run dev",
+    "cf:deploy": "npm --prefix cloudflare run deploy",
+    "cf:kv:create": "npm --prefix cloudflare exec wrangler -- kv namespace create WEBIVORE_SNAPSHOTS --binding SNAPSHOTS --update-config --cwd cloudflare"
   },
   "dependencies": {
     "@fontsource/tektur": "^5.3.0",
@@ -27,6 +36,7 @@
     "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^9.2.0",
+    "linkedom": "^0.18.13",
     "prettier": "^3.9.6",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
