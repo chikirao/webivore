@@ -1,23 +1,29 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "webivore-snapshot",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-09-22",
-  "compatibility_flags": ["nodejs_compat_v2"],
-  "workers_dev": true,
-  "browser": {
-    "binding": "BROWSER",
-    "remote": true
-  },
-  "vars": {
-    "ENVIRONMENT": "production",
-    "CACHE_TTL_SECONDS": "1209600",
-    "UNCACHED_CAPTURE_LIMIT": "3",
-    "ALLOWED_ORIGINS": "https://webivore.chikirao.ru,https://chikirao.github.io,http://localhost:5174,http://127.0.0.1:5174"
-  },
-  "limits": {
-    "cpu_ms": 10
-  }
-  // Run `npm run cf:kv:create` from the repository root once. Wrangler adds
-  // the account-specific SNAPSHOTS KV binding here; its generated id is public.
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "webivore-snapshot",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-22",
+	"compatibility_flags": [
+		"nodejs_compat_v2"
+	],
+	"workers_dev": true,
+	"preview_urls": false,
+	"browser": {
+		"binding": "BROWSER",
+		"remote": true
+	},
+	"vars": {
+		"ENVIRONMENT": "production",
+		"CACHE_TTL_SECONDS": "1209600",
+		"UNCACHED_CAPTURE_LIMIT": "3",
+		"ALLOWED_ORIGINS": "https://webivore.chikirao.ru,https://chikirao.github.io,http://localhost:5174,http://127.0.0.1:5174"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "SNAPSHOTS",
+			"id": "b8711878d4d34276ba4aeba3e4ddcd12"
+		}
+	]
+	// Run `npm run cf:kv:create` from the repository root once. Wrangler adds
+	// the account-specific SNAPSHOTS KV binding here; its generated id is public.
 }
