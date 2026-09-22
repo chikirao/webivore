@@ -33,11 +33,7 @@ jobs:
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
         run: |
           if [ -z "$VITE_BASE_PATH" ]; then
-            if [ -s public/CNAME ]; then
-              export VITE_BASE_PATH="/"
-            else
-              export VITE_BASE_PATH="/${GITHUB_REPOSITORY#*/}/"
-            fi
+            export VITE_BASE_PATH="/${GITHUB_REPOSITORY#*/}/"
           fi
           npm run build:pages
       - uses: actions/upload-pages-artifact@v3
