@@ -18,6 +18,14 @@
 		"UNCACHED_CAPTURE_LIMIT": "3",
 		"ALLOWED_ORIGINS": "https://webivore.chikirao.ru,https://chikirao.github.io,http://localhost:5174,http://127.0.0.1:5174"
 	},
+	"d1_databases": [
+		{
+			"binding": "LEADERBOARD",
+			"database_name": "webivore-leaderboard",
+			"database_id": "9663c661-b66a-4013-9619-32976e8aa551",
+			"migrations_dir": "migrations"
+		}
+	],
 	"kv_namespaces": [
 		{
 			"binding": "SNAPSHOTS",

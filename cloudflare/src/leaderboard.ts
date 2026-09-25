@@ -152,7 +152,14 @@ export async function board(env: Env, period: Period, limit: number, playerId: s
 export async function register(env: Env, request: Request, body: Record<string, unknown>, now = Date.now()) {
   const { db, salt } = database(env);
   const { nickname, key } = cleanNickname(body.nickname);
-  await validateTurnstile(env, String(body.turnstileToken ?? ""), request);
+  try {
+    await validateTurnstile(env, String(body.turnstileToken ?? ""), request);
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "TURNSTILE_REQUIRED" || code === "TURNSTILE_INVALID")
+      throw fail(code === "TURNSTILE_REQUIRED" ? 428 : 403, code, "Finish the quick check, then claim your nickname.");
+    throw error;
+  }
   const [device, network] = await Promise.all([deviceHash(salt, request, body.device), networkHash(salt, request)]);
   const since = now - DAY;
   const [byDevice, byNetwork, taken] = await db.batch<{ n: number }>([

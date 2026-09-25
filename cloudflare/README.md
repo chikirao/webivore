@@ -43,7 +43,7 @@ Anti-abuse: nicknames are normalised (NFKC, lookalike folding, reserved/rude wor
 One-time setup, from the repository root (requires the existing `RATE_LIMIT_SALT` secret):
 
 ```sh
-npm run cf:d1:create   # creates webivore-leaderboard and writes its id into wrangler.jsonc
+npm run cf:d1:create   # creates webivore-leaderboard; put the printed database_id into wrangler.jsonc if Wrangler did not
 npm run cf:d1:migrate  # applies migrations/ to the remote database
 npm run cf:deploy
 ```
