@@ -1,5 +1,46 @@
 import * as THREE from "three";
-import type { Level, Piece } from "./shared";
+import type { Level, Piece, Region } from "./shared";
+
+const HOLE = "#050505";
+const RIM = "#d9d3c4";
+
+function hash(n: number, salt: number) {
+  let x = Math.imul((n | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(salt | 0, 0xc2b2ae35);
+  x ^= x >>> 16;
+  x = Math.imul(x, 0x7feb352d);
+  x ^= x >>> 15;
+  x = Math.imul(x, 0x846ca68b);
+  x ^= x >>> 16;
+  return (x >>> 0) / 4294967296;
+}
+
+/** Torn outline of a rect: jittered perimeter, deterministic per piece. */
+export function tornPath(ctx: CanvasRenderingContext2D, r: Region, grow: number, rough: number, seed: number) {
+  const x0 = r.x - grow,
+    y0 = r.y - grow,
+    x1 = r.x + r.width + grow,
+    y1 = r.y + r.height + grow;
+  const step = 4.5;
+  const edge = (ax: number, ay: number, bx: number, by: number, nx: number, ny: number, salt: number) => {
+    const n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) / step));
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      const j = (hash(i * 7 + salt, seed) - 0.35) * rough;
+      ctx.lineTo(ax + (bx - ax) * t + nx * j, ay + (by - ay) * t + ny * j);
+    }
+  };
+  ctx.moveTo(x0, y0);
+  edge(x0, y0, x1, y0, 0, -1, 1);
+  edge(x1, y0, x1, y1, 1, 0, 2);
+  edge(x1, y1, x0, y1, 0, 1, 3);
+  edge(x0, y1, x0, y0, -1, 0, 4);
+  ctx.closePath();
+}
+
+/**
+ * The captured page as the ground. Eaten pieces leave torn black holes with a
+ * pale paper rim, as in the trailer; the rim may overlap neighbours slightly.
+ */
 export class WorldSurface {
   tiles: {
     y: number;
@@ -13,7 +54,6 @@ export class WorldSurface {
   constructor(
     public level: Level,
     public source: HTMLImageElement,
-    public background: HTMLImageElement | undefined,
     scene: THREE.Scene,
     anisotropy: number,
   ) {
@@ -49,36 +89,21 @@ export class WorldSurface {
   }
   erase(p: Piece) {
     for (const r of p.regions ?? [p]) {
-      for (
-        let i = Math.floor(r.y / 1024);
-        i <=
-        Math.min(
-          this.tiles.length - 1,
-          Math.floor((r.y + r.height - 1) / 1024),
-        );
-        i++
-      ) {
+      const first = Math.max(0, Math.floor((r.y - 6) / 1024)),
+        last = Math.min(this.tiles.length - 1, Math.floor((r.y + r.height + 6) / 1024));
+      for (let i = first; i <= last; i++) {
         const t = this.tiles[i];
-        if (!t) continue;
-        const top = Math.max(r.y, t.y),
-          bottom = Math.min(r.y + r.height, t.y + t.height);
-        if (bottom <= top) continue;
-        if (this.background && this.level.coverage !== "exclusive")
-          t.ctx.drawImage(
-            this.background,
-            r.x,
-            top,
-            r.width,
-            bottom - top,
-            r.x,
-            top - t.y,
-            r.width,
-            bottom - top,
-          );
-        else {
-          t.ctx.fillStyle = this.level.pageColor ?? "#f4f0e7";
-          t.ctx.fillRect(r.x, top - t.y, r.width, bottom - top);
-        }
+        t.ctx.save();
+        t.ctx.translate(0, -t.y);
+        t.ctx.fillStyle = RIM;
+        t.ctx.beginPath();
+        tornPath(t.ctx, r, 2.2, 3.4, p.id * 3 + 1);
+        t.ctx.fill();
+        t.ctx.fillStyle = HOLE;
+        t.ctx.beginPath();
+        tornPath(t.ctx, r, 0.4, 2.6, p.id * 3 + 2);
+        t.ctx.fill();
+        t.ctx.restore();
         this.dirty.add(i);
       }
     }

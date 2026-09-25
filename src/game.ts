@@ -108,7 +108,6 @@ export class Game {
     pan: new THREE.Vector3(),
   };
   atlas = new Image();
-  background = new Image();
   attached: Item[] = [];
   particles: { mesh: THREE.Mesh; velocity: THREE.Vector3; life: number }[] = [];
   raf = 0;
@@ -293,17 +292,11 @@ export class Game {
   async loadWorld() {
     try {
       this.atlas.src = this.level.atlas;
-      const promises = [this.atlas.decode(), this.rabbit.ready];
-      if (this.level.background) {
-        this.background.src = this.level.background;
-        promises.push(this.background.decode());
-      }
-      await Promise.all(promises);
+      await Promise.all([this.atlas.decode(), this.rabbit.ready]);
       if (this.disposed) return;
       this.surface = new WorldSurface(
         this.level,
         this.atlas,
-        this.level.background ? this.background : undefined,
         this.scene,
         Math.min(8, this.renderer.capabilities.getMaxAnisotropy()),
       );
