@@ -47,6 +47,8 @@
   margin-top: 4px;
   font: italic 700 22px/1.05 "Tektur", var(--display);
   letter-spacing: -0.01em;
+  /* Room for the italic overhang, which overflow: hidden would clip. */
+  padding-right: 0.18em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

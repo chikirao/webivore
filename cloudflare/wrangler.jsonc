@@ -16,7 +16,7 @@
 		"ENVIRONMENT": "production",
 		"CACHE_TTL_SECONDS": "1209600",
 		"UNCACHED_CAPTURE_LIMIT": "3",
-		"ALLOWED_ORIGINS": "https://webivore.chikirao.ru,https://chikirao.github.io,http://localhost:5174,http://127.0.0.1:5174"
+		"ALLOWED_ORIGINS": "https://webivore.chikirao.ru,https://webivore.pages.dev,https://chikirao.github.io,http://localhost:5174,http://127.0.0.1:5174"
 	},
 	"d1_databases": [
 		{
