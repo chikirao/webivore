@@ -87,7 +87,8 @@ async function queryDns(hostname: string, type: "A" | "AAAA") {
   endpoint.searchParams.set("type", type);
   const response = await fetch(endpoint, {
     headers: { accept: "application/dns-json" },
-    redirect: "error",
+    // Workers reject "error"; a manual redirect is not ok and fails below.
+    redirect: "manual",
     signal: AbortSignal.timeout(3000),
   });
   if (!response.ok) throw new Error("Public DNS validation failed.");
