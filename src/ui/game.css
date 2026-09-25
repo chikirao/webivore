@@ -236,7 +236,8 @@
   animation: streak 0.8s ease-in-out infinite;
 }
 .complete .meter-sweep {
-  animation: sweep 0.9s var(--ease) 1 forwards;
+  /* No fill-mode: a parked off-track sweep would widen the finish screen. */
+  animation: sweep 0.9s var(--ease) 1;
 }
 .complete .tip-chevrons,
 .complete .tip-streak {

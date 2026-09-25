@@ -11,6 +11,7 @@ import { Plate } from "./ui/Plate";
 import { Chevrons, Serial } from "./ui/marks";
 import { ArrowArt, EntryGraphics, Wordmark } from "./ui/OverdriveArt";
 import { ImportDialog } from "./ImportDialog";
+import { HiScore, LeaderboardDialog } from "./Leaderboard";
 import { TurnstileWidget } from "./TurnstileWidget";
 import type { ImportKind } from "./local-import";
 import { appUrl } from "./paths";
@@ -55,6 +56,12 @@ export function Entry({
   onTurnstileToken: (token: string) => void;
 }) {
   const [importOpen, setImportOpen] = useState(false);
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [boardSeen, setBoardSeen] = useState(0);
+  const closeBoard = useCallback(() => {
+    setBoardOpen(false);
+    setBoardSeen((n) => n + 1);
+  }, []);
   const closeImport = useCallback(() => {
     setImportOpen(false);
     queueMicrotask(() => document.getElementById("open-import")?.focus());
@@ -62,6 +69,7 @@ export function Entry({
   return (
     <main className="entry">
       <EntryGraphics />
+      <HiScore onOpen={() => setBoardOpen(true)} refreshKey={boardSeen} />
       <header className="entry-head">
         <h1 className="sr-only">WEBIVORE</h1>
         <Wordmark />
@@ -221,6 +229,7 @@ export function Entry({
         onCancel={onCancel}
         onImport={onImport}
       />
+      <LeaderboardDialog open={boardOpen} onClose={closeBoard} />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import { cacheKey, readAtlas, readCached, writeCached } from "./cache";
 import { capture } from "./capture";
 import { normalizeUrl } from "./security";
+import { routeLeaderboard } from "./leaderboard";
 import { enforceRateLimit, validateTurnstile } from "./turnstile";
 import type { CaptureResult, Env } from "./types";
 
@@ -25,7 +26,7 @@ function withCors(response: Response, request: Request, env: Env) {
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Vary", "Origin");
     headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    headers.set("Access-Control-Allow-Headers", "Content-Type");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
     headers.set("Access-Control-Max-Age", "86400");
   }
   headers.set("X-Content-Type-Options", "nosniff");
@@ -148,13 +149,16 @@ export async function handleRequest(request: Request, env: Env, dependencies: De
   const origin = allowedOrigin(request, env);
   if (origin === false) return withCors(json({ error: "Origin is not allowed.", code: "CORS_DENIED" }, 403), request, env);
   try {
-    let response: Response;
-    if (request.method === "OPTIONS")
-      response = new Response(null, { status: 204, headers: { "Cache-Control": "public, max-age=86400" } });
-    else if (request.method === "GET") response = await handleGet(request, env, url.pathname);
-    else if (request.method === "POST" && url.pathname === "/api/snapshot")
-      response = await handlePost(request, env, dependencies);
-    else response = json({ error: "Not found.", code: "NOT_FOUND" }, 404);
+    let response =
+      request.method === "OPTIONS"
+        ? new Response(null, { status: 204, headers: { "Cache-Control": "public, max-age=86400" } })
+        : await routeLeaderboard(request, env, url, () => boundedJson(request));
+    if (!response) {
+      if (request.method === "GET") response = await handleGet(request, env, url.pathname);
+      else if (request.method === "POST" && url.pathname === "/api/snapshot")
+        response = await handlePost(request, env, dependencies);
+      else response = json({ error: "Not found.", code: "NOT_FOUND" }, 404);
+    }
     return withCors(response, request, env);
   } catch (error) {
     const tagged = error as Error & { status?: number; code?: string };

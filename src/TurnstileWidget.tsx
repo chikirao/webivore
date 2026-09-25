@@ -33,7 +33,17 @@ function loadTurnstile() {
   return scriptPromise;
 }
 
-export function TurnstileWidget({ siteKey, onToken }: { siteKey: string; onToken: (token: string) => void }) {
+export function TurnstileWidget({
+  siteKey,
+  onToken,
+  action = "snapshot",
+  note = "One quick check protects the free capture quota.",
+}: {
+  siteKey: string;
+  onToken: (token: string) => void;
+  action?: string;
+  note?: string;
+}) {
   const host = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -45,7 +55,7 @@ export function TurnstileWidget({ siteKey, onToken }: { siteKey: string; onToken
         if (!active || !host.current || !window.turnstile) return;
         widget = window.turnstile.render(host.current, {
           sitekey: siteKey,
-          action: "snapshot",
+          action,
           theme: "light",
           size: "flexible",
           appearance: "interaction-only",
@@ -59,12 +69,12 @@ export function TurnstileWidget({ siteKey, onToken }: { siteKey: string; onToken
       active = false;
       if (widget) window.turnstile?.remove(widget);
     };
-  }, [siteKey, onToken]);
+  }, [siteKey, onToken, action]);
   if (!siteKey)
     return <p className="status status-error">Fresh captures require a configured Turnstile site key. Demo, cached and local levels still work.</p>;
   return (
     <div className="turnstile-block">
-      <p>One quick check protects the free capture quota.</p>
+      {note && <p>{note}</p>}
       <div ref={host} />
       {error && <p className="status status-error">{error}</p>}
     </div>

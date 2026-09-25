@@ -19,6 +19,7 @@ import { importLocalFile, type ImportKind } from "./local-import";
 import { downloadLevelFile, levelSource, type LevelSource } from "./level-file";
 import { loadRemoteLevel, SnapshotError } from "./remote-level";
 import { routeAt } from "./paths";
+import { startRun, type RunTicket } from "./leaderboard-api";
 
 const initial: Stats = {
   count: 0,
@@ -60,7 +61,9 @@ function App() {
     [stats, setStats] = useState(initial),
     [muted, setMuted] = useState(false),
     [paused, setPaused] = useState(false),
-    [countdown, setCountdown] = useState<number | null>(null);
+    [countdown, setCountdown] = useState<number | null>(null),
+    [snapshotId, setSnapshotId] = useState<string | null>(null),
+    [run, setRun] = useState<Promise<RunTicket | null> | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null),
     mapHost = useRef<HTMLDivElement>(null),
     game = useRef<Game | null>(null),
@@ -119,6 +122,12 @@ function App() {
     }, 800);
     return () => clearInterval(timer);
   }, [stats.ready]);
+  // A leaderboard run opens when play actually starts on a captured website;
+  // the Worker times it, so it must not open during loading or the countdown.
+  useEffect(() => {
+    if (snapshotId && stats.ready && countdown === null && !run)
+      setRun(startRun(snapshotId).catch(() => null));
+  }, [snapshotId, stats.ready, countdown, run]);
   useEffect(() => {
     if (game.current) {
       game.current.muted = muted;
@@ -151,6 +160,8 @@ function App() {
         turnstileToken,
       });
       if (controller.signal.aborted) return;
+      setSnapshotId(result.snapshotId ?? null);
+      setRun(null);
       setSource({
         kind: "remote",
         url: result.level.url,
@@ -201,6 +212,7 @@ function App() {
     try {
       const imported = await importLocalFile(file, kind, controller.signal);
       if (controller.signal.aborted) return;
+      setSnapshotId(null);
       setSource(imported.source);
       setNotice(
         imported.notice ??
@@ -226,6 +238,8 @@ function App() {
     cancel();
     setLevel(null);
     setSource(null);
+    setSnapshotId(null);
+    setRun(null);
     setStats(initial);
   };
   if (!level)
@@ -240,6 +254,7 @@ function App() {
           onStart={(v) => void load(v)}
           onDemo={() => {
             const demo = demoLevel();
+            setSnapshotId(null);
             setSource(levelSource(demo));
             setNotice("Demo runs entirely in this browser.");
             setLevel(demo);
@@ -380,6 +395,7 @@ function App() {
       {stats.done && game.current && (
         <Finish
           game={game.current}
+          run={snapshotId ? run : undefined}
           onLeave={leave}
           onExportLevel={() =>
             downloadLevelFile(level, source ?? undefined)

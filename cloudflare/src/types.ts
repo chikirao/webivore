@@ -44,6 +44,7 @@ export type SnapshotMetadata = {
 export interface Env {
   BROWSER: Fetcher;
   SNAPSHOTS: KVNamespace;
+  LEADERBOARD?: D1Database;
   TURNSTILE_SECRET_KEY?: string;
   RATE_LIMIT_SALT?: string;
   ALLOWED_ORIGINS?: string;

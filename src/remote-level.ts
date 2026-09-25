@@ -54,7 +54,7 @@ export async function loadRemoteLevel(value: string, options: { signal?: AbortSi
         : "Could not load website.";
     throw new SnapshotError(typeof payload.error === "string" ? payload.error : fallback, code, response.status);
   }
-  if (isLegacyLevel(payload)) return { level: payload, cache: "miss" as const, degraded: false };
+  if (isLegacyLevel(payload)) return { level: payload, cache: "miss" as const, degraded: false, snapshotId: undefined };
   const result = payload as unknown as SnapshotApiResponse;
   if (!result.snapshot || !["hit", "miss"].includes(result.cache))
     throw new SnapshotError("The snapshot service returned an incompatible response.", "BAD_RESPONSE", 502);
@@ -66,5 +66,5 @@ export async function loadRemoteLevel(value: string, options: { signal?: AbortSi
   const atlas = await atlasResponse.arrayBuffer();
   if (atlas.byteLength > 24 * 1024 * 1024) throw new SnapshotError("The captured atlas is too large.", "ATLAS_TOO_LARGE", 413);
   const level = await buildLevel({ kind: "snapshot", snapshot: result.snapshot, atlas }, options.signal);
-  return { level, cache: result.cache, degraded: result.snapshot.degraded === true };
+  return { level, cache: result.cache, degraded: result.snapshot.degraded === true, snapshotId: result.snapshot.id };
 }

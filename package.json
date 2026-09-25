@@ -15,6 +15,8 @@
     "cf:verify": "npm run cf:check && npm run cf:test",
     "cf:dev": "npm --prefix cloudflare run dev",
     "cf:deploy": "npm --prefix cloudflare run deploy",
+    "cf:d1:create": "npm --prefix cloudflare exec wrangler -- d1 create webivore-leaderboard --binding LEADERBOARD --update-config --cwd cloudflare",
+    "cf:d1:migrate": "npm --prefix cloudflare exec wrangler -- d1 migrations apply LEADERBOARD --remote --cwd cloudflare",
     "cf:kv:create": "npm --prefix cloudflare exec wrangler -- kv namespace create WEBIVORE_SNAPSHOTS --binding SNAPSHOTS --update-config --cwd cloudflare"
   },
   "dependencies": {

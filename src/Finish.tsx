@@ -9,6 +9,8 @@ import { ArrowArt, EntryGraphics } from "./ui/OverdriveArt";
 import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
 import "./ui/finish.css";
 import { appUrl } from "./paths";
+import { MealTicket } from "./Leaderboard";
+import type { RunTicket } from "./leaderboard-api";
 
 export const siteLabel = (url: string) =>
   url.startsWith("demo:")
@@ -178,10 +180,13 @@ export class TrophyScene {
 
 export function Finish({
   game,
+  run,
   onLeave,
   onExportLevel,
 }: {
   game: Game;
+  /** Leaderboard run: undefined when the level cannot rank (demo/local). */
+  run?: Promise<RunTicket | null> | null;
   onLeave: () => void;
   onExportLevel: () => void;
 }) {
@@ -338,11 +343,7 @@ export function Finish({
           <button className="level-export" onClick={onExportLevel}>
             Level file ↓
           </button>
-          <p className="label export-note">
-            <i />
-            512 × 512 / looping GIF
-            <i />
-          </p>
+          <MealTicket run={run} pieces={game.count} seconds={game.time} />
           {download && (
             <a
               className="download-again"
