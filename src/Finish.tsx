@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { DownloadSimpleIcon, PlayIcon } from "@phosphor-icons/react";
+import { CheckIcon, CopyIcon, DownloadSimpleIcon, PlayIcon } from "@phosphor-icons/react";
 import type { Game } from "./game";
 import { Plate } from "./ui/Plate";
 import { Meter } from "./ui/Meter";
@@ -10,7 +10,7 @@ import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
 import "./ui/finish.css";
 import { appUrl } from "./paths";
 import { MealTicket } from "./Leaderboard";
-import type { RunTicket } from "./leaderboard-api";
+import { storedPlayer, type Player, type RunTicket } from "./leaderboard-api";
 
 export const siteLabel = (url: string) =>
   url.startsWith("demo:")
@@ -19,13 +19,30 @@ export const siteLabel = (url: string) =>
       ? decodeURIComponent(url.split(":").slice(1).join(":"))
       : new URL(url).hostname;
 const SIZE = 512,
-  FRAMES = 48;
+  FRAMES = 60,
+  /** GIF frame delay in centiseconds: 60 × 6 cs = one 3.6 s loop. */
+  DELAY = 6,
+  LOOP_MS = FRAMES * DELAY * 10,
+  /** Live preview and Copy PNG are drawn at twice the GIF size. */
+  HI = SIZE * 2,
+  GAME_URL = "webivore.chikirao.ru";
+const RED = "#ff0013",
+  INK = "#050505",
+  PAPER = "#ffffff",
+  DISPLAY = "'Russo One', Arial, sans-serif";
+/** Art window of the card, in card-local pixels (card centre at 0,0). */
+const ART = { x: -156, y: -166, w: 312, h: 232 },
+  BALL_PX = 212;
 
 /**
- * The square trophy: the real collected ball (all layers, priority copies
- * included) rendered by three.js, the celebrating rabbit standing beside it so
- * head and pose stay readable through the whole turn, logotype and site name.
- * Identical drawing for the live preview and every exported GIF frame.
+ * The trophy card: a tilted collectible card on a red halftone table. The
+ * real collected ball (all layers, priority copies included) turns once per
+ * loop inside the art window beside the celebrating rabbit; the card carries
+ * the player's nickname (GUEST without an account), the site, size, time,
+ * date and the game address. The halftone swell travels from the bottom-left
+ * to the top-right corner and re-enters as it leaves, so the last frame meets
+ * the first without a seam. One drawing serves the live preview, Copy PNG and
+ * every GIF frame; it scales with the target canvas.
  */
 export class TrophyScene {
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -34,149 +51,203 @@ export class TrophyScene {
   ball = new THREE.Group();
   rabbit = new Image();
   fonts: Promise<unknown>;
+  nickname = "GUEST";
+  date: string;
   constructor(public game: Game) {
-    this.renderer.setSize(SIZE, SIZE);
+    // Twice the drawn size so the ball stays crisp on the 2× preview and PNG.
+    this.renderer.setSize(BALL_PX * 2, BALL_PX * 2);
     this.renderer.setClearColor(0xffffff, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     for (const f of game.collection?.fragments ?? []) game.collection?.bake(f);
     for (const mesh of game.collection?.renderMeshes ?? [])
       this.ball.add(new THREE.Mesh(mesh.geometry, mesh.material));
-    // Ball fills the left of the square, leaving the right for the rabbit.
-    const r = Math.max(12, game.radius);
-    const view = r * 1.38;
-    this.camera = new THREE.OrthographicCamera(
-      -view,
-      view,
-      view,
-      -view,
-      0.1,
-      view * 20,
-    );
+    const view = Math.max(12, game.radius) * 1.08;
+    this.camera = new THREE.OrthographicCamera(-view, view, view, -view, 0.1, view * 20);
     this.camera.position.set(0, view * 0.35, view * 4);
     this.camera.lookAt(0, 0, 0);
-    this.ball.position.set(-view * 0.25, -view * 0.33, 0);
-    this.scene.add(
-      this.ball,
-      new THREE.HemisphereLight(0xffffff, 0x888888, 2.4),
-    );
+    this.scene.add(this.ball, new THREE.HemisphereLight(0xffffff, 0x888888, 2.4));
     const light = new THREE.DirectionalLight(0xffffff, 2.5);
-    light.position.set(-r, r * 2, r * 2);
+    light.position.set(-view, view * 2, view * 2);
     this.scene.add(light);
     this.rabbit.src = appUrl("assets/rabbit-victory-trim.png");
-    this.fonts = Promise.all([
-      document.fonts.load("italic 700 52px Russo One"),
-      this.rabbit.decode(),
-    ]);
+    const d = new Date();
+    this.date = [d.getDate(), d.getMonth() + 1, d.getFullYear() % 100]
+      .map((n) => String(n).padStart(2, "0"))
+      .join(".");
+    this.fonts = Promise.all([document.fonts.load(`24px ${DISPLAY}`), this.rabbit.decode()]);
   }
-  draw(canvas: HTMLCanvasElement, angle: number) {
+  /** `phase` in [0, 1): position in the loop. */
+  draw(canvas: HTMLCanvasElement, phase: number) {
     const c = canvas.getContext("2d")!;
-    c.fillStyle = "#fff";
-    c.fillRect(0, 0, SIZE, SIZE);
-    // Corner accents
-    c.fillStyle = "#0b0b0b";
-    for (const [sx, sy] of [
-      [1, 1],
-      [-1, 1],
-      [1, -1],
-      [-1, -1],
-    ]) {
-      c.save();
-      c.translate(sx > 0 ? 0 : SIZE, sy > 0 ? 0 : SIZE);
-      c.scale(sx, sy);
-      c.beginPath();
-      c.moveTo(0, 0);
-      c.lineTo(96, 0);
-      c.lineTo(72, 12);
-      c.lineTo(12, 12);
-      c.lineTo(12, 60);
-      c.lineTo(0, 78);
-      c.closePath();
-      c.fill();
-      c.restore();
-    }
-    // Motion marks around the ball
-    c.strokeStyle = "#ff1d1d";
-    c.lineWidth = 7;
-    c.lineCap = "round";
-    for (const [a0, a1] of [
-      [-2.6, -2.1],
-      [-0.55, -0.1],
-      [1.4, 1.75],
-    ]) {
-      c.beginPath();
-      c.arc(252, 310, 205, a0, a1);
-      c.stroke();
-    }
-    // Rabbit beside the ball: head and pose stay clear of the ball throughout the turn.
-    // Full pose at right, rendered after the ball so neither head nor feet disappear.
-    this.ball.rotation.set(0.2, angle, 0.08);
-    this.renderer.render(this.scene, this.camera);
-    c.drawImage(this.renderer.domElement, 0, 0);
-    if (this.rabbit.complete && this.rabbit.naturalWidth) {
-      const h = 310,
-        w = (h * this.rabbit.naturalWidth) / this.rabbit.naturalHeight;
-      c.drawImage(this.rabbit, 300, 130, w, h);
-    }
-    // Paper shards
-    c.fillStyle = "#fff";
-    c.strokeStyle = "#0b0b0b";
-    c.lineWidth = 3;
-    for (const [x, y, s, r] of [
-      [92, 392, 16, 0.4],
-      [438, 118, 12, -0.5],
-      [470, 402, 14, 0.2],
-      [150, 458, 10, -0.9],
-    ]) {
-      c.save();
-      c.translate(x, y);
-      c.rotate(r + angle * 0.3);
-      c.beginPath();
-      c.rect(-s / 2, -s * 0.65, s, s * 1.3);
-      c.fill();
-      c.stroke();
-      c.restore();
-    }
-    // Logotype and site
-    c.save();
-    c.fillStyle = "#050505";
-    c.transform(1, 0, -0.2, 1, 0, 0);
-    c.fillRect(38, 26, 462, 71);
-    c.restore();
-    c.font = "italic 700 62px Russo One, Arial, sans-serif";
-    c.textAlign = "left";
+    const k = canvas.width / SIZE;
+    c.setTransform(k, 0, 0, k, 0, 0);
     c.textBaseline = "alphabetic";
-    c.lineJoin = "round";
-    c.lineWidth = 8;
-    c.strokeStyle = "#0b0b0b";
-    c.strokeText("WEBIVORE", 30, 79, 447);
-    c.fillStyle = "#fff";
-    c.fillText("WEBIVORE", 30, 79, 447);
-    c.fillStyle = "#ff1d1d";
-    for (let i = 0; i < 4; i++) {
-      c.beginPath();
-      c.moveTo(34 + i * 16, 100);
-      c.lineTo(44 + i * 16, 100);
-      c.lineTo(38 + i * 16, 110);
-      c.lineTo(28 + i * 16, 110);
-      c.closePath();
-      c.fill();
-    }
-    const site = siteLabel(this.game.level.url);
-    c.fillStyle = "#0b0b0b";
-    let siteSize = 20;
-    c.font = `700 ${siteSize}px Arial, sans-serif`;
-    while (c.measureText(site).width > 250 && siteSize > 11)
-      c.font = `700 ${--siteSize}px Arial, sans-serif`;
-    c.fillText(site, 34, 128);
-    c.font = "700 10px Arial, sans-serif";
+    c.fillStyle = RED;
+    c.fillRect(0, 0, SIZE, SIZE);
+    wave(c, phase);
+    c.save();
+    c.translate(256, 262);
+    c.rotate(-0.06);
+    cut(c, -168, -214, 356, 452, 22);
+    c.fillStyle = "rgba(0,0,0,0.35)";
+    c.fill();
+    cut(c, -178, -226, 356, 452, 22);
+    c.fillStyle = INK;
+    c.fill();
+    cut(c, -170, -218, 340, 436, 18);
+    c.fillStyle = PAPER;
+    c.fill();
+    // Nickname and pieces
+    c.textAlign = "left";
+    fit(c, this.nickname, 28, 220);
+    italic(c, clip(c, this.nickname, 220), -154, -184, INK);
     c.textAlign = "right";
-    c.fillText(`chikirao · ${this.game.count} pieces`, SIZE - 30, SIZE - 24);
+    c.font = `22px ${DISPLAY}`;
+    c.fillStyle = RED;
+    c.fillText(String(this.game.count), 154, -186);
+    c.font = "700 10px Arial, sans-serif";
+    c.fillText("PCS", 154, -172);
+    // Art window: rays, the turning ball, the rabbit beside it
+    c.save();
+    c.beginPath();
+    c.rect(ART.x, ART.y, ART.w, ART.h);
+    c.clip();
+    c.fillStyle = INK;
+    c.fillRect(ART.x, ART.y, ART.w, ART.h);
+    rays(c, -30, -40, 22, 320, "#222");
+    shade(c, -30, 52, 90, 14, 0.8);
+    this.ball.rotation.set(0.2, phase * Math.PI * 2, 0.08);
+    this.renderer.render(this.scene, this.camera);
+    c.drawImage(this.renderer.domElement, -30 - BALL_PX / 2, -48 - BALL_PX / 2, BALL_PX, BALL_PX);
+    if (this.rabbit.complete && this.rabbit.naturalWidth) {
+      const h = 170;
+      c.drawImage(this.rabbit, 60, -120, (h * this.rabbit.naturalWidth) / this.rabbit.naturalHeight, h);
+    }
+    c.restore();
+    c.lineWidth = 3;
+    c.strokeStyle = INK;
+    c.strokeRect(ART.x, ART.y, ART.w, ART.h);
+    // Site line
+    c.fillStyle = INK;
+    c.fillRect(ART.x, 74, ART.w, 30);
+    c.textAlign = "left";
+    const site = siteLabel(this.game.level.url);
+    fit(c, site, 17, 250, 11);
+    italic(c, clip(c, site, 250), ART.x + 10, 96, PAPER);
+    chevrons(c, 120, 82, 2, RED, 0.9);
+    // Stats
+    const stats = [
+      ["SIZE", `${metres(this.game.radius, this.game.count)}m`],
+      ["TIME", time(this.game.time)],
+      ["DATE", this.date],
+    ];
+    c.font = "700 11px Arial, sans-serif";
+    c.fillStyle = "#666";
+    stats.forEach(([label], i) => c.fillText(label, ART.x + 4 + i * 100, 132));
+    c.font = `24px ${DISPLAY}`;
+    stats.forEach(([, value], i) => italic(c, value, ART.x + 4 + i * 100, 164, INK));
+    // Footer: game name and address
+    c.fillStyle = "#ddd";
+    c.fillRect(ART.x, 180, ART.w, 2);
+    c.font = `12px ${DISPLAY}`;
+    c.fillStyle = RED;
+    c.fillText("WEBIVORE", ART.x + 4, 203);
+    c.fillStyle = INK;
+    c.textAlign = "right";
+    c.fillText(GAME_URL, ART.x + ART.w - 4, 203);
+    c.restore();
   }
   dispose() {
     this.renderer.dispose();
     this.scene.clear();
   }
 }
+
+type Ctx = CanvasRenderingContext2D;
+function cut(c: Ctx, x: number, y: number, w: number, h: number, k: number) {
+  c.beginPath();
+  c.moveTo(x + k, y);
+  c.lineTo(x + w, y);
+  c.lineTo(x + w, y + h - k);
+  c.lineTo(x + w - k, y + h);
+  c.lineTo(x, y + h);
+  c.lineTo(x, y + k);
+  c.closePath();
+}
+function rays(c: Ctx, cx: number, cy: number, n: number, r: number, color: string) {
+  c.fillStyle = color;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2,
+      b = a + Math.PI / n;
+    c.beginPath();
+    c.moveTo(cx, cy);
+    c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    c.lineTo(cx + Math.cos(b) * r, cy + Math.sin(b) * r);
+    c.fill();
+  }
+}
+function shade(c: Ctx, cx: number, cy: number, rx: number, ry: number, alpha: number) {
+  const g = c.createRadialGradient(0, 0, 0, 0, 0, rx);
+  g.addColorStop(0, `rgba(0,0,0,${alpha})`);
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  c.save();
+  c.translate(cx, cy);
+  c.scale(1, ry / rx);
+  c.fillStyle = g;
+  c.fillRect(-rx, -rx, rx * 2, rx * 2);
+  c.restore();
+}
+/** Largest display size (down to `min`) that fits `max` px. */
+function fit(c: Ctx, text: string, size: number, max: number, min = 12) {
+  c.font = `${size}px ${DISPLAY}`;
+  while (c.measureText(text).width > max && size > min) c.font = `${--size}px ${DISPLAY}`;
+}
+function clip(c: Ctx, text: string, max: number) {
+  if (c.measureText(text).width <= max) return text;
+  while (text.length > 1 && c.measureText(text + "…").width > max) text = text.slice(0, -1);
+  return text + "…";
+}
+function italic(c: Ctx, text: string, x: number, y: number, fill: string) {
+  c.save();
+  c.translate(x, y);
+  c.transform(1, 0, -0.18, 1, 0, 0);
+  c.fillStyle = fill;
+  c.fillText(text, 0, 0);
+  c.restore();
+}
+function chevrons(c: Ctx, x: number, y: number, n: number, color: string, s: number) {
+  c.fillStyle = color;
+  for (let i = 0; i < n; i++) {
+    const o = x + i * 13 * s;
+    c.beginPath();
+    c.moveTo(o, y);
+    c.lineTo(o + 7 * s, y);
+    c.lineTo(o + 13 * s, y + 7 * s);
+    c.lineTo(o + 7 * s, y + 14 * s);
+    c.lineTo(o, y + 14 * s);
+    c.lineTo(o + 6 * s, y + 7 * s);
+    c.fill();
+  }
+}
+/**
+ * Halftone swell along the bottom-left → top-right diagonal. The diagonal
+ * coordinate wraps, so the crest leaves one corner as it re-enters the other.
+ */
+function wave(c: Ctx, phase: number) {
+  const step = 14;
+  c.fillStyle = "#c8000f";
+  for (let j = 0, y = 0; y < SIZE + step; j++, y += step * 0.87)
+    for (let x = ((j % 2) * step) / 2; x < SIZE + step; x += step) {
+      let d = ((x + SIZE - y) / (SIZE * 2) - phase) % 1;
+      if (d < 0) d += 1;
+      const r = 1.2 + 5.6 * Math.exp(-(((d - 0.5) / 0.2) ** 2));
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.fill();
+    }
+}
+
+const nicknameOf = (player: Player | null) => player?.nickname || "GUEST";
 
 export function Finish({
   game,
@@ -195,19 +266,26 @@ export function Finish({
     worker = useRef<Worker | null>(null);
   const [progress, setProgress] = useState<number | null>(null),
     [error, setError] = useState(""),
-    [download, setDownload] = useState("");
+    [copied, setCopied] = useState(false);
   const running = useRef(false),
     mounted = useRef(true),
-    urlRef = useRef("");
+    urlRef = useRef(""),
+    /** Nickname baked into the cached GIF; a new name means a new GIF. */
+    urlNick = useRef(""),
+    reduced = useRef(false);
+  const phaseNow = () => (reduced.current ? 0.12 : (performance.now() % LOOP_MS) / LOOP_MS);
   useEffect(() => {
     mounted.current = true;
     const s = new TrophyScene(game);
+    s.nickname = nicknameOf(storedPlayer());
     scene.current = s;
+    // A nickname claimed on this screen (meal ticket) shows up on the card at once.
+    const sync = () => (s.nickname = nicknameOf(storedPlayer()));
+    addEventListener("webivore:player", sync);
     let raf = 0;
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const tick = (now: number) => {
-      if (canvas.current && !running.current)
-        s.draw(canvas.current, reduced ? 0.6 : now * 0.00055);
+    reduced.current = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const tick = () => {
+      if (canvas.current && !running.current) s.draw(canvas.current, phaseNow());
       raf = requestAnimationFrame(tick);
     };
     void s.fonts.then(() => {
@@ -215,14 +293,24 @@ export function Finish({
     });
     return () => {
       mounted.current = false;
+      removeEventListener("webivore:player", sync);
       cancelAnimationFrame(raf);
       worker.current?.terminate();
       s.dispose();
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
     };
   }, [game]);
+  const fileBase = `webivore-${siteLabel(game.level.url).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "level"}`;
+  const save = (url: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileBase}.gif`;
+    a.click();
+  };
   async function exportGif() {
     if (!scene.current || running.current) return;
+    // Pressing again re-saves the packed loop instead of encoding it anew.
+    if (urlRef.current && urlNick.current === scene.current.nickname) return save(urlRef.current);
     running.current = true;
     setProgress(0);
     setError("");
@@ -234,12 +322,12 @@ export function Finish({
     output.width = output.height = SIZE;
     const request = (data: unknown, transfer: Transferable[] = []) =>
       new Promise<any>((resolve, reject) => {
-        w.onmessage = (e) =>
-          e.data.type === "error"
-            ? reject(new Error(e.data.message))
-            : resolve(e.data);
-        w.onerror = () =>
-          reject(new Error("GIF encoder interrupted. Please try again."));
+        w.onmessage = (e) => {
+          if (e.data.type === "progress") setProgress(Math.round(50 + e.data.value * 50));
+          else if (e.data.type === "error") reject(new Error(e.data.message));
+          else resolve(e.data);
+        };
+        w.onerror = () => reject(new Error("GIF encoder interrupted. Please try again."));
         w.postMessage(data, transfer);
       });
     try {
@@ -247,26 +335,17 @@ export function Finish({
       w.postMessage({ type: "start", size: SIZE });
       for (let i = 0; i < FRAMES; i++) {
         if (!mounted.current) return;
-        scene.current.draw(output, (i * Math.PI * 2) / FRAMES);
-        const pixels = output
-          .getContext("2d")!
-          .getImageData(0, 0, SIZE, SIZE).data;
-        await request({ type: "frame", pixels: pixels.buffer, delay: 8 }, [
-          pixels.buffer,
-        ]);
-        setProgress(Math.round(((i + 1) / FRAMES) * 100));
+        scene.current.draw(output, i / FRAMES);
+        const pixels = output.getContext("2d")!.getImageData(0, 0, SIZE, SIZE).data;
+        await request({ type: "frame", pixels: pixels.buffer }, [pixels.buffer]);
+        setProgress(Math.round(((i + 1) / FRAMES) * 50));
       }
-      const result = await request({ type: "finish" });
+      const result = await request({ type: "finish", delay: DELAY });
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-      const url = URL.createObjectURL(
-        new Blob([result.bytes], { type: "image/gif" }),
-      );
+      const url = URL.createObjectURL(new Blob([result.bytes], { type: "image/gif" }));
       urlRef.current = url;
-      setDownload(url);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `webivore-${siteLabel(game.level.url).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "level"}.gif`;
-      a.click();
+      urlNick.current = scene.current.nickname;
+      save(url);
     } catch (e) {
       if (mounted.current) setError((e as Error).message);
     } finally {
@@ -275,23 +354,34 @@ export function Finish({
       if (mounted.current) setProgress(null);
     }
   }
+  async function copyPng() {
+    if (!scene.current) return;
+    setError("");
+    try {
+      if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined")
+        throw new Error("This browser can’t copy images. Use Download GIF.");
+      const still = document.createElement("canvas");
+      still.width = still.height = HI;
+      scene.current.draw(still, phaseNow());
+      // The blob is handed over as a promise so Safari keeps the click gesture.
+      const png = new Promise<Blob>((resolve, reject) =>
+        still.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not render the card."))), "image/png"),
+      );
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+      setCopied(true);
+      setTimeout(() => mounted.current && setCopied(false), 1800);
+    } catch (e) {
+      const message = (e as Error).message;
+      setError(message.includes("Download GIF") ? message : "Clipboard blocked. Use Download GIF.");
+    }
+  }
   const site = siteLabel(game.level.url);
   return (
-    <div
-      className="finish"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="finish-title"
-    >
+    <div className="finish" role="dialog" aria-modal="true" aria-labelledby="finish-title">
       <EntryGraphics />
       <header className="finish-top">
         <div className="finish-meter">
-          <Meter
-            percent={100}
-            count={game.count}
-            total={game.items.length}
-            complete
-          />
+          <Meter percent={100} count={game.count} total={game.items.length} complete />
         </div>
         <Burst className="cleared">
           Site
@@ -303,9 +393,9 @@ export function Finish({
         <div className="trophy-frame">
           <canvas
             ref={canvas}
-            width={SIZE}
-            height={SIZE}
-            aria-label={`Your collected ${site} ball rotating beside the celebrating rabbit`}
+            width={HI}
+            height={HI}
+            aria-label={`Your trophy card: the ${site} ball turning beside the celebrating rabbit`}
           />
         </div>
         <div className="finish-actions">
@@ -313,30 +403,19 @@ export function Finish({
             <span>All</span>
             <strong>Yours</strong>
           </h2>
-          <button
-            className="key export-key"
-            disabled={progress !== null}
-            onClick={() => void exportGif()}
-            autoFocus
-          >
+          <button className="key export-key" disabled={progress !== null} onClick={() => void exportGif()} autoFocus>
             <ArrowArt input={false} />
             <span className="export-body">
               <DownloadSimpleIcon weight="fill" />
-              {progress === null ? (
-                "Export GIF"
-              ) : (
-                <span role="status">Packing {progress}%</span>
-              )}
+              {progress === null ? "Download GIF" : <span role="status">Packing {progress}%</span>}
               <Chevrons className="chev" />
             </span>
           </button>
-          <Plate
-            as="button"
-            shape="chip"
-            line={null}
-            className="chip again-chip"
-            onClick={onLeave}
-          >
+          <button className="copy-png" onClick={() => void copyPng()} aria-live="polite">
+            {copied ? <CheckIcon weight="bold" /> : <CopyIcon weight="bold" />}
+            {copied ? "Copied" : "Copy PNG"}
+          </button>
+          <Plate as="button" shape="chip" line={null} className="chip again-chip" onClick={onLeave}>
             Play again
             <PlayIcon weight="fill" />
           </Plate>
@@ -344,15 +423,6 @@ export function Finish({
             Level file ↓
           </button>
           <MealTicket run={run} pieces={game.count} seconds={game.time} />
-          {download && (
-            <a
-              className="download-again"
-              href={download}
-              download="webivore-trophy.gif"
-            >
-              Download again
-            </a>
-          )}
           {error && (
             <p className="status status-error" role="alert">
               {error}

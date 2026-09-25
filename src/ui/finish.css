@@ -97,7 +97,7 @@
 .finish-site {
   margin: -4px 0 6px 12px;
   font: 700 clamp(14px, 1.4vw, 20px) var(--text);
-  letter-spacing: 0.2em;
+  letter-spacing: normal;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
@@ -360,7 +360,7 @@
   height: 4.5em;
 }
 .cleared .burst-text {
-  font-size: 1.15em;
+  font-size: 0.84em;
   -webkit-text-stroke: 0;
   line-height: 0.92;
 }
@@ -535,7 +535,7 @@
   justify-content: center;
   gap: 24px;
   font-size: 18px;
-  letter-spacing: 0.09em;
+  letter-spacing: normal;
 }
 .download-again {
   position: absolute;
@@ -872,7 +872,7 @@
     top: 102%;
     font-size: 10px;
     gap: 8px;
-    letter-spacing: 0.07em;
+    letter-spacing: normal;
   }
   .export-note i {
     width: 15px;
@@ -980,4 +980,76 @@
     width: min(44svh, 88vw);
     height: min(44svh, 88vw);
   }
+}
+/* Copy PNG mirrors Level file on the left of Play again. */
+.copy-png {
+  position: absolute;
+  left: 0;
+  top: 75%;
+  width: 20%;
+  min-height: 48px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font: italic 700 13px "Tektur", sans-serif;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.copy-png svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.copy-png:hover,
+.copy-png:focus-visible {
+  background: var(--red);
+  color: white;
+}
+@media (min-aspect-ratio: 1/1) {
+  .copy-png,
+  .level-export {
+    top: 72%;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .copy-png {
+    top: 79%;
+    width: 20%;
+    min-height: 44px;
+    font-size: 10px;
+  }
+}
+@media (max-width: 520px) {
+  .copy-png svg {
+    display: none;
+  }
+}
+/* Tablet portrait: the arrow key starts below the ALL YOURS rail. */
+@media (min-width: 521px) and (max-aspect-ratio: 1/1) {
+  .export-key {
+    top: 31%;
+    height: 50%;
+  }
+}
+/* Errors (clipboard, encoder) float above the rail instead of under the ticket. */
+.finish-actions > .status {
+  position: fixed;
+  top: auto;
+  left: 50%;
+  bottom: calc(clamp(60px, 9%, 96px) + 12px);
+  z-index: 30;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 10px 16px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 13px var(--text);
+  box-shadow: 5px 5px 0 var(--red);
 }

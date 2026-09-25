@@ -39,7 +39,7 @@
 }
 .hiscore-kicker {
   font: 700 10px/1 var(--text);
-  letter-spacing: 0.18em;
+  letter-spacing: normal;
   text-transform: uppercase;
   color: var(--ash);
 }
@@ -66,7 +66,7 @@
 }
 .hiscore-count span {
   font: 700 10px/1 var(--text);
-  letter-spacing: 0.14em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 .hiscore-cta {
@@ -241,7 +241,7 @@
   padding: 3px 6px 2px;
   font: 700 9px/1 var(--text);
   font-style: normal;
-  letter-spacing: 0.16em;
+  letter-spacing: normal;
   text-transform: uppercase;
   background: var(--red);
   color: var(--paper);
@@ -258,7 +258,7 @@
 .lb-sites small,
 .lb-pieces {
   font: 700 10px/1 var(--text);
-  letter-spacing: 0.12em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 .lb-pieces {
@@ -312,7 +312,7 @@
 .lb-gap {
   text-align: center;
   font-weight: 700;
-  letter-spacing: 0.4em;
+  letter-spacing: normal;
   color: var(--smoke);
 }
 
@@ -484,7 +484,7 @@
 }
 .ticket-kicker {
   font: 700 10px/1 var(--text);
-  letter-spacing: 0.16em;
+  letter-spacing: normal;
   text-transform: uppercase;
   color: var(--ash);
 }
@@ -626,4 +626,11 @@
   .entry .entry-head {
     top: 60px;
   }
+}
+/* The skewed tabs lean past the left edge of the clipped scroller. */
+.lb-tabs {
+  padding-left: 8px;
+}
+.lb-sheet > .plate-body {
+  padding-right: 12px;
 }

@@ -320,8 +320,8 @@ export function Hud({
           className="camera-plate"
         >
           <span className="label camera-label">
-            {stats.free ? "Free camera" : "Orbit camera"} ·{" "}
-            {Math.round(stats.zoom * 100)}%
+            {stats.free ? "Free camera" : "Orbit camera"}
+            <span className="camera-zoom">{Math.round(stats.zoom * 100)}%</span>
           </span>
           <span className="camera-buttons">
             <Plate

@@ -860,3 +860,74 @@
     transition: none !important;
   }
 }
+
+/* ── Layout fixes: one bottom-left row, rail to the edge, rabbit clear of the form ── */
+.entry-author {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.entry-author,
+.entry-help {
+  bottom: calc(10.8% + 14px);
+}
+.entry-help {
+  left: calc(2.6% + 150px);
+}
+.entry-rail {
+  width: 100%;
+}
+@media (max-width: 1150px) and (min-aspect-ratio: 1/1) {
+  .entry-help {
+    left: calc(2.6% + 124px);
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  /* The globe only makes sense beside the landscape arrow. */
+  .globe {
+    display: none;
+  }
+  .entry-hero {
+    top: 19%;
+    height: 30%;
+    right: 3%;
+    width: 64%;
+  }
+  .hero-art {
+    object-position: center bottom;
+  }
+  .entry-author,
+  .entry-help {
+    bottom: calc(9% + 16px);
+  }
+  .entry-help {
+    left: auto;
+    right: 4%;
+  }
+  .entry-author {
+    left: 4%;
+  }
+}
+@media (max-width: 520px) {
+  .entry-hero {
+    top: 19%;
+    height: 37%;
+    right: 0;
+    width: 70%;
+  }
+  .hero-art {
+    object-position: right center;
+  }
+  .entry-author,
+  .entry-help {
+    bottom: calc(8.5% + 12px);
+  }
+}
+@media (min-width: 521px) and (max-aspect-ratio: 1/1) {
+  .entry-hero {
+    top: 15%;
+    height: 36%;
+    right: 1%;
+    width: 72%;
+  }
+}

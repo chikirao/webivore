@@ -157,7 +157,7 @@
   transform: translateX(-50%);
   padding-top: 8px;
   font: 700 11px var(--text);
-  letter-spacing: 0.04em;
+  letter-spacing: normal;
 }
 .meter-ticks li::before {
   content: "";
@@ -343,7 +343,7 @@
 }
 .site-name {
   font: 700 12px var(--text);
-  letter-spacing: 0.16em;
+  letter-spacing: normal;
   text-transform: uppercase;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -432,7 +432,7 @@
 }
 .reset-text {
   font: 700 12px var(--text);
-  letter-spacing: 0.08em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 .stats-rail,
@@ -611,7 +611,7 @@
   }
   .meter-caption {
     font-size: 8px;
-    letter-spacing: 0.1em;
+    letter-spacing: normal;
   }
   .meter-track {
     height: 18px;
@@ -650,7 +650,7 @@
   }
   .site-name {
     font-size: 10px;
-    letter-spacing: 0.1em;
+    letter-spacing: normal;
     max-width: 130px;
   }
   .site-note {
@@ -984,7 +984,7 @@
 }
 .site-name {
   font-size: 17px;
-  letter-spacing: 0.03em;
+  letter-spacing: normal;
   max-width: 100%;
 }
 .site-note {
@@ -1019,7 +1019,7 @@
 .stat .label {
   font-size: 18px;
   color: white;
-  letter-spacing: 0.02em;
+  letter-spacing: normal;
   margin-bottom: 8px;
 }
 .stat strong {
@@ -1840,4 +1840,48 @@
 }
 .map-host canvas {
   padding: 0;
+}
+/* BIG BITE only appears while a quarter is crossed. */
+.meter-bite {
+  animation: bite-in 0.4s var(--ease);
+}
+.camera-zoom::before {
+  content: " · ";
+}
+/* No keyboard, no H badge on the guide button. */
+@media (pointer: coarse), (hover: none) {
+  .guide-button span {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  /* The 100 tick sits on the frame edge; 25/50/75 carry the scale. */
+  .meter-ticks li:last-child {
+    display: none;
+  }
+  /* Smaller minimap: map, pause/sound and site rail keep their order. */
+  .hud-map {
+    width: 38%;
+    height: auto;
+    min-height: 0;
+    grid-template-rows: 76px 36px;
+  }
+  .map-side {
+    min-height: 0;
+  }
+  .site-rail,
+  .site-rail > .plate-body {
+    min-height: 36px;
+  }
+  /* Camera caption: mode over zoom, never a broken line. */
+  .camera-label {
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+  .camera-zoom {
+    display: block;
+  }
+  .camera-zoom::before {
+    content: none;
+  }
 }

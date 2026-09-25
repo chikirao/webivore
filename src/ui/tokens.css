@@ -86,7 +86,7 @@ a {
   font-family: var(--text);
   font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 /* Outlined lettering: white fill, black stroke — the logotype treatment. */
@@ -168,4 +168,32 @@ a {
 .chip,
 .logotype {
   font-style: italic;
+}
+/* Scrollbars: an ink rail with a red cut-corner thumb, same language as the plates. */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(-45deg, var(--ash) 0 3px, var(--paper) 3px 7px);
+  border-left: 3px solid var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--red);
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  min-height: 48px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+}
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-corner {
+  display: none;
+  background: transparent;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: var(--red) var(--ash);
+  }
 }

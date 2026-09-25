@@ -24,7 +24,7 @@
 }
 .rig-header span {
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: normal;
   color: #bbb;
 }
 .rig-header h1 {

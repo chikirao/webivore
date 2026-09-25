@@ -75,7 +75,7 @@ export function Meter({
         </strong>
         <span className="label meter-caption">Consumed</span>
       </div>
-      {!complete && (
+      {!complete && pulse > 0 && (
         <Burst className="meter-bite">
           Big
           <br />

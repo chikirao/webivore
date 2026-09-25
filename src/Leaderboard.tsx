@@ -82,7 +82,7 @@ export function HiScore({ onOpen, refreshKey }: { onOpen: () => void; refreshKey
         <CrownIcon weight="fill" />
       </span>
       <span className="hiscore-copy" aria-hidden="true">
-        <span className="hiscore-kicker">{load.state === "error" ? "Hall of appetite" : "Top eater today"}</span>
+        <span className="hiscore-kicker">Top eater today</span>
         <b className="hiscore-name">
           {load.state === "loading" ? "· · ·" : load.state === "error" ? "Leaderboard" : top ? top.nickname : "Nobody yet — be first"}
         </b>
@@ -168,7 +168,6 @@ export function LeaderboardDialog({ open, onClose }: { open: boolean; onClose: (
           <button className="lb-close" onClick={onClose} aria-label="Close leaderboard">
             <XIcon weight="bold" />
           </button>
-          <span className="label">Hall of appetite</span>
           <h2 id={titleId} className="display lb-title">
             Leader<span>board</span>
           </h2>
