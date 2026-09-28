@@ -504,9 +504,18 @@
   position: absolute;
   inset: 0;
   display: grid;
-  place-items: center;
+  /* Above centre, so the rabbit's landing below it stays visible. */
+  place-items: start center;
+  padding-top: 17svh;
   pointer-events: none;
   z-index: 8;
+}
+@media (max-aspect-ratio: 1/1) {
+  /* Portrait HUDs fill the top; the empty band is below the landing spot. */
+  .countdown {
+    place-items: end center;
+    padding: 0 0 26svh;
+  }
 }
 .countdown strong {
   font-size: clamp(110px, 18vw, 240px);

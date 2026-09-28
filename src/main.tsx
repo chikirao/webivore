@@ -11,6 +11,8 @@ import { RabbitEditor } from "./RabbitEditor";
 import { Entry } from "./Entry";
 import { Hud } from "./Hud";
 import { Finish, siteLabel } from "./Finish";
+import { Victory } from "./Victory";
+import { FALL } from "./stunts";
 import { Plate } from "./ui/Plate";
 import { Chevrons } from "./ui/marks";
 import { PlayIcon } from "@phosphor-icons/react";
@@ -62,6 +64,8 @@ function App() {
     [muted, setMuted] = useState(false),
     [paused, setPaused] = useState(false),
     [countdown, setCountdown] = useState<number | null>(null),
+    /** The YOU WON! banner has played; the trophy screen may open. */
+    [cheered, setCheered] = useState(false),
     [snapshotId, setSnapshotId] = useState<string | null>(null),
     [run, setRun] = useState<Promise<RunTicket | null> | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null),
@@ -81,6 +85,7 @@ function App() {
     pauseRef.current = false;
     setPaused(false);
     setCountdown(3);
+    setCheered(false);
     let g: Game;
     try {
       g = new Game(
@@ -128,6 +133,12 @@ function App() {
     if (snapshotId && stats.ready && countdown === null && !run)
       setRun(startRun(snapshotId).catch(() => null));
   }, [snapshotId, stats.ready, countdown, run]);
+  // The rabbit falls during "1" and hits the page exactly on "GO".
+  useEffect(() => {
+    if (countdown !== 1) return;
+    const timer = setTimeout(() => game.current?.startDrop(), 800 - FALL * 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
   useEffect(() => {
     if (game.current) {
       game.current.muted = muted;
@@ -393,7 +404,10 @@ function App() {
           </Plate>
         </div>
       )}
-      {stats.done && game.current && (
+      {stats.done && game.current && !cheered && (
+        <Victory site={site} pieces={stats.count} onDone={() => setCheered(true)} />
+      )}
+      {stats.done && game.current && cheered && (
         <Finish
           game={game.current}
           run={snapshotId ? run : undefined}

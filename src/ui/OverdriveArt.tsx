@@ -83,6 +83,23 @@ export function EntryGraphics() {
       preserveAspectRatio="none"
       aria-hidden="true"
     >
+      {/* Backplate behind the rabbit: fills the gap the bursts leave, the rabbit's white keyline separates it. */}
+      <g className="hero-plate">
+        <path
+          fill="var(--red)"
+          d="M1150 0h190l196 318v392l-96 222h-300l-96-160 58-24-112-150 70 2-86-196 84 36-52-176 76 40z"
+        />
+        <path
+          fill="var(--ink)"
+          d="M1262 0h34l240 392v56z M1536 520v38l-214 372h-36z M1040 520l52 22-28 70-40-18z"
+        />
+        <path
+          fill="none"
+          stroke="white"
+          strokeWidth="10"
+          d="M1176 132l62 104 M1206 110l62 104 M1236 88l62 104"
+        />
+      </g>
       <g fill="var(--red)">
         <path d="M1072 0h33l69 96-48-28 127 243h-50L1103 85z M1120 0h67l40 69-50-2z M1202 0h103l184 283-78-22 125 124v139l-133-141 81 173-55 7 75 90-90 113 76-8-70 82 91 37-49 11-112-92 27-51-90-248 75 45-56-112 76 67-102-161 64 4z" />
         <path d="M864 338h151l37 59-23 28-46-51-33 5z M884 367l102 38-40 7 65 129-18 66-90-153 26 6z M959 703l67 12-70 62 64-9-37 34-131 56 36-43-102 79z M1053 754l101 67-36 12-59-25 13 42-67 51 48-76z M1510 544l26 16v90l-44 25 24-81-31 6z" />
@@ -124,6 +141,7 @@ export function EntryGraphics() {
         <path d="M1287 132l54 45m-3-56-42 62 M1388 124l6 34m-20-16 40-6" />
       </g>
       <path
+        className="globe-link"
         d="M135 480H252L319 423H627L690 485H828"
         fill="none"
         stroke="var(--ink)"

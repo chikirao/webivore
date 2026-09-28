@@ -5,6 +5,7 @@ import { PickupIndex, combinedPiece } from "./grouping";
 import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
 import { flushPatches } from "./texture-patch";
+import { Stunts } from "./stunts";
 import { imageReady, reasonOf } from "./load-image";
 import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
@@ -141,6 +142,8 @@ export class Game {
   guideCheckedAt = -Infinity;
   mapCanvas = document.createElement("canvas");
   mapContext = this.mapCanvas.getContext("2d")!;
+  stunts: Stunts;
+  private shaken = new THREE.Vector3();
   constructor(
     canvas: HTMLCanvasElement,
     level: Level,
@@ -150,6 +153,7 @@ export class Game {
   ) {
     this.canvas = canvas;
     this.level = level;
+    this.stunts = new Stunts(this.scene, this.reduced);
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
@@ -455,6 +459,42 @@ export class Game {
     this.cam.pitch = 0.88;
     this.cam.userZoom = 1;
   }
+  /** "GO": the rabbit falls from the sky onto its spawn point. */
+  startDrop() {
+    if (!this.surface) return;
+    this.stunts.drop(this.x, this.y, this.items, this.surface.tiles, () => this.thud());
+  }
+  /** Landing boom: a falling sine plus a short low-passed noise burst. */
+  thud() {
+    if (this.muted) return;
+    try {
+      this.audio ??= new AudioContext();
+      void this.audio.resume();
+      const a = this.audio,
+        t = a.currentTime;
+      const o = a.createOscillator(),
+        g = a.createGain();
+      o.frequency.setValueAtTime(120, t);
+      o.frequency.exponentialRampToValueAtTime(36, t + 0.4);
+      g.gain.setValueAtTime(0.32, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+      o.connect(g).connect(a.destination);
+      o.start(t);
+      o.stop(t + 0.56);
+      const noise = a.createBuffer(1, Math.floor(a.sampleRate * 0.3), a.sampleRate),
+        data = noise.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 3;
+      const src = a.createBufferSource(),
+        filter = a.createBiquadFilter(),
+        level = a.createGain();
+      src.buffer = noise;
+      filter.type = "lowpass";
+      filter.frequency.value = 900;
+      level.gain.value = 0.35;
+      src.connect(filter).connect(level).connect(a.destination);
+      src.start(t);
+    } catch {}
+  }
   sound(block = false) {
     if (this.muted || this.time - this.lastSound < 0.065) return;
     this.lastSound = this.time;
@@ -598,6 +638,7 @@ export class Game {
   }
   update(dt: number) {
     if (!this.ready || this.error) return;
+    if (this.stunts.state === "waiting") this.startDrop();
     this.time += dt;
     let side =
       (this.keys.has("KeyD") || this.keys.has("ArrowRight") ? 1 : 0) -
@@ -665,13 +706,15 @@ export class Game {
       );
     }
     this.done = this.count === this.items.length;
+    if (this.done) this.stunts.celebrate(this.pile.position, this.radius);
   }
   animateWorld(dt: number) {
     const speed = Math.hypot(this.vx, this.vy);
-    this.character.position.set(this.x, 0, this.y);
+    this.stunts.update(dt);
+    this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer, this.y);
     this.character.rotation.y = this.heading;
     const scale = 1 + Math.min(0.8, this.radius / 380);
-    this.character.scale.setScalar(scale);
+    this.character.scale.set(scale, scale * this.stunts.squash, scale);
     this.rabbit.update(
       this.camera,
       this.heading,
@@ -753,6 +796,8 @@ export class Game {
     this.particles = this.particles.filter((p) => p.life > 0);
   }
   updateCamera(dt: number) {
+    this.camera.position.sub(this.shaken);
+    if (this.stunts.celebrating && !this.reduced) this.cam.yaw += dt * 0.5;
     if (this.keys.has("KeyQ")) this.cam.yaw += dt * 1.5;
     if (this.keys.has("KeyE")) this.cam.yaw -= dt * 1.5;
     const lookAhead = this.count ? (RABBIT.ballGap + this.radius) * 0.55 : 0;
@@ -774,6 +819,8 @@ export class Game {
     const desired = this.cam.target.clone().add(offset);
     this.camera.position.lerp(desired, 1 - Math.exp(-10 * dt));
     this.camera.lookAt(this.cam.target);
+    this.shaken.copy(this.stunts.shake);
+    this.camera.position.add(this.shaken);
   }
   /** World point → CSS px inside the stage canvas. */
   project(x: number, y: number, z: number) {
@@ -950,6 +997,7 @@ export class Game {
     this.textures.forEach((t) => t.dispose());
     this.surface?.dispose();
     this.collection?.dispose();
+    this.stunts.dispose();
     for (const p of this.flights) p.paper?.geometry.dispose();
     this.rabbit.dispose();
     this.scene.clear();

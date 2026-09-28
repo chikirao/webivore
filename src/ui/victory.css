@@ -1,0 +1,167 @@
+/* YOU WON! — bands sweep in, the title slams, the whole card shudders once. */
+.victory {
+  position: absolute;
+  inset: 0;
+  z-index: 19;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.victory-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  opacity: 0;
+  animation: victory-flash 0.5s ease-out 0.28s;
+}
+.victory-band {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  transform: rotate(-9deg);
+}
+.victory-band-red {
+  top: calc(50% - clamp(90px, 16vw, 190px));
+  height: clamp(180px, 32vw, 380px);
+  background:
+    repeating-linear-gradient(-50deg, transparent 0 22px, rgb(0 0 0 / 14%) 22px 26px),
+    var(--red);
+  border-block: 6px solid var(--ink);
+  animation: victory-sweep-left 0.42s var(--ease) both;
+}
+.victory-band-ink {
+  top: calc(50% + clamp(70px, 13vw, 160px));
+  height: clamp(44px, 6vw, 70px);
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  animation: victory-sweep-right 0.42s var(--ease) 0.08s both;
+}
+.victory-chev {
+  height: 60%;
+  width: auto;
+  animation: victory-chev 0.6s linear infinite;
+}
+.victory-chev:nth-child(2) {
+  color: var(--red);
+}
+.victory-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  transform: rotate(-9deg);
+  animation: victory-shudder 0.36s linear 0.3s;
+}
+.victory-title {
+  margin: 0;
+  display: flex;
+  gap: 0.22em;
+  font-size: clamp(64px, 15vw, 210px);
+  line-height: 0.85;
+  color: var(--paper);
+  -webkit-text-stroke: 0.045em var(--ink);
+  paint-order: stroke fill;
+  filter: drop-shadow(0.05em 0.05em 0 var(--ink));
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.victory-title span {
+  display: inline-block;
+  animation: victory-slam 0.34s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.victory-title span:first-child {
+  animation-delay: 0.14s;
+}
+.victory-title span:last-child {
+  animation-delay: 0.24s;
+}
+.victory-sub {
+  margin: 0;
+  padding: 7px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: clamp(11px, 1.3vw, 16px);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  animation: victory-rise 0.3s var(--ease) 0.5s both;
+  max-width: 88vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.victory-skip {
+  position: absolute;
+  right: var(--pad);
+  bottom: var(--pad);
+  padding: 6px 10px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  animation: victory-rise 0.3s var(--ease) 1s both;
+}
+@keyframes victory-sweep-left {
+  from {
+    transform: rotate(-9deg) translateX(-110%);
+  }
+}
+@keyframes victory-sweep-right {
+  from {
+    transform: rotate(-9deg) translateX(110%);
+  }
+}
+@keyframes victory-slam {
+  from {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+}
+@keyframes victory-shudder {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: -9px 5px;
+  }
+  40% {
+    translate: 8px -6px;
+  }
+  60% {
+    translate: -5px 3px;
+  }
+  80% {
+    translate: 3px -2px;
+  }
+}
+@keyframes victory-flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes victory-rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+@keyframes victory-chev {
+  to {
+    transform: translateX(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .victory *,
+  .victory {
+    animation: none !important;
+  }
+}
