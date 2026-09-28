@@ -12,7 +12,7 @@ import { Chevrons, Serial } from "./ui/marks";
 import { ArrowArt, EntryGraphics, Wordmark } from "./ui/OverdriveArt";
 import { ImportDialog } from "./ImportDialog";
 import { HiScore, LeaderboardDialog } from "./Leaderboard";
-import { TurnstileWidget } from "./TurnstileWidget";
+import { TurnstileDialog } from "./TurnstileWidget";
 import type { ImportKind } from "./local-import";
 import { appUrl } from "./paths";
 import "./ui/entry.css";
@@ -37,6 +37,7 @@ export function Entry({
   turnstileNeeded,
   turnstileSiteKey,
   onTurnstileToken,
+  onTurnstileCancel,
 }: {
   url: string;
   setUrl: (v: string) => void;
@@ -54,6 +55,7 @@ export function Entry({
   turnstileNeeded: boolean;
   turnstileSiteKey: string;
   onTurnstileToken: (token: string) => void;
+  onTurnstileCancel: () => void;
 }) {
   const [importOpen, setImportOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
@@ -173,7 +175,7 @@ export function Entry({
           )}
           {!error && notice && <p className="status" role="status">{notice}</p>}
           {turnstileNeeded && !loading && (
-            <TurnstileWidget siteKey={turnstileSiteKey} onToken={onTurnstileToken} />
+            <TurnstileDialog siteKey={turnstileSiteKey} onToken={onTurnstileToken} onClose={onTurnstileCancel} />
           )}
         </div>
       </section>

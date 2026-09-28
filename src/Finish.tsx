@@ -9,6 +9,7 @@ import { ArrowArt, EntryGraphics } from "./ui/OverdriveArt";
 import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
 import "./ui/finish.css";
 import { appUrl } from "./paths";
+import { imageReady } from "./load-image";
 import { MealTicket } from "./Leaderboard";
 import { storedPlayer, type Player, type RunTicket } from "./leaderboard-api";
 
@@ -74,7 +75,7 @@ export class TrophyScene {
     this.date = [d.getDate(), d.getMonth() + 1, d.getFullYear() % 100]
       .map((n) => String(n).padStart(2, "0"))
       .join(".");
-    this.fonts = Promise.all([document.fonts.load(`24px ${DISPLAY}`), this.rabbit.decode()]);
+    this.fonts = Promise.all([document.fonts.load(`24px ${DISPLAY}`), imageReady(this.rabbit)]);
   }
   /** `phase` in [0, 1): position in the loop. */
   draw(canvas: HTMLCanvasElement, phase: number) {

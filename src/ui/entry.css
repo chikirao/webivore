@@ -679,19 +679,6 @@
   text-decoration: underline;
   font-weight: 800;
 }
-.turnstile-block {
-  position: relative;
-  z-index: 10;
-  border: 3px solid var(--ink);
-  background: white;
-  padding: 10px;
-  box-shadow: 5px 5px 0 var(--red);
-}
-.turnstile-block p {
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
 .import-backdrop {
   position: fixed;
   inset: 0;

@@ -14,6 +14,7 @@ import {
 } from "./rabbit-settings";
 import "./ui/rabbit-editor.css";
 import { appUrl } from "./paths";
+import { imageReady } from "./load-image";
 
 const pitches = [0.18, 0.7, 1.31];
 const parts = [
@@ -179,7 +180,7 @@ function PreviewScene({
       },
       settings: (s) => rabbit.configure(s),
     };
-    Promise.all([rabbit.ready, atlas.decode()])
+    Promise.all([rabbit.ready, imageReady(atlas)])
       .then(() => {
         if (stopped) return;
         floorTexture.image = atlas;

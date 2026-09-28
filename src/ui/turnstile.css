@@ -1,0 +1,74 @@
+/* Turnstile check: a centred modal above every other layer, including the leaderboard. */
+.check-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 66%);
+}
+.check-sheet {
+  width: min(380px, calc(100vw - 32px));
+  padding: 24px 22px 22px;
+  color: var(--ink);
+  box-shadow: 10px 10px 0 var(--red);
+}
+.check-sheet > .plate-body {
+  display: block;
+  width: 100%;
+}
+.check-sheet [role="dialog"] {
+  position: relative;
+}
+.check-close {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+}
+.check-close:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.check-close svg {
+  width: 22px;
+  height: 22px;
+}
+.check-title {
+  margin: 0 0 10px;
+  padding-right: 52px;
+  font-size: clamp(34px, 9vw, 48px);
+}
+.check-title span {
+  color: var(--red);
+}
+.check-note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+/* The normal widget is 300 × 65; reserve it so the sheet doesn't jump while it loads. */
+.check-widget {
+  display: flex;
+  justify-content: center;
+  min-height: 65px;
+}
+.check-error {
+  margin: 12px 0 0;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.check-retry {
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: underline;
+}

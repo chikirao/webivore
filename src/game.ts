@@ -4,6 +4,8 @@ import { maxCollectionRadius, type Level, type Piece } from "./shared";
 import { PickupIndex, combinedPiece } from "./grouping";
 import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
+import { imageReady, reasonOf } from "./load-image";
+import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
 
 export type PickupEvent = {
@@ -292,7 +294,7 @@ export class Game {
   async loadWorld() {
     try {
       this.atlas.src = this.level.atlas;
-      await Promise.all([this.atlas.decode(), this.rabbit.ready]);
+      await Promise.all([imageReady(this.atlas), this.rabbit.ready]);
       if (this.disposed) return;
       this.surface = new WorldSurface(
         this.level,
@@ -316,7 +318,7 @@ export class Game {
       this.ready = true;
     } catch (e) {
       if (!this.disposed) {
-        this.error = `Could not build the 3D world: ${(e as Error).message}`;
+        this.error = `Could not build the 3D world: ${reasonOf(e)}.`;
         this.label = this.error;
         this.labelUntil = Infinity;
       }
@@ -477,7 +479,8 @@ export class Game {
       o.stop(this.audio.currentTime + 0.16);
     } catch {}
   }
-  pickup(seed: Item, candidates: Item[] = [seed]) {
+  /** `quiet` bakes the piece straight into the ball without flight, label or sound (endgame sweep). */
+  pickup(seed: Item, candidates: Item[] = [seed], quiet = false) {
     if (seed.gone || !this.collection || !this.surface) return;
     const members = candidates.filter(
       (p) => !p.gone && p.threshold <= this.capacity,
@@ -497,7 +500,7 @@ export class Game {
       this.mass += member.mass;
       this.score += member.score;
       this.area += member.growthValue;
-      this.surface.erase(member);
+      this.surface.erase(member, this.radius);
     }
     this.guide.collected(this.count);
     this.guideCheckedAt = -Infinity;
@@ -512,7 +515,7 @@ export class Game {
       member.packed = p.packed;
       member.normal.copy(p.normal);
     }
-    if (this.flights.length < 32) {
+    if (!quiet && this.flights.length < 32) {
       p.mesh = new THREE.Group();
       p.start = new THREE.Vector3(p.x + p.width / 2, 2, p.y + p.height / 2);
       p.mesh.position.copy(p.start);
@@ -528,6 +531,7 @@ export class Game {
       p.curled = true;
       p.members?.forEach((member) => (member.curled = true));
     }
+    if (quiet) return;
     this.label =
       this.count === 1
         ? "Your first piece. Keep walking — it will grow."
@@ -573,6 +577,24 @@ export class Game {
       }
     }
   }
+  /** Sweeps leftover crumbs once they no longer deserve a trip back across the page. */
+  sweepCrumbs() {
+    const crumbs = crumbsToSweep(
+      this.items.filter((p) => !p.gone),
+      this.mass,
+      this.total,
+      this.radius,
+      this.capacity,
+    );
+    if (!crumbs.length) return;
+    for (const crumb of crumbs) this.pickup(crumb, [crumb], true);
+    const label = `${crumbs.length} ${crumbs.length === 1 ? "crumb" : "crumbs"} swept up`;
+    this.label = label;
+    this.labelUntil = this.time + 2.5;
+    this.recent.push({ id: ++this.visualBites, big: true, label, x: this.x, z: this.y, time: this.time });
+    if (this.recent.length > 6) this.recent.splice(0, this.recent.length - 6);
+    this.sound();
+  }
   update(dt: number) {
     if (!this.ready || this.error) return;
     this.time += dt;
@@ -615,6 +637,7 @@ export class Game {
       ...this.pickupIndex.near(px, pz, reach + 6),
       ...this.pickupIndex.near(this.x, this.y, 15),
     ]);
+    let ate = false;
     for (const p of nearby) {
       if (p.gone) continue;
       const near = (x: number, z: number) => {
@@ -627,8 +650,10 @@ export class Game {
       const can = this.capacity >= p.threshold;
       if (can && (contact.d <= reach + 5 || feet.d <= 14)) {
         this.pickup(p, this.pickupIndex.group(p, this.radius, this.capacity));
+        ate = true;
       }
     }
+    if (ate) this.sweepCrumbs();
     if (this.count && speed > 1) {
       const axis = new THREE.Vector3(this.vy, 0, -this.vx).normalize();
       this.pile.quaternion.premultiply(

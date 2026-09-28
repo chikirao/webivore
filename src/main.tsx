@@ -271,6 +271,7 @@ function App() {
             import.meta.env.VITE_TURNSTILE_SITE_KEY ?? "",
           )}
           onTurnstileToken={(token) => void load(pendingUrl || url, token)}
+          onTurnstileCancel={() => setTurnstileNeeded(false)}
         />
       </>
     );

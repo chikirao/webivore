@@ -16,7 +16,7 @@ import {
   type Player,
   type RunTicket,
 } from "./leaderboard-api";
-import { TurnstileWidget } from "./TurnstileWidget";
+import { TurnstileDialog } from "./TurnstileWidget";
 import { Plate } from "./ui/Plate";
 import { Chevrons } from "./ui/marks";
 import "./ui/leaderboard.css";
@@ -267,33 +267,27 @@ export function NicknameForm({
   const [nickname, setNickname] = useState(player?.nickname ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [token, setToken] = useState("");
-  const [attempt, setAttempt] = useState(0);
+  const [checking, setChecking] = useState(false);
   const siteKey = turnstileSiteKey();
   const needsCheck = !player && !!siteKey;
   const inputId = useId();
-  const onToken = useCallback((value: string) => setToken(value), []);
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (busy) return;
-    if (needsCheck && !token) {
-      setError("Finishing the quick check… try again in a second.");
-      return;
-    }
+  async function send(token?: string) {
     setBusy(true);
     setError("");
     try {
-      onDone(player ? await renamePlayer(player, nickname) : await registerPlayer(nickname, token || undefined));
+      onDone(player ? await renamePlayer(player, nickname) : await registerPlayer(nickname, token));
     } catch (reason) {
       setError((reason as LeaderboardError).message);
-      // Turnstile tokens are single use.
-      if (needsCheck) {
-        setToken("");
-        setAttempt((n) => n + 1);
-      }
     } finally {
       setBusy(false);
     }
+  }
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    // Tokens are single use, so every new claim opens a fresh check.
+    if (needsCheck) setChecking(true);
+    else void send();
   }
   return (
     <form className="lb-form" onSubmit={submit}>
@@ -323,7 +317,18 @@ export function NicknameForm({
         )}
       </div>
       {error && <p className="lb-error" role="alert">{error}</p>}
-      {needsCheck && <TurnstileWidget key={attempt} siteKey={siteKey} onToken={onToken} action="nickname" note="" />}
+      {checking && (
+        <TurnstileDialog
+          siteKey={siteKey}
+          action="nickname"
+          note="One quick check keeps bots off the board."
+          onToken={(token) => {
+            setChecking(false);
+            void send(token);
+          }}
+          onClose={() => setChecking(false)}
+        />
+      )}
     </form>
   );
 }
