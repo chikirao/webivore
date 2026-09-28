@@ -465,41 +465,11 @@
     display: inline;
   }
 }
-.signals {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-.signal {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  display: grid;
-  justify-items: center;
-  animation: bite-in 0.22s var(--ease);
-}
-.got-it {
-  font-size: 30px;
-  color: var(--paper);
-  -webkit-text-stroke: 0.08em var(--ink);
-  paint-order: stroke fill;
-  filter: drop-shadow(3px 3px 0 var(--red));
-  transform: rotate(-6deg);
-}
-.signal.big .burst {
-  font-size: 22px;
-}
-.signal-label {
-  margin-top: 6px;
-  background: var(--paper);
-  color: var(--ink);
-  padding: 3px 8px;
-  font-size: 10px;
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
+
+
+
+
 .countdown {
   position: absolute;
   inset: 0;
@@ -711,16 +681,9 @@
     left: 10px;
     font-size: 8px;
   }
-  .got-it {
-    font-size: 22px;
-  }
-  .signal.big .burst {
-    font-size: 15px;
-  }
-  .signal-label {
-    max-width: 150px;
-    font-size: 9px;
-  }
+
+
+
   .bracket {
     width: 70px;
     height: 20px;
@@ -1893,4 +1856,232 @@
   .camera-zoom::before {
     content: none;
   }
+}
+
+/* ---- Streak counter: one badge instead of a popup per bite ---- */
+.combo {
+  position: absolute;
+  left: calc(var(--pad) + 6px);
+  top: 30%;
+  z-index: 5;
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  pointer-events: none;
+  transform: rotate(-7deg);
+  --size: 72px;
+}
+.combo-count {
+  display: block;
+  /* Room for the italic overhang: gradient text is clipped to this box. */
+  padding: 0.06em 0.32em 0.04em 0.08em;
+  margin-right: -0.32em;
+  font-size: var(--size);
+  color: var(--paper);
+  -webkit-text-stroke: 0.07em var(--ink);
+  paint-order: stroke fill;
+  filter: drop-shadow(4px 4px 0 var(--ink));
+  animation: combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+.combo-count small {
+  font-size: 0.55em;
+  margin-right: 0.04em;
+}
+.combo-word {
+  padding: 3px 12px 4px;
+  font-size: 18px;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  animation: combo-word 0.3s var(--ease);
+}
+.combo-timer {
+  display: block;
+  width: 120px;
+  height: 7px;
+  background: var(--red);
+  border: 2px solid var(--ink);
+  transform-origin: left;
+  animation: combo-timer linear forwards;
+}
+/* 5 NICE, 10 HUNGRY: red */
+.combo.tier-1 .combo-count,
+.combo.tier-2 .combo-count {
+  color: var(--red);
+  -webkit-text-stroke-color: var(--paper);
+}
+.combo.tier-2 {
+  --size: 80px;
+}
+/* 20+: gradient ink, clipped to the letters */
+.combo.tier-3 .combo-count,
+.combo.tier-4 .combo-count,
+.combo.tier-5 .combo-count,
+.combo.tier-6 .combo-count,
+.combo.tier-7 .combo-count,
+.combo.tier-8 .combo-count {
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.05em var(--ink);
+  background-size: 200% 100%;
+}
+/* 20 GREEDY: orange to yellow */
+.combo.tier-3 {
+  --size: 86px;
+}
+.combo.tier-3 .combo-count {
+  background-image: linear-gradient(180deg, #ffe600 20%, #ff7a00 80%);
+}
+/* 35 FEAST: shimmering gold, a little swagger */
+.combo.tier-4 {
+  --size: 92px;
+  animation: combo-sway 0.9s ease-in-out infinite;
+}
+.combo.tier-4 .combo-count {
+  background-image: linear-gradient(100deg, #b87400 0%, #ffd23a 30%, #fff6c4 45%, #ffd23a 60%, #b87400 100%);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-slide 1.2s linear infinite;
+}
+/* 50 FRENZY: hot red and pink, flickering, shaking */
+.combo.tier-5 {
+  --size: 100px;
+}
+.combo.tier-5 .combo-count {
+  background-image: linear-gradient(90deg, #ff0013, #ff2bd6, #ff0013);
+  filter: drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 10px #ff2b6a);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-slide 0.7s linear infinite,
+    combo-shake 0.16s linear infinite;
+}
+/* 75 RAMPAGE: cyan and magenta glitch */
+.combo.tier-6 {
+  --size: 108px;
+}
+.combo.tier-6 .combo-count {
+  background-image: linear-gradient(90deg, #1ec8ff, #7a4bff, #ff2bd6, #1ec8ff);
+  filter: drop-shadow(-3px 0 0 #1ec8ff) drop-shadow(3px 0 0 #ff2bd6) drop-shadow(4px 4px 0 var(--ink));
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-slide 0.6s linear infinite,
+    combo-shake 0.13s linear infinite;
+}
+/* 100 WEBIVORE and 150 GODLIKE: the rainbow */
+.combo.tier-7,
+.combo.tier-8 {
+  --size: 118px;
+}
+.combo.tier-8 {
+  --size: 134px;
+}
+.combo.tier-7 .combo-count,
+.combo.tier-8 .combo-count {
+  background-image: linear-gradient(90deg, #ff0013, #ff9d00, #ffe600, #2bd94a, #1ec8ff, #7a4bff, #ff2bd6, #ff0013);
+  filter: drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 14px #ff2bd6);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-slide 0.5s linear infinite,
+    combo-shake 0.12s linear infinite;
+}
+.combo.tier-8 .combo-count {
+  filter: drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 22px #ffe600) drop-shadow(0 0 30px #ff2bd6);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-slide 0.3s linear infinite,
+    combo-shake 0.09s linear infinite;
+}
+.combo.tier-5 .combo-word,
+.combo.tier-6 .combo-word,
+.combo.tier-7 .combo-word,
+.combo.tier-8 .combo-word {
+  background: var(--red);
+  font-size: 22px;
+}
+.combo.tier-4 .combo-timer {
+  background: linear-gradient(90deg, #ff7a00, #ffe600);
+}
+.combo.tier-5 .combo-timer,
+.combo.tier-6 .combo-timer {
+  background: linear-gradient(90deg, #ff0013, #ff2bd6, #1ec8ff);
+}
+.combo.tier-7 .combo-timer,
+.combo.tier-8 .combo-timer {
+  background: linear-gradient(90deg, #ff0013, #ffe600, #2bd94a, #1ec8ff, #ff2bd6);
+}
+@keyframes combo-pop {
+  from {
+    transform: scale(1.7);
+  }
+}
+@keyframes combo-word {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+@keyframes combo-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes combo-slide {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes combo-sway {
+  50% {
+    transform: rotate(-3deg) scale(1.04);
+  }
+}
+@keyframes combo-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: -2px 1px;
+  }
+  50% {
+    translate: 2px -1px;
+  }
+  75% {
+    translate: -1px -2px;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .combo {
+    top: auto;
+    bottom: 27%;
+  }
+  .combo-count {
+    font-size: calc(var(--size) * 0.62);
+  }
+  .combo-word,
+  .combo.tier-5 .combo-word,
+  .combo.tier-6 .combo-word,
+  .combo.tier-7 .combo-word,
+  .combo.tier-8 .combo-word {
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combo,
+  .combo * {
+    animation-name: none !important;
+  }
+  .combo-timer {
+    animation-name: combo-timer !important;
+  }
+}
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 40;
+  pointer-events: none;
 }

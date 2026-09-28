@@ -146,23 +146,29 @@ export class Stunts {
     }
   }
 
-  /** Victory: confetti out of the ball, then a slow orbit while the banner plays. */
-  celebrate(ball: THREE.Vector3, radius: number) {
+  /** Victory: volleys of confetti out of the ball while the rabbit dances. */
+  celebrate(ball: () => THREE.Vector3, radius: () => number) {
     if (this.celebrating) return;
     this.celebrating = true;
     this.since = 0;
-    if (this.reduced) return;
-    const top = ball.clone();
-    top.y += radius;
-    this.burst(top, 70, 160 + radius * 0.8, 260 + radius);
-    this.trauma = 0.45;
+    this.ball = ball;
+    this.ballRadius = radius;
+    this.volleys = this.reduced ? [] : [0.2, 1.2, 2.2, 3.2];
   }
+  private ball = () => new THREE.Vector3();
+  private ballRadius = () => 0;
+  private volleys: number[] = [];
 
   /** Rabbit's victory hops, as a height offset. */
   get cheer() {
     if (!this.celebrating || this.reduced) return 0;
-    const t = this.since % 0.55;
-    return Math.max(0, Math.sin((t / 0.55) * Math.PI)) * 34;
+    const t = this.since % 0.5;
+    return Math.max(0, Math.sin((t / 0.5) * Math.PI)) * 30;
+  }
+  /** Side-to-side dance twist added to the rabbit's heading. */
+  get dance() {
+    if (!this.celebrating || this.reduced) return 0;
+    return Math.sin(this.since * 6.3) * 0.7;
   }
 
   update(dt: number) {
@@ -174,6 +180,15 @@ export class Stunts {
     }
     this.since += dt;
     this.sinceLanding += dt;
+    while (this.celebrating && this.volleys.length && this.since >= this.volleys[0]) {
+      const first = this.volleys.length === 4;
+      this.volleys.shift();
+      const r = this.ballRadius(),
+        top = this.ball().clone();
+      top.y += r;
+      this.burst(top, first ? 80 : 50, 160 + r * 0.8, 260 + r);
+      if (first) this.trauma = 0.45;
+    }
     const s = this.sinceLanding;
     // Squash on touchdown, one small rebound.
     this.squash = s < 0.45 ? 1 - 0.28 * Math.exp(-9 * s) * Math.cos(s * 22) : 1;

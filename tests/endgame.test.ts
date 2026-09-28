@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { crumbsToSweep, isCrumb } from "../src/sweep.ts";
 import { tearSize } from "../src/world.ts";
+import { EmptyCells } from "../src/clearing.ts";
 
 const piece = (side: number, threshold = 10) => ({ width: side, height: side / 2, threshold });
 
@@ -27,4 +28,20 @@ test("holes stay small early and pad wide enough late to merge neighbouring line
   assert.ok(late.pad * 2 >= 12, `late holes bridge a 12px line gap (pad ${late.pad})`);
   assert.ok(late.rim > late.pad && late.rough > early.rough);
   assert.ok(tearSize(10_000).pad <= 14.4, "padding is bounded");
+});
+
+test("empty background next to eaten content clears, cells under live pieces stay", () => {
+  const live = { x: 200, y: 0, width: 40, height: 40 };
+  const eaten = { x: 0, y: 0, width: 40, height: 40 };
+  const cells = new EmptyCells(480, 96, [live, eaten]);
+  assert.deepEqual(cells.clearNear(eaten, 0), [], "the bitten cell still holds the piece until it is eaten");
+  cells.eaten(eaten);
+  const near = cells.clearNear(eaten, 60);
+  assert.deepEqual(near, [
+    { x: 0, y: 0, width: 144, height: 48 },
+    { x: 0, y: 48, width: 144, height: 48 },
+  ], "empty cells merge into one run per row");
+  const far = cells.clearNear({ x: 0, y: 0, width: 480, height: 96 }, 0);
+  assert.ok(far.filter((r) => r.y === 0).every((r) => r.x + r.width <= 192 || r.x >= 240), "the live piece's cell is never cleared");
+  assert.deepEqual(cells.clearNear(eaten, 60), [], "cells clear once");
 });

@@ -420,6 +420,8 @@ export class Rabbit {
     scale: number,
     time: number,
     speed: number,
+    /** Victory dance: the ball is let go and both hands wave beside the body. */
+    wave = false,
   ) {
     const delta = camera.position
       .clone()
@@ -440,7 +442,10 @@ export class Rabbit {
     this.hands.forEach((hand, i) => {
       const side = i ? 1 : -1,
         p = i ? view.rightHand : view.leftHand;
-      if (radius > 0) {
+      if (wave) {
+        const beat = Math.sin(time * 9 + i * Math.PI);
+        hand.position.set(side * (17 + 3 * Math.abs(beat)), 25 + 11 * beat, 6);
+      } else if (radius > 0) {
         const ball = Rabbit.ballLocal(radius, scale);
         const y = THREE.MathUtils.clamp(
           ball.center.y - ball.radius * 0.15,

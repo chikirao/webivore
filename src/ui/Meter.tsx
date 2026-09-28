@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Burst, Chevrons } from "./marks";
 import { appUrl } from "../paths";
+import { burstFrom } from "./confetti";
 
 const SEGMENTS = 12;
 /**
@@ -24,6 +25,15 @@ export function Meter({
   const stage = Math.floor(Math.min(100, p + 1e-6) / 25);
   const previous = useRef(stage);
   const [pulse, setPulse] = useState(0);
+  const root = useRef<HTMLElement>(null);
+  // BIG BITE! throws paper out of its burst.
+  useEffect(() => {
+    if (!pulse || complete || !root.current) return;
+    // Phones hide the badge; the paper then comes out of the percentage.
+    const bite = root.current.querySelector(".meter-bite");
+    const from = bite?.getBoundingClientRect().width ? bite : root.current.querySelector(".meter-readout");
+    burstFrom(from, { count: 60, power: 560 });
+  }, [pulse, complete]);
   useEffect(() => {
     if (stage > previous.current) {
       setPulse(stage);
@@ -37,6 +47,7 @@ export function Meter({
   const filled = p / (100 / SEGMENTS);
   return (
     <section
+      ref={root}
       className={`meter ${p >= 75 ? "charged" : ""} ${p >= 100 ? "complete" : ""} ${pulse ? "pulse" : ""}`}
       aria-label="Page consumed"
     >

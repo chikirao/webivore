@@ -1,50 +1,69 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chevrons } from "./ui/marks";
+import { burstFrom } from "./ui/confetti";
 import "./ui/victory.css";
 
+/** Seconds the rabbit dances before the banner, and how long the banner stays. */
+export const DANCE_MS = 4000;
+export const BANNER_MS = 3000;
+
 /**
- * The win banner between the last bite and the trophy screen: bands sweep
- * across, YOU WON! slams in, then the finish screen takes over. Any click or
- * key skips it.
+ * Between the last bite and the trophy screen: first the rabbit dances in the
+ * 3D scene (the game drives that), then the screen washes white and the red
+ * YOU WON! card slams in, then the finish screen takes over. Only the Skip
+ * button, Enter, Space or Escape skip it; held movement keys do not.
  */
 export function Victory({ site, pieces, onDone }: { site: string; pieces: number; onDone: () => void }) {
   const done = useRef(onDone);
   done.current = onDone;
+  const [banner, setBanner] = useState(false);
+  const card = useRef<HTMLDivElement>(null);
+  // The card lands with one more round of paper, from both of its sides.
+  useEffect(() => {
+    if (!banner) return;
+    const timer = setTimeout(() => {
+      burstFrom(card.current, { count: 90, power: 900, angle: -Math.PI * 0.75, spread: 1.1 });
+      burstFrom(card.current, { count: 90, power: 900, angle: -Math.PI * 0.25, spread: 1.1 });
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [banner]);
   useEffect(() => {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = setTimeout(() => done.current(), reduced ? 1200 : 2600);
-    const skip = (e: Event) => {
-      if (e instanceof KeyboardEvent && ["Shift", "Control", "Alt", "Meta", "Tab"].includes(e.key)) return;
+    const dance = reduced ? 0 : DANCE_MS;
+    const show = setTimeout(() => setBanner(true), dance);
+    const end = setTimeout(() => done.current(), dance + (reduced ? 1500 : BANNER_MS));
+    const key = (e: KeyboardEvent) => {
+      if (e.repeat || !["Enter", "Escape", " "].includes(e.key)) return;
+      e.preventDefault();
       done.current();
     };
-    addEventListener("keydown", skip);
-    addEventListener("pointerdown", skip);
+    addEventListener("keydown", key);
     return () => {
-      clearTimeout(timer);
-      removeEventListener("keydown", skip);
-      removeEventListener("pointerdown", skip);
+      clearTimeout(show);
+      clearTimeout(end);
+      removeEventListener("keydown", key);
     };
   }, []);
   return (
-    <div className="victory" role="alert">
-      <div className="victory-flash" aria-hidden="true" />
-      <div className="victory-band victory-band-red" aria-hidden="true" />
-      <div className="victory-band victory-band-ink" aria-hidden="true">
-        <Chevrons className="victory-chev" />
-        <Chevrons className="victory-chev" />
-        <Chevrons className="victory-chev" />
-      </div>
-      <div className="victory-card">
-        <h2 className="victory-title display">
-          <span>You</span> <span>won!</span>
-        </h2>
-        <p className="victory-sub label">
-          {site} · {pieces} pieces eaten
-        </p>
-      </div>
-      <span className="victory-skip label" aria-hidden="true">
-        Click to skip
-      </span>
+    <div className={`victory${banner ? " is-banner" : ""}`}>
+      {banner && (
+        <>
+          <div className="victory-veil" aria-hidden="true" />
+          <div ref={card} className="victory-card" role="alert">
+            <Chevrons className="victory-chev victory-chev-top" count={6} />
+            <h2 className="victory-title display">
+              <span>You</span> <span>won!</span>
+            </h2>
+            <p className="victory-sub label">
+              {site} · {pieces} pieces eaten
+            </p>
+            <Chevrons className="victory-chev victory-chev-bottom" count={6} />
+          </div>
+        </>
+      )}
+      <button className="victory-skip label" onClick={() => done.current()}>
+        Skip
+      </button>
     </div>
   );
 }

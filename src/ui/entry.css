@@ -899,14 +899,15 @@
 }
 @media (max-width: 520px) {
   .entry-hero {
-    /* Ends at the form's top edge, so the crumpled page in its hands stays visible. */
-    top: 16.5%;
-    height: 31%;
-    right: 0;
-    width: 70%;
+    /* Bigger and left over the red field: ears tuck under the title, the form
+       cuts through the middle of the round hands and the crumpled page. */
+    top: 12%;
+    height: 45%;
+    right: 2%;
+    width: 84%;
   }
   .hero-art {
-    object-position: right center;
+    object-position: center bottom;
   }
   .entry-author,
   .entry-help {

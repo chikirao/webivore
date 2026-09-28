@@ -6,6 +6,7 @@ import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
 import { flushPatches } from "./texture-patch";
 import { Stunts } from "./stunts";
+import { EmptyCells } from "./clearing";
 import { imageReady, reasonOf } from "./load-image";
 import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
@@ -143,6 +144,11 @@ export class Game {
   mapCanvas = document.createElement("canvas");
   mapContext = this.mapCanvas.getContext("2d")!;
   stunts: Stunts;
+  /** Empty page background, cleared around bites so no blank island is left. */
+  empty: EmptyCells;
+  private clearedId = 1_000_000;
+  /** Victory dance: the let-go ball and the rabbit's short walk away from it. */
+  party?: { ball: THREE.Vector3; from: { x: number; y: number }; to: { x: number; y: number }; t: number };
   private shaken = new THREE.Vector3();
   constructor(
     canvas: HTMLCanvasElement,
@@ -176,6 +182,7 @@ export class Game {
       normal: new THREE.Vector3(),
     }));
     this.pickupIndex = new PickupIndex(this.items);
+    this.empty = new EmptyCells(level.width, level.height, this.items);
     this.maxRadius = maxCollectionRadius(this.items.length);
     this.starterCapacity = Math.max(
       15,
@@ -542,7 +549,10 @@ export class Game {
       this.score += member.score;
       this.area += member.growthValue;
       this.surface.erase(member, this.radius);
+      this.empty.eaten(member);
     }
+    for (const r of this.empty.clearNear(combined, 30 + this.radius * 0.9))
+      this.surface.erase({ ...r, id: this.clearedId++ } as Piece, this.radius);
     this.guide.collected(this.count);
     this.guideCheckedAt = -Infinity;
     p.gone = true;
@@ -706,30 +716,36 @@ export class Game {
       );
     }
     this.done = this.count === this.items.length;
-    if (this.done) this.stunts.celebrate(this.pile.position, this.radius);
+    if (this.done) this.stunts.celebrate(() => this.pile.position, () => this.radius);
   }
   animateWorld(dt: number) {
     const speed = Math.hypot(this.vx, this.vy);
     this.stunts.update(dt);
-    this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer, this.y);
-    this.character.rotation.y = this.heading;
     const scale = 1 + Math.min(0.8, this.radius / 380);
+    this.danceStep(dt, scale);
+    this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer, this.y);
+    // Dancing, the rabbit faces the orbiting camera; otherwise its walk heading.
+    const heading = (this.party ? this.cam.yaw : this.heading) + this.stunts.dance;
+    this.character.rotation.y = heading;
     this.character.scale.set(scale, scale * this.stunts.squash, scale);
     this.rabbit.update(
       this.camera,
-      this.heading,
-      this.radius,
+      heading,
+      this.party ? 0 : this.radius,
       scale,
       this.time,
       speed,
+      !!this.party,
     );
     if (this.count && !this.paused && !this.reduced)
       this.pile.rotateY(dt * 0.24);
-    this.pile.position.set(
-      this.x + Math.sin(this.heading) * (RABBIT.ballGap * scale + this.radius),
-      Math.max(4, this.radius * 0.85),
-      this.y + Math.cos(this.heading) * (RABBIT.ballGap * scale + this.radius),
-    );
+    if (this.party) this.pile.position.copy(this.party.ball);
+    else
+      this.pile.position.set(
+        this.x + Math.sin(this.heading) * (RABBIT.ballGap * scale + this.radius),
+        Math.max(4, this.radius * 0.85),
+        this.y + Math.cos(this.heading) * (RABBIT.ballGap * scale + this.radius),
+      );
     if (this.pileShadow) {
       this.pileShadow.visible = this.count > 0;
       this.pileShadow.position.set(
@@ -795,22 +811,51 @@ export class Game {
     }
     this.particles = this.particles.filter((p) => p.life > 0);
   }
+  /** Victory: let go of the ball and hop a few steps away from it to dance. */
+  danceStep(dt: number, scale: number) {
+    if (!this.stunts.celebrating || this.reduced) return;
+    if (!this.party) {
+      const ball = this.pile.position.clone(),
+        away = new THREE.Vector3(this.x - ball.x, 0, this.y - ball.z).normalize(),
+        reach = this.radius + RABBIT.ballGap * scale + 70;
+      this.party = {
+        ball,
+        from: { x: this.x, y: this.y },
+        to: {
+          x: clamp(ball.x + away.x * reach, 18, this.level.width - 18),
+          y: clamp(ball.z + away.z * reach, 18, this.level.height - 18),
+        },
+        t: 0,
+      };
+    }
+    const p = this.party;
+    p.t += dt;
+    const k = 1 - (1 - Math.min(1, p.t / 0.6)) ** 3;
+    this.x = THREE.MathUtils.lerp(p.from.x, p.to.x, k);
+    this.y = THREE.MathUtils.lerp(p.from.y, p.to.y, k);
+    this.vx = this.vy = 0;
+  }
   updateCamera(dt: number) {
     this.camera.position.sub(this.shaken);
-    if (this.stunts.celebrating && !this.reduced) this.cam.yaw += dt * 0.5;
+    if (this.stunts.celebrating && !this.reduced) this.cam.yaw += dt * 0.75;
     if (this.keys.has("KeyQ")) this.cam.yaw += dt * 1.5;
     if (this.keys.has("KeyE")) this.cam.yaw -= dt * 1.5;
     const lookAhead = this.count ? (RABBIT.ballGap + this.radius) * 0.55 : 0;
-    const look = new THREE.Vector3(
-      this.x + this.vx * 0.15 + Math.sin(this.heading) * lookAhead,
-      Math.max(15, this.radius * 0.65),
-      this.y + this.vy * 0.15 + Math.cos(this.heading) * lookAhead,
-    );
+    const look = this.party
+      ? // Orbit the dancer, with the ball in the frame beside it.
+        new THREE.Vector3(this.x, 18, this.y).lerp(this.party.ball, 0.35).setY(Math.max(18, this.radius * 0.45))
+      : new THREE.Vector3(
+          this.x + this.vx * 0.15 + Math.sin(this.heading) * lookAhead,
+          Math.max(15, this.radius * 0.65),
+          this.y + this.vy * 0.15 + Math.cos(this.heading) * lookAhead,
+        );
     look.add(this.cam.pan);
     this.cam.target.lerp(look, 1 - Math.exp(-6 * dt));
     const portraitFit = Math.max(1, 0.95 / this.camera.aspect);
+    // The victory orbit pulls in around the dancing rabbit and its ball.
+    const party = this.stunts.celebrating && !this.reduced ? 0.72 : 1;
     const distance =
-      ((290 + this.radius * 2.7) * portraitFit) / this.cam.userZoom;
+      (((290 + this.radius * 2.7) * portraitFit) / this.cam.userZoom) * party;
     const offset = new THREE.Vector3(
       Math.sin(this.cam.yaw) * Math.cos(this.cam.pitch),
       Math.sin(this.cam.pitch),

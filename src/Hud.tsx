@@ -12,10 +12,11 @@ import {
   SpeakerSlashIcon,
 } from "@phosphor-icons/react";
 import type { Level } from "./shared";
-import type { PickupEvent, Stats } from "./game";
+import type { Stats } from "./game";
 import { Plate } from "./ui/Plate";
 import { Meter } from "./ui/Meter";
-import { BallMark, Burst, ClockMark } from "./ui/marks";
+import { BallMark, ClockMark } from "./ui/marks";
+import { Combo } from "./Combo";
 import "./ui/game.css";
 
 export function time(n: number) {
@@ -46,103 +47,6 @@ export function Bracket({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
       />
       <path d="M150 22 H200 L180 30 H140 Z" fill="var(--red)" />
     </svg>
-  );
-}
-
-type Shown = PickupEvent & { slot: number };
-const hash = (n: number) =>
-  ((Math.imul(n + 1, 2654435761) >>> 0) % 1000) / 1000;
-/**
- * Pickup feedback pinned to where the bite happened: the world point is projected
- * by the game, a deterministic scatter separates simultaneous bites, and the
- * result is clamped inside the play area away from the HUD. Bounded pool of four.
- */
-export function PickupSignals({
-  pickups,
-  width,
-  height,
-}: {
-  pickups: PickupEvent[];
-  width: number;
-  height: number;
-}) {
-  const [shown, setShown] = useState<Shown[]>([]);
-  const seen = useRef(new Set<number>());
-  const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
-  useEffect(
-    () => () => {
-      for (const t of timers.current.values()) clearTimeout(t);
-    },
-    [],
-  );
-  useEffect(() => {
-    const fresh = pickups.filter((p) => !seen.current.has(p.id));
-    if (!fresh.length) return;
-    for (const p of fresh) seen.current.add(p.id);
-    if (seen.current.size > 64)
-      seen.current = new Set([...seen.current].slice(-32));
-    setShown((s) =>
-      [
-        ...s,
-        ...fresh.map((p, i) => ({ ...p, slot: (s.length + i) % 4 })),
-      ].slice(-4),
-    );
-    for (const p of fresh) {
-      timers.current.set(
-        p.id,
-        setTimeout(() => {
-          setShown((s) => s.filter((shown) => shown.id !== p.id));
-          timers.current.delete(p.id);
-        }, 1150),
-      );
-    }
-  }, [pickups]);
-  if (!width || !height) return null;
-  return (
-    <div className="signals" aria-live="polite">
-      {shown.map((p) => {
-        const h = hash(p.id);
-        const half = Math.min(115, width * 0.28);
-        const x = Math.min(
-          width - half - 12,
-          Math.max(half + 12, p.x + (h - 0.5) * 120),
-        );
-        const hudBottom =
-          height *
-          (width <= 800 && x > width * 0.55
-            ? 0.32
-            : width <= 520
-              ? 0.15
-              : width <= 800
-                ? 0.16
-                : 0.22);
-        const y = Math.min(
-          height * 0.79,
-          Math.max(
-            hudBottom + (p.big ? 170 : 70),
-            p.y - 20 - h * 35 - p.slot * 12,
-          ),
-        );
-        return (
-          <div
-            key={p.id}
-            className={`signal ${p.big ? "big" : ""}`}
-            style={{ left: x, top: y }}
-          >
-            {p.big ? (
-              <Burst>
-                Big
-                <br />
-                bite
-              </Burst>
-            ) : (
-              <b className="display got-it">Got it</b>
-            )}
-            <span className="signal-label">{p.label}</span>
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
@@ -379,11 +283,7 @@ export function Hud({
         </span>
       </p>
       {stats.ready && !stats.done && (
-        <PickupSignals
-          pickups={stats.pickups}
-          width={viewport.width}
-          height={viewport.height}
-        />
+        <Combo pickups={stats.pickups} />
       )}
       {countdown !== null && stats.ready && !stats.error && (
         <div className="countdown" aria-live="assertive">
