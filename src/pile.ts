@@ -14,6 +14,7 @@ import {
   type Placement,
 } from "./packing";
 import { highlightScore, highlightSlot } from "./highlights";
+import { dropPatches, markDirty } from "./texture-patch";
 const INDICES = (GRID - 1) * (GRID - 1) * 6,
   SLOT = 128,
   COLS = 8,
@@ -106,8 +107,7 @@ export class LayeredPile {
     const layer = this.layers.at(-1)!;
     const sx = (slot % COLS) * SLOT,
       sy = Math.floor(slot / COLS) * SLOT;
-    this.paint(layer.ctx, p, sx, sy, SLOT);
-    layer.texture.needsUpdate = true;
+    this.paint(layer, p, sx, sy, SLOT);
     const placement = regularPlacement(index, radius, p.width / p.height);
     const positions = sheet(placement, index);
     const uv = new Float32Array(VERTS * 2);
@@ -141,15 +141,18 @@ export class LayeredPile {
     this.fragments.push(f);
     return f;
   }
+  /** Draws a bite into one atlas cell; only that cell is re-uploaded. */
   private paint(
-    ctx: CanvasRenderingContext2D,
+    layer: Layer,
     p: Piece,
     x: number,
     y: number,
     cell: number,
   ) {
-    const inner = cell - 4;
+    const inner = cell - 4,
+      ctx = layer.ctx;
     ctx.clearRect(x, y, cell, cell);
+    markDirty(layer.texture, layer.canvas, x, y, cell, cell);
     for (const r of p.regions ?? [p])
       ctx.drawImage(
         this.source,
@@ -264,7 +267,7 @@ export class LayeredPile {
       this.skinPieces.forEach((piece, s) => {
         if (piece)
           this.paint(
-            this.skin!.ctx,
+            this.skin!,
             piece.piece,
             (s % COLS) * SLOT,
             Math.floor(s / COLS) * SLOT,
@@ -273,17 +276,14 @@ export class LayeredPile {
       });
     } else if (this.skin) {
       this.paint(
-        this.skin.ctx,
+        this.skin,
         f.piece,
         (slot % COLS) * SLOT,
         Math.floor(slot / COLS) * SLOT,
         SLOT,
       );
     }
-    if (this.skin) {
-      this.skin.texture.needsUpdate = true;
-      this.refit();
-    }
+    if (this.skin) this.refit();
   }
   /** Offer a baked bite a bounded priority slot; graphics displace text, bigger displaces smaller. */
   private prioritize(f: PackedFragment) {
@@ -303,8 +303,7 @@ export class LayeredPile {
     }
     const x = (slot % PRIORITY_COLS) * PRIORITY_CELL,
       y = Math.floor(slot / PRIORITY_COLS) * PRIORITY_CELL;
-    this.paint(this.outer.ctx, f.piece, x, y, PRIORITY_CELL);
-    this.outer.texture.needsUpdate = true;
+    this.paint(this.outer, f.piece, x, y, PRIORITY_CELL);
     this.priorities[slot] = {
       score,
       aspect: f.piece.width / f.piece.height,
@@ -360,6 +359,7 @@ export class LayeredPile {
     ]) {
       l.mesh.geometry.dispose();
       l.mesh.material.dispose();
+      dropPatches([l.texture]);
       l.texture.dispose();
       l.mesh.removeFromParent();
     }

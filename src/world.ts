@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { Level, Piece, Region } from "./shared";
+import { dropPatches, flushPatches, markDirty } from "./texture-patch";
 
 const HOLE = "#050505";
 const RIM = "#d9d3c4";
@@ -68,14 +69,14 @@ export class WorldSurface {
     texture: THREE.CanvasTexture;
     mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
   }[] = [];
-  dirty = new Set<number>();
   holes: Hole[] = [];
   constructor(
     public level: Level,
     public source: HTMLImageElement,
     scene: THREE.Scene,
-    anisotropy: number,
+    private renderer: THREE.WebGLRenderer,
   ) {
+    const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     for (let y = 0; y < level.height; y += 1024) {
       const height = Math.min(1024, level.height - y),
         canvas = document.createElement("canvas");
@@ -104,6 +105,8 @@ export class WorldSurface {
       mesh.rotation.x = -Math.PI / 2;
       mesh.position.set(level.width / 2, 0, y + height / 2);
       scene.add(mesh);
+      // Upload now rather than on the first frame; later bites patch only their own area.
+      renderer.initTexture(texture);
       this.tiles.push({ y, height, canvas, ctx, texture, mesh });
     }
   }
@@ -126,6 +129,10 @@ export class WorldSurface {
         const t = this.tiles[i];
         t.ctx.save();
         t.ctx.translate(0, -t.y);
+        // Refilled neighbours stay inside the uploaded patch, so canvas and texture agree.
+        t.ctx.beginPath();
+        t.ctx.rect(x0, y0, x1 - x0, y1 - y0);
+        t.ctx.clip();
         t.ctx.fillStyle = RIM;
         t.ctx.beginPath();
         tornPath(t.ctx, r, rim, rough + 0.8, p.id * 3 + 1);
@@ -135,7 +142,7 @@ export class WorldSurface {
         for (const h of touching) tornPath(t.ctx, h.r, h.pad, h.rough, h.seed);
         t.ctx.fill();
         t.ctx.restore();
-        this.dirty.add(i);
+        markDirty(t.texture, t.canvas, x0, y0 - t.y, x1 - x0, y1 - y0);
       }
     }
   }
@@ -145,14 +152,15 @@ export class WorldSurface {
       const t = this.tiles[i];
       t.ctx.fillStyle = this.level.pageColor ?? "#f4f0e7";
       t.ctx.fillRect(0, 0, t.canvas.width, t.canvas.height);
-      this.dirty.add(i);
+      t.texture.needsUpdate = true;
     }
   }
+  /** Sends drawn holes to the GPU (the game loop also flushes before every render). */
   flush() {
-    for (const i of this.dirty) this.tiles[i].texture.needsUpdate = true;
-    this.dirty.clear();
+    flushPatches(this.renderer);
   }
   dispose() {
+    dropPatches(this.tiles.map((t) => t.texture));
     for (const t of this.tiles) {
       t.mesh.geometry.dispose();
       t.mesh.material.dispose();

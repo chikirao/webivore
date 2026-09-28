@@ -4,6 +4,7 @@ import { maxCollectionRadius, type Level, type Piece } from "./shared";
 import { PickupIndex, combinedPiece } from "./grouping";
 import { Rabbit, RABBIT } from "./rabbit";
 import { WorldSurface } from "./world";
+import { flushPatches } from "./texture-patch";
 import { imageReady, reasonOf } from "./load-image";
 import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
@@ -300,7 +301,7 @@ export class Game {
         this.level,
         this.atlas,
         this.scene,
-        Math.min(8, this.renderer.capabilities.getMaxAnisotropy()),
+        this.renderer,
       );
       this.collection = new LayeredPile(this.pile, this.atlas);
       const slab = new THREE.Mesh(
@@ -911,7 +912,7 @@ export class Game {
     this.updateGuide();
     this.animateWorld(dt);
     this.updateCamera(dt);
-    this.surface?.flush();
+    flushPatches(this.renderer);
     this.renderer.render(this.scene, this.camera);
     if (now - this.reportAt > 100) {
       this.reportAt = now;
