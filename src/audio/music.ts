@@ -1,5 +1,5 @@
 import { appUrl } from "../paths";
-import { audio, bus, musicLevel, onMix, whenAudioUnlocked } from "./engine";
+import { audio, bus, loadBuffer, musicLevel, onMix, whenAudioUnlocked } from "./engine";
 import MAP_JSON from "./music-map.json";
 import { onSoundSettings, soundSettings } from "./settings";
 
@@ -44,32 +44,10 @@ function rateFor(track: Track) {
   return track === "menu" ? 22050 : coarse() ? 32000 : 44100;
 }
 
-async function decode(url: string, rate: number): Promise<AudioBuffer | null> {
-  const a = audio();
-  if (!a) return null;
-  try {
-    const data = await (await fetch(url)).arrayBuffer();
-    let ctx: BaseAudioContext = a;
-    const OAC =
-      window.OfflineAudioContext ??
-      (window as unknown as { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext;
-    if (OAC && rate < a.sampleRate) {
-      try {
-        ctx = new OAC(2, 1, rate);
-      } catch {
-        /* this browser decodes at its own rate */
-      }
-    }
-    return await new Promise<AudioBuffer>((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
-  } catch {
-    return null;
-  }
-}
-
 function load(track: Track) {
   let p = buffers.get(track);
   if (!p) {
-    p = decode(appUrl(`assets/audio/music-${track}.mp3`), rateFor(track));
+    p = loadBuffer(appUrl(`assets/audio/music-${track}.mp3`), rateFor(track));
     buffers.set(track, p);
   }
   return p;

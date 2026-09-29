@@ -338,7 +338,7 @@ export function Hud({
       <p className={`hint hud-hint${stats.looked ? " looked" : ""}`}>
         <span className="keys-hint">
           <b>WASD</b> walk · <b>drag</b> orbit · <b>right-drag</b> pan ·{" "}
-          <b>Q/E</b> turn · <b>space</b> boost · <b>F</b> follow · <b>esc</b> pause � <b>H</b>{" "}
+          <b>Q/E</b> turn · <b>space</b> boost · <b>F</b> follow · <b>esc</b> pause · <b>H</b>{" "}
           hint
         </span>
         {!stats.looked && (

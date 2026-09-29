@@ -2267,10 +2267,195 @@
     animation: none;
   }
 }
-/* Narrow phones: no room for the site name beside the minimap controls; the rail stays as the back button. */
+/* Narrow phones: no site rail under the minimap, only the map with pause and sound beside it. */
 @media (max-width: 520px) {
-  .site-rail .site-name,
-  .site-rail .site-note {
+  .hud-map .site-rail {
     display: none;
+  }
+  .hud-map {
+    grid-template-rows: minmax(0, 1fr) !important;
+    min-height: 112px !important;
+    height: 14% !important;
+  }
+}
+
+/* ---- Streak 500 (OMNIVORE) and 1000 (WORLD WIDE WEBIVORE) ---- */
+.combo.tier-9 {
+  --size: 140px;
+}
+.combo.tier-10 {
+  --size: 150px;
+}
+.combo.tier-9 .combo-count,
+.combo.tier-10 .combo-count {
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.05em var(--ink);
+  background-size: 100% 200%;
+}
+/* 500: polished chrome with a travelling glint, red rays turning behind it */
+.combo.tier-9 .combo-count {
+  background-image: linear-gradient(170deg, #ffffff 0%, #c9d3dc 22%, #56616c 42%, #f4f7fa 50%, #7d8994 64%, #e9eef2 82%, #9aa6b1 100%);
+  filter: drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 14px #ff0013) drop-shadow(0 0 28px #ff0013);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-glint 0.9s linear infinite,
+    combo-shake 0.1s linear infinite;
+}
+/* 1000: rainbow chrome cycling through every hue, rainbow rays, pulsing */
+.combo.tier-10 .combo-count {
+  background-image: linear-gradient(170deg, #ffffff 0%, #ff2bd6 20%, #1ec8ff 40%, #ffffff 50%, #ffe600 62%, #2bd94a 80%, #ff0013 100%);
+  filter: drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 18px #ffe600) drop-shadow(0 0 34px #ff2bd6);
+  animation:
+    combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1),
+    combo-glint 0.5s linear infinite,
+    combo-shake 0.07s linear infinite,
+    combo-hue 1.2s linear infinite;
+}
+.combo.tier-9::before,
+.combo.tier-10::before {
+  width: calc(var(--size) * 4.2);
+  background: conic-gradient(#ff0013, #ff9d00, #ffe600, #2bd94a, #1ec8ff, #7a4bff, #ff2bd6, #ff0013);
+  -webkit-mask:
+    repeating-conic-gradient(#000 0 8deg, transparent 8deg 16deg),
+    radial-gradient(circle, #000 18%, transparent 68%);
+  -webkit-mask-composite: source-in;
+  mask:
+    repeating-conic-gradient(#000 0 8deg, transparent 8deg 16deg),
+    radial-gradient(circle, #000 18%, transparent 68%);
+  mask-composite: intersect;
+  animation:
+    combo-aura 2.4s linear infinite,
+    combo-throb 0.6s ease-in-out infinite;
+}
+.combo.tier-9 .combo-word,
+.combo.tier-10 .combo-word {
+  font-size: 24px;
+  background: var(--red);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.combo.tier-10 .combo-word {
+  background: linear-gradient(90deg, #ff0013, #ff9d00, #ffe600, #2bd94a, #1ec8ff, #7a4bff, #ff2bd6);
+  color: var(--ink);
+}
+.combo.tier-9 .combo-timer {
+  background: linear-gradient(90deg, #e9eef2, #56616c, #e9eef2);
+}
+.combo.tier-10 .combo-timer {
+  background: linear-gradient(90deg, #ff0013, #ffe600, #2bd94a, #1ec8ff, #ff2bd6);
+}
+@keyframes combo-glint {
+  to {
+    background-position: 0 -200%;
+  }
+}
+@keyframes combo-hue {
+  to {
+    filter: hue-rotate(360deg) drop-shadow(4px 4px 0 var(--ink)) drop-shadow(0 0 18px #ffe600);
+  }
+}
+@keyframes combo-aura {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes combo-throb {
+  50% {
+    scale: 1.12;
+    opacity: 1;
+  }
+}
+
+/* The moment a milestone hits: the counter slams in huge, flashes white and throws a shockwave */
+.combo.is-milestone .combo-count {
+  animation:
+    combo-milestone 0.7s cubic-bezier(0.25, 1.6, 0.4, 1),
+    combo-glint 0.5s linear infinite,
+    combo-shake 0.06s linear infinite;
+}
+.combo.milestone-2 .combo-count {
+  animation:
+    combo-milestone 0.9s cubic-bezier(0.25, 1.6, 0.4, 1),
+    combo-glint 0.4s linear infinite,
+    combo-shake 0.05s linear infinite,
+    combo-hue 0.6s linear infinite;
+}
+.combo.is-milestone::before {
+  animation:
+    combo-aura 1.2s linear infinite,
+    combo-flare 0.9s ease-out;
+}
+.combo-shock {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 40%;
+  width: calc(var(--size) * 1.4);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 10px solid #ff0013;
+  box-shadow: 0 0 0 4px var(--ink), inset 0 0 0 4px var(--ink);
+  animation: combo-shock 0.8s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+.combo.milestone-2 .combo-shock {
+  border: 12px solid transparent;
+  background:
+    linear-gradient(var(--paper), var(--paper)) padding-box,
+    conic-gradient(#ff0013, #ff9d00, #ffe600, #2bd94a, #1ec8ff, #7a4bff, #ff2bd6, #ff0013) border-box;
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 61%);
+  mask: radial-gradient(circle, transparent 60%, #000 61%);
+  box-shadow: none;
+  animation: combo-shock 1s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+@keyframes combo-milestone {
+  0% {
+    transform: scale(3.4) rotate(-6deg);
+    filter: brightness(4) drop-shadow(0 0 30px #fff);
+  }
+  30% {
+    transform: scale(0.9) rotate(2deg);
+  }
+  55% {
+    transform: scale(1.12);
+  }
+}
+@keyframes combo-flare {
+  from {
+    scale: 0.2;
+    opacity: 1;
+  }
+  40% {
+    scale: 1.5;
+  }
+}
+@keyframes combo-shock {
+  from {
+    scale: 0.3;
+    opacity: 1;
+  }
+  to {
+    scale: 3.2;
+    opacity: 0;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .combo.tier-9 .combo-count,
+  .combo.tier-10 .combo-count {
+    font-size: calc(var(--size) * 0.5);
+  }
+  .combo.tier-9 .combo-word,
+  .combo.tier-10 .combo-word {
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combo-shock {
+    display: none;
+  }
+  .combo.tier-9::before,
+  .combo.tier-10::before {
+    animation: none;
   }
 }

@@ -103,6 +103,10 @@ export function audio(): AudioContext | null {
   if (ctx) return ctx;
   const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AC) return null;
+  // Game sound, not media: an "ambient" session keeps iOS from putting a
+  // Now Playing player (pause, seek) in Control Center for the page.
+  const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+  if (session) session.type = "ambient";
   try {
     ctx = new AC({ latencyHint: "interactive" });
   } catch {
@@ -317,12 +321,27 @@ export function playBuffer(channel: Channel, buffer: AudioBuffer | null | undefi
 }
 
 /** Decodes a fetched file; resolves null when audio is unavailable or the file fails. */
-export async function loadBuffer(url: string): Promise<AudioBuffer | null> {
+/**
+ * Fetch and decode a file. With `rate` below the context's, it decodes at that
+ * rate (through an offline context) to keep long files light on phones.
+ */
+export async function loadBuffer(url: string, rate = 0): Promise<AudioBuffer | null> {
   const a = audio();
   if (!a) return null;
   try {
     const data = await (await fetch(url)).arrayBuffer();
-    return await new Promise<AudioBuffer>((resolve, reject) => a.decodeAudioData(data, resolve, reject));
+    let decoder: BaseAudioContext = a;
+    const OAC =
+      window.OfflineAudioContext ??
+      (window as unknown as { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext;
+    if (OAC && rate && rate < a.sampleRate) {
+      try {
+        decoder = new OAC(2, 1, rate);
+      } catch {
+        /* this browser decodes at its own rate */
+      }
+    }
+    return await new Promise<AudioBuffer>((resolve, reject) => decoder.decodeAudioData(data, resolve, reject));
   } catch {
     return null;
   }

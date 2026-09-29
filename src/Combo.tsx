@@ -2,13 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import type { PickupEvent } from "./game";
 import { burstFrom } from "./ui/confetti";
 import { crtKick } from "./crt/fx";
-import { popper, streakNote, streakTier } from "./audio/sfx";
+import { popper, streakMilestone, streakNote, streakTier } from "./audio/sfx";
 
 /** A streak ends this long after the last bite. */
 export const STREAK_MS = 2400;
+/** Streak milestones: the counter itself goes off (chrome at 500, rainbow at 1000). */
+const MILESTONES = [500, 1000];
 
-/** Streak steps: every step up looks and moves louder; rainbow is saved for 100. */
+/** Streak steps: every step up looks and moves louder; rainbow is saved for 100, chrome for 500. */
 const TIERS: [number, string][] = [
+  [1000, "World Wide Webivore"],
+  [500, "Omnivore!!!!"],
   [150, "Godlike!!!"],
   [100, "Webivore!!!"],
   [75, "Rampage!!"],
@@ -37,6 +41,13 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const badge = useRef<HTMLDivElement>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // DEV: window.__combo(n) makes the next bite streak n + 1 (to preview 500 / 1000)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as unknown as { __combo?: (n: number) => void };
+    w.__combo = (n) => (count.current = n);
+    return () => void delete w.__combo;
+  }, []);
   useEffect(() => {
     const fresh = pickups.filter((p) => !seen.current.has(p.id));
     if (!fresh.length) return;
@@ -60,6 +71,24 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
     if (now > before) streakTier(now);
     if (now > before && now >= 4) crtKick(now >= 6 ? 2 : 1);
   }, [streak]);
+  const [milestone, setMilestone] = useState<{ level: 1 | 2; key: number } | null>(null);
+  const milestoneTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // 500 and 1000: a slam, a shockwave and a paper blast, all from the counter
+  useEffect(() => {
+    const crossed = MILESTONES.filter((m) => streak >= m && previous.current < m);
+    if (!crossed.length) return;
+    const level = (MILESTONES.indexOf(crossed[crossed.length - 1]) + 1) as 1 | 2;
+    setMilestone({ level, key: Date.now() });
+    streakMilestone(level);
+    burstFrom(badge.current, { count: level > 1 ? 160 : 100, rainbow: true, power: level > 1 ? 900 : 700, spread: Math.PI * 2 });
+    milestoneTimers.current.forEach(clearTimeout);
+    milestoneTimers.current = [setTimeout(() => setMilestone(null), level > 1 ? 1600 : 1300)];
+    if (level > 1)
+      milestoneTimers.current.push(
+        setTimeout(() => burstFrom(badge.current, { count: 120, rainbow: true, power: 800, spread: Math.PI * 2 }), 450),
+      );
+  }, [streak]);
+  useEffect(() => () => milestoneTimers.current.forEach(clearTimeout), []);
   useEffect(() => {
     if (Math.floor(streak / 10) > Math.floor(previous.current / 10)) {
       burstFrom(badge.current, { count: 30 + Math.min(90, streak / 2), rainbow: streak >= 100, power: 480 + Math.min(300, streak) });
@@ -70,7 +99,7 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
   if (!streak) return null;
   const { tier, word } = comboTier(streak);
   return (
-    <div ref={badge} className={`combo tier-${tier}`} aria-live="polite" aria-label={`Streak ${streak}`}>
+    <div ref={badge} className={`combo tier-${tier}${milestone ? ` is-milestone milestone-${milestone.level}` : ""}`} aria-live="polite" aria-label={`Streak ${streak}`}>
       <strong key={bumped} className="display combo-count">
         <small>x</small>
         {streak}
@@ -82,6 +111,8 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
         </span>
       )}
       <i key={`t${bumped}`} className="combo-timer" style={{ animationDuration: `${STREAK_MS}ms` }} />
+      {milestone && <i key={milestone.key} className="combo-shock" aria-hidden="true" />}
     </div>
   );
 }
+

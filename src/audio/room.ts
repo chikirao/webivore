@@ -18,7 +18,9 @@ const url = (f: string) => appUrl(`assets/audio/${f}`);
 type Loop = { src: AudioBufferSourceNode; gain: GainNode; pan: StereoPannerNode | null };
 
 let buffers: Promise<(AudioBuffer | null)[]> | null = null;
-let tv: HTMLAudioElement | null = null;
+/** The record, decoded (no <audio> element: iOS would show it as a media player). */
+let tvBuffer: Promise<AudioBuffer | null> | null = null;
+let tv: AudioBufferSourceNode | null = null;
 let tvGain: GainNode | null = null;
 let lamp: Loop | null = null;
 let fly: Loop | null = null;
@@ -62,36 +64,17 @@ export function enterRoom() {
   const a = audio();
   if (!a) return;
   buffers ??= Promise.all([FILES.lamp, FILES.fly, FILES.crickets].map((f) => loadBuffer(url(f))));
-  if (!tv) {
-    tv = new Audio(url("tv.mp3"));
-    tv.loop = true;
-    tv.preload = "auto";
-    tv.load();
-    try {
-      const source = a.createMediaElementSource(tv);
-      tvGain = a.createGain();
-      tvGain.gain.value = 0;
-      const input = bus("tv");
-      if (input) source.connect(tvGain).connect(input);
-    } catch {
-      tv = null;
-    }
-  }
+  // behind a lowpassed TV speaker: 22 kHz is plenty and saves phones memory
+  tvBuffer ??= loadBuffer(url("tv.mp3"), 22050);
   cancelUnlock();
-  cancelUnlock = whenAudioUnlocked(
-    () => void start(id),
-    // media elements only start inside a gesture
-    () => void tv?.play().catch(() => {}),
-  );
+  cancelUnlock = whenAudioUnlocked(() => void start(id));
 }
 
 async function start(id: number) {
   const a = audio();
   if (!a || id !== session) return;
-  // the record plays at once; the room's loops join when they have decoded
-  void tv?.play().catch(() => {});
-  tvGain?.gain.cancelScheduledValues(a.currentTime);
-  tvGain?.gain.setTargetAtTime(1, a.currentTime, 0.25);
+  // the record starts first; the room's loops join when they have decoded
+  void startTv(id);
   const [lampBuf, flyBuf, cricketBuf] = (await buffers) ?? [];
   if (id !== session || fades.length) return;
   const t = a.currentTime;
@@ -99,6 +82,34 @@ async function start(id: number) {
   fly = loop(flyBuf ?? null, PERIOD.fly, faded("fly", t));
   lamp?.gain.gain.setTargetAtTime(1, t, 0.5);
   scheduleCrickets(id, cricketBuf ?? null, faded("crickets", t), 1 + Math.random() * 2);
+}
+
+async function startTv(id: number) {
+  const a = audio(),
+    buffer = await tvBuffer;
+  const input = bus("tv");
+  if (!a || !buffer || !input || id !== session || tv) return;
+  tvGain = a.createGain();
+  tvGain.gain.setValueAtTime(0, a.currentTime);
+  tvGain.gain.setTargetAtTime(1, a.currentTime, 0.25);
+  tv = a.createBufferSource();
+  tv.buffer = buffer;
+  tv.loop = true;
+  tv.connect(tvGain).connect(input);
+  tv.start();
+}
+
+function stopTv() {
+  try {
+    tv?.stop();
+  } catch {
+    /* already stopped */
+  }
+  tv?.disconnect();
+  tvGain?.disconnect();
+  tv = tvGain = null;
+  // 40 MB of decoded record: let it go; coming back to the room fetches it again
+  tvBuffer = null;
 }
 
 /** A few seconds of crickets, then quiet for a while, again and again. */
@@ -167,6 +178,6 @@ export function leaveRoom(seconds = 1) {
       l?.src.disconnect();
     }
     old.forEach((g) => g.disconnect());
-    if (id === session) tv?.pause();
+    if (id === session) stopTv();
   }, seconds * 1000 + 250);
 }

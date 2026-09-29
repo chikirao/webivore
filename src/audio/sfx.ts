@@ -189,6 +189,22 @@ export function streakTier(tier: number) {
   if (tier >= 7) stab("streak", [64, 67, 71, 74, 78], 0.05, 0.3, 0.7);
 }
 
+/**
+ * Streak milestones. 500: a boom, a big E-minor stab and a rising run.
+ * 1000: two booms, the stab climbing a step, a long run and a bell shower.
+ */
+export function streakMilestone(level: 1 | 2) {
+  thud();
+  stab("streak", [40, 52, 59, 64, 67, 71], 0, 0.45, 1.1, 0.6);
+  arp("streak", [64, 67, 71, 76, 79, 83, 88, 91], 0.03, 0.9, 0.05);
+  if (level < 2) return;
+  stab("streak", [43, 55, 62, 67, 71, 74], 0.5, 0.4, 1.1, 0.4);
+  stab("streak", [40, 52, 59, 64, 68, 71, 76], 0.95, 1.1, 1.2, 1);
+  setTimeout(thud, 950);
+  arp("streak", [76, 79, 83, 88, 91, 95, 100, 103, 107], 0.028, 0.8, 0.6);
+  [88, 91, 95, 100, 103, 107].forEach((m, i) => vibe("streak", m, 1 + i * 0.07, 0.6, 0.5));
+}
+
 // ---------------------------------------------------------------- party
 function popperBuffers() {
   return render("popper", 3, (sr, r) => {
@@ -390,6 +406,8 @@ export const SFX_TESTS: Record<string, () => void> = {
   "Streak run": () => [2, 3, 4, 5, 6, 7].forEach((n, i) => setTimeout(() => streakNote(n), i * 180)),
   "Tier up": () => streakTier(4),
   "Tier 100": () => streakTier(7),
+  "Streak 500": () => streakMilestone(1),
+  "Streak 1000": () => streakMilestone(2),
   Popper: popper,
   Firework: () => firework(true),
   "You won": victory,

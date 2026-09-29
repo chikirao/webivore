@@ -4,21 +4,32 @@ import { crumbsToSweep, isCrumb } from "../src/sweep.ts";
 import { tearSize } from "../src/world.ts";
 import { EmptyCells } from "../src/clearing.ts";
 
-const piece = (side: number, threshold = 10) => ({ width: side, height: side / 2, threshold });
+const piece = (side: number, threshold = 10) => ({ width: side, height: side / 2, threshold, mass: (side * side) / 2 });
 
 test("a crumb is collectable and small next to the ball", () => {
   assert.equal(isCrumb(piece(20), 100, 50), true);
-  assert.equal(isCrumb(piece(80), 100, 50), false, "too large for this ball");
+  assert.equal(isCrumb(piece(160), 100, 50), false, "too large for this ball");
   assert.equal(isCrumb(piece(20, 60), 100, 50), false, "not collectable yet");
+  assert.equal(isCrumb({ width: 900, height: 2, threshold: 10 }, 100, 50), true, "a hairline rule is small, however long");
 });
 
-test("leftover crumbs are swept only near the end or when nothing else is left", () => {
+test("leftover crumbs are swept near the end or when nothing else is left", () => {
   const crumb = piece(10);
   const big = piece(400);
-  assert.deepEqual(crumbsToSweep([crumb, big], 90, 100, 100, 50), [], "mid-game crumbs stay on the page");
-  assert.deepEqual(crumbsToSweep([crumb, big], 98, 100, 100, 50), [crumb], "97%+ sweeps crumbs, big pieces stay");
-  assert.deepEqual(crumbsToSweep([crumb], 50, 100, 100, 50), [crumb], "only crumbs left");
-  assert.deepEqual(crumbsToSweep([big], 99, 100, 100, 50), [], "a real piece still has to be eaten");
+  const total = 1_000_000;
+  assert.deepEqual(crumbsToSweep([crumb, big], total * 0.8, total, 100, 50), [], "mid-game crumbs stay on the page");
+  assert.deepEqual(crumbsToSweep([crumb, big], total * 0.9, total, 100, 50), [crumb], "90%+ sweeps crumbs, big pieces stay");
+  assert.deepEqual(crumbsToSweep([crumb], total * 0.5, total, 100, 50), [crumb], "only crumbs left");
+  assert.deepEqual(crumbsToSweep([big], total * 0.9, total, 100, 50), [], "a real piece still has to be eaten");
+});
+
+test("a forgotten comma never blocks the finish", () => {
+  const comma = { width: 4, height: 9, threshold: 12, mass: 36 };
+  const rule = { width: 2400, height: 1, threshold: 12, mass: 2400 };
+  const total = 4_000_000;
+  assert.deepEqual(crumbsToSweep([comma, rule], total - 2436, total, 360, 400), [comma, rule], "both go once the page is nearly eaten");
+  const tooBig = { width: 250, height: 200, threshold: 12, mass: 50_000 };
+  assert.deepEqual(crumbsToSweep([comma, tooBig], total - 50_036, total, 360, 400), [comma, tooBig], "what is left weighs next to nothing: the page clears");
 });
 
 test("holes stay small early and pad wide enough late to merge neighbouring lines", () => {

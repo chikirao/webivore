@@ -160,6 +160,7 @@ export class Game {
   private boostAt = -Infinity;
   /** The rabbit riding the ball as paper pieces during a boost. */
   private rippleAt = 0;
+  private sweepAt = 0;
   /** Where the player steers, world units per second squared direction (0 when idle). */
   private steer = new THREE.Vector2();
   constructor(
@@ -696,7 +697,11 @@ export class Game {
         ate = true;
       }
     }
-    if (ate) this.sweepCrumbs();
+    // also on a timer: the last bite can happen before a crumb becomes negligible
+    if (ate || this.time >= this.sweepAt) {
+      this.sweepAt = this.time + 0.5;
+      this.sweepCrumbs();
+    }
     // the page jumps in the boost's wake
     if (this.boosting && this.surface && this.time >= this.rippleAt) {
       this.rippleAt = this.time + 0.04;
