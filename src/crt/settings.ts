@@ -37,6 +37,8 @@ export const CRT_DEFAULTS = {
     grainShadows: 0.11,
     /** 0 = mono grain, 1 = per-channel colour grain. */
     grainColor: 0.3,
+    /** Grain amount multiplier on phones and tablets, where fine grain reads too faint. */
+    grainMobile: 1.8,
     /** Cloud behind the window: darkening where it passes, whole-window dim as it covers the moon. */
     cloudDark: 0.79,
     windowDim: 0.38,

@@ -296,10 +296,16 @@
   background: linear-gradient(90deg, var(--red, #ff0013) calc(var(--p) * 100%), #262020 0);
 }
 
-.pl-skip {
+/* Mute and Skip: plain text in the corner, no plate */
+.pl-corner {
   position: absolute;
   right: max(16px, env(safe-area-inset-right));
   bottom: max(16px, env(safe-area-inset-bottom));
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+.pl-text-button {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -311,23 +317,34 @@
   text-transform: uppercase;
   cursor: pointer;
 }
-.pl-skip:hover,
-.pl-skip:focus-visible {
+.pl-text-button:hover,
+.pl-text-button:focus-visible {
   color: rgba(255, 255, 255, 0.9);
   outline: none;
 }
-.pl-skip:focus-visible {
+.pl-text-button:focus-visible {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.pl-skip kbd {
+.pl-text-button kbd {
   font: 10px/1 Arial, sans-serif;
   opacity: 0.8;
 }
 @media (pointer: coarse) {
-  .pl-skip kbd {
+  .pl-text-button kbd {
     display: none;
   }
+}
+
+/* The dive scales the whole room up many times: blurred and blended layers
+   would be re-rasterised at that size (phones run out of memory), so they
+   leave the tree once faded. */
+.stage-zoom .pl-backdrop,
+.stage-zoom .pl-glow,
+.stage-zoom .pl-screen-halo {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
 
 html:has(.prelude),

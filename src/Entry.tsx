@@ -15,6 +15,7 @@ import { HiScore, LeaderboardDialog } from "./Leaderboard";
 import { TurnstileDialog } from "./TurnstileWidget";
 import type { ImportKind } from "./local-import";
 import { appUrl } from "./paths";
+import { setLessEffects, useLessEffects } from "./prefs";
 import "./ui/entry.css";
 export const PRESETS: [string, string][] = [
   ["Wikipedia", "https://en.wikipedia.org/wiki/Internet"],
@@ -57,6 +58,7 @@ export function Entry({
   onTurnstileToken: (token: string) => void;
   onTurnstileCancel: () => void;
 }) {
+  const lessFx = useLessEffects();
   const [importOpen, setImportOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const [boardSeen, setBoardSeen] = useState(0);
@@ -205,18 +207,16 @@ export function Entry({
         <span className="strip checker" />
         <Serial className="serial" />
         <i className="rail-bar" />
-        <button
-          className="rail-sound"
-          onClick={() => setMuted(!muted)}
-          aria-label={muted ? "Enable sound" : "Mute sound"}
-          aria-pressed={muted}
-        >
-          {muted ? (
-            <SpeakerSlashIcon weight="fill" />
-          ) : (
-            <SpeakerHighIcon weight="fill" />
-          )}
-        </button>
+        <span className="rail-toggles">
+          <button type="button" className="rail-toggle" aria-pressed={lessFx} onClick={() => setLessEffects(!lessFx)}>
+            <i aria-hidden="true" />
+            Less effects
+          </button>
+          <button type="button" className="rail-toggle" aria-pressed={muted} onClick={() => setMuted(!muted)}>
+            {muted ? <SpeakerSlashIcon weight="fill" /> : <SpeakerHighIcon weight="fill" />}
+            Mute sound
+          </button>
+        </span>
         <span className="rail-line" />
         <Chevrons className="rail-chevrons" />
         <span className="strip hatch-red wide" />

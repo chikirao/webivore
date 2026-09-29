@@ -488,6 +488,9 @@
   }
 }
 .countdown strong {
+  /* room for the italic overhang and the shadow: the filter clips to the box */
+  display: block;
+  padding: 0.08em 0.3em 0.12em 0.15em;
   font-size: clamp(110px, 18vw, 240px);
   -webkit-text-stroke: 0.05em var(--ink);
   filter: drop-shadow(0.06em 0.06em 0 var(--red));
@@ -2131,4 +2134,75 @@
   height: 100vh;
   z-index: 40;
   pointer-events: none;
+}
+
+/* Phones and "Less effects": the streak badge stays readable but still.
+   Gradient text, glow filters and endless shaking re-rasterise the badge
+   every frame, which stalls phones; on touch it also moves off the joystick. */
+.touch-playing .combo {
+  top: max(124px, 17svh);
+  bottom: auto;
+  left: max(12px, env(safe-area-inset-left));
+}
+.touch-playing .combo-count {
+  font-size: calc(var(--size) * 0.55);
+}
+.touch-playing .combo-word {
+  font-size: 13px;
+}
+.touch-playing .combo-timer {
+  width: 90px;
+}
+.touch-playing .combo,
+.less-effects .combo {
+  animation: none;
+}
+.touch-playing .combo .combo-count,
+.less-effects .combo .combo-count {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--combo-fill, var(--paper));
+  -webkit-text-stroke: 0.07em var(--ink);
+  filter: none;
+  text-shadow: 3px 3px 0 var(--ink);
+  animation: combo-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+.touch-playing .combo-timer,
+.less-effects .combo-timer {
+  background: var(--combo-fill, var(--red));
+}
+.combo.tier-1,
+.combo.tier-2 {
+  --combo-fill: var(--red);
+}
+.combo.tier-3 {
+  --combo-fill: #ffb300;
+}
+.combo.tier-4 {
+  --combo-fill: #ffd23a;
+}
+.combo.tier-5 {
+  --combo-fill: #ff2b6a;
+}
+.combo.tier-6 {
+  --combo-fill: #1ec8ff;
+}
+.combo.tier-7,
+.combo.tier-8 {
+  --combo-fill: #ffe600;
+}
+.touch-playing .combo.tier-1 .combo-count,
+.touch-playing .combo.tier-2 .combo-count,
+.less-effects .combo.tier-1 .combo-count,
+.less-effects .combo.tier-2 .combo-count {
+  -webkit-text-stroke-color: var(--paper);
+}
+.pause-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pause-toggles .chip[aria-pressed="true"] {
+  color: var(--red);
 }

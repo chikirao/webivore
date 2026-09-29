@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Chevrons } from "./ui/marks";
 import { burstFrom } from "./ui/confetti";
+import { popper, victory } from "./audio/sfx";
 import "./ui/victory.css";
 
 /** Seconds the rabbit dances before the banner, and how long the banner stays. */
@@ -21,9 +22,11 @@ export function Victory({ site, pieces, onDone }: { site: string; pieces: number
   // The card lands with one more round of paper, from both of its sides.
   useEffect(() => {
     if (!banner) return;
+    victory();
     const timer = setTimeout(() => {
       burstFrom(card.current, { count: 90, power: 900, angle: -Math.PI * 0.75, spread: 1.1 });
       burstFrom(card.current, { count: 90, power: 900, angle: -Math.PI * 0.25, spread: 1.1 });
+      popper();
     }, 450);
     return () => clearTimeout(timer);
   }, [banner]);

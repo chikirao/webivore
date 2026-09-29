@@ -163,6 +163,7 @@ export class RoomLight {
   /** Canvas pixels per CSS pixel, so grain size is in screen px. */
   private backingPerCss = 1;
   private displayScale = 0.625;
+  private coarse = matchMedia("(pointer: coarse)").matches;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -238,7 +239,8 @@ export class RoomLight {
     // under one device pixel, the amount fades the way finer grain would.
     const roomCss = this.room.size[0] * this.displayScale;
     const cell = k.grainSize * (roomCss / 1920) * this.backingPerCss;
-    gl.uniform1f(this.loc("grain"), reduced ? 0 : k.grain * Math.min(1, Math.sqrt(cell)));
+    const mobile = this.coarse ? k.grainMobile : 1;
+    gl.uniform1f(this.loc("grain"), reduced ? 0 : k.grain * mobile * Math.min(1, Math.sqrt(cell)));
     gl.uniform1f(this.loc("grainPx"), Math.max(1, cell));
     gl.uniform1f(this.loc("grainShadows"), k.grainShadows);
     gl.uniform1f(this.loc("grainColor"), k.grainColor);

@@ -25,6 +25,13 @@ import { startRun, type RunTicket } from "./leaderboard-api";
 import { Prelude } from "./prelude/Prelude";
 import { crtKick, crtTransition, installCrt } from "./crt/fx";
 import { CrtDevPanel } from "./crt/CrtDevPanel";
+import { installAudioUnlock, setMuted, useMuted } from "./audio/engine";
+import { countdown as countdownSound } from "./audio/sfx";
+import { musicFinal, musicPause, playMusic, prefetchMusic, type Track } from "./audio/music";
+import { soundSettings } from "./audio/settings";
+import { setLessEffects, useLessEffects } from "./prefs";
+
+installAudioUnlock();
 
 /** `?intro=0` skips the room prelude (tests, returning players with a link). */
 const showIntro = new URLSearchParams(location.search).get("intro") !== "0";
@@ -43,6 +50,7 @@ const initial: Stats = {
   error: "",
   pickups: [],
   guiding: true,
+  looked: false,
 };
 
 function useViewport() {
@@ -67,7 +75,6 @@ function App() {
     [level, setLevel] = useState<Level | null>(null),
     [source, setSource] = useState<LevelSource | null>(null),
     [stats, setStats] = useState(initial),
-    [muted, setMuted] = useState(false),
     [paused, setPaused] = useState(false),
     [countdown, setCountdown] = useState<number | null>(null),
     /** The YOU WON! banner has played; the trophy screen may open. */
@@ -79,6 +86,8 @@ function App() {
     game = useRef<Game | null>(null),
     operation = useRef<AbortController | null>(null);
   const pauseRef = useRef(false);
+  const muted = useMuted();
+  const less = useLessEffects();
   const [intro, setIntro] = useState(showIntro);
   const viewport = useViewport();
   useEffect(installCrt, []);
@@ -162,11 +171,37 @@ function App() {
   }, [countdown]);
   useEffect(() => {
     if (game.current) {
-      game.current.muted = muted;
       game.current.paused = paused || countdown !== null;
       if (game.current.paused) game.current.clearPointerInput();
     }
-  }, [muted, paused, countdown]);
+  }, [paused, countdown]);
+  useEffect(() => {
+    if (stats.ready && countdown !== null) countdownSound(countdown);
+  }, [countdown, stats.ready]);
+  // Music: the room has its own record; then the menu take, silence through
+  // the countdown, the game take from GO, the finale from the last bite.
+  const track: Track | null = intro
+    ? null
+    : !level
+      ? "menu"
+      : stats.done
+        ? "finale"
+        : stats.ready && !stats.error && (countdown === null || countdown <= 0)
+          ? "game"
+          : null;
+  useEffect(() => playMusic(track), [track]);
+  useEffect(() => {
+    if (level) prefetchMusic("game");
+  }, [level]);
+  const nearEnd = track === "game" && stats.percent >= soundSettings.music.finalAt;
+  useEffect(() => {
+    if (nearEnd) musicFinal();
+  }, [nearEnd]);
+  const halfway = track === "game" && stats.percent >= 50;
+  useEffect(() => {
+    if (halfway) prefetchMusic("finale");
+  }, [halfway]);
+  useEffect(() => musicPause(paused && !!level && !stats.done), [paused, level, stats.done]);
   const cancel = useCallback(() => {
     operation.current?.abort(new DOMException("Cancelled", "AbortError"));
     operation.current = null;
@@ -328,7 +363,7 @@ function App() {
         !stats.done &&
         !stats.error &&
         !paused &&
-        countdown === null && <TouchControls onMove={moveStick} />}
+        countdown === null && <TouchControls onMove={moveStick} looked={stats.looked} />}
       <div inert={stats.done}>
         <Hud
           stats={stats}
@@ -425,6 +460,14 @@ function App() {
             >
               Export level
             </Plate>
+            <span className="pause-toggles">
+              <Plate as="button" shape="chip" className="chip" aria-pressed={less} onClick={() => setLessEffects(!less)}>
+                {less ? "Full effects" : "Less effects"}
+              </Plate>
+              <Plate as="button" shape="chip" className="chip" aria-pressed={muted} onClick={() => setMuted(!muted)}>
+                {muted ? "Sound on" : "Mute all sounds"}
+              </Plate>
+            </span>
           </Plate>
         </div>
       )}

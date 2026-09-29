@@ -25,8 +25,11 @@ export function useTouchControls() {
 
 export function TouchControls({
   onMove,
+  looked = false,
 }: {
   onMove: (x: number, y: number) => void;
+  /** The camera has been turned once: the swipe hint has done its job. */
+  looked?: boolean;
 }) {
   const base = useRef<HTMLButtonElement>(null);
   const knob = useRef<HTMLSpanElement>(null);
@@ -148,9 +151,11 @@ export function TouchControls({
         Drag to walk. Release to stop. Swipe the game field with another finger
         to rotate the camera. Arrow keys also move.
       </span>
-      <span className="touch-camera-hint" aria-hidden="true">
-        Swipe to look
-      </span>
+      {!looked && (
+        <span className="touch-camera-hint" aria-hidden="true">
+          Swipe to look
+        </span>
+      )}
     </div>
   );
 }

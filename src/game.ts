@@ -10,6 +10,7 @@ import { EmptyCells } from "./clearing";
 import { imageReady, reasonOf } from "./load-image";
 import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
+import { tear, thud as landingThud } from "./audio/sfx";
 
 export type PickupEvent = {
   id: number;
@@ -33,6 +34,8 @@ export type Stats = {
   error: string;
   pickups: PickupEvent[];
   guiding: boolean;
+  /** The player has turned the camera at least once (hides the swipe hint). */
+  looked: boolean;
 };
 type Item = Piece & {
   gone: boolean;
@@ -61,7 +64,6 @@ export class Game {
   items: Item[];
   pickupIndex: PickupIndex<Item>;
   rabbit!: Rabbit;
-  lastSound = -Infinity;
   visualBites = 0;
   /** Recent bites with their world position, projected for HUD feedback. Bounded. */
   recent: {
@@ -97,7 +99,7 @@ export class Game {
   time = 0;
   done = false;
   paused = false;
-  muted = false;
+  looked = false;
   ready = false;
   error = "";
   label = "Walk up to a little piece. Your collection starts there.";
@@ -121,7 +123,6 @@ export class Game {
   width = 0;
   height = 0;
   disposed = false;
-  audio?: AudioContext;
   handlers: (() => void)[] = [];
   drag?: { x: number; y: number; pan: boolean; id: number };
   stick = { x: 0, y: 0 };
@@ -393,7 +394,11 @@ export class Game {
       if (this.drag || this.paused || this.done || !this.ready || this.error)
         return;
       e.preventDefault();
-      this.canvas.setPointerCapture(e.pointerId);
+      try {
+        this.canvas.setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer already gone; move/up still reach the canvas */
+      }
       const pan = e.pointerType !== "touch" && (e.button === 2 || e.shiftKey);
       this.drag = { x: e.clientX, y: e.clientY, id: e.pointerId, pan };
       if (pan) this.cam.free = true;
@@ -409,6 +414,7 @@ export class Game {
           this.cam.pan.z -=
             (dy * Math.cos(this.cam.yaw) - dx * Math.sin(this.cam.yaw)) * scale;
         } else {
+          if (Math.abs(dx) + Math.abs(dy) > 2) this.looked = true;
           this.cam.yaw -= dx * 0.006;
           this.cam.pitch = clamp(this.cam.pitch + dy * 0.005, 0.32, 1.43);
         }
@@ -471,61 +477,9 @@ export class Game {
     if (!this.surface) return;
     this.stunts.drop(this.x, this.y, this.items, this.surface.tiles, () => this.thud());
   }
-  /** Landing boom: a falling sine plus a short low-passed noise burst. */
+  /** Landing boom. */
   thud() {
-    if (this.muted) return;
-    try {
-      this.audio ??= new AudioContext();
-      void this.audio.resume();
-      const a = this.audio,
-        t = a.currentTime;
-      const o = a.createOscillator(),
-        g = a.createGain();
-      o.frequency.setValueAtTime(120, t);
-      o.frequency.exponentialRampToValueAtTime(36, t + 0.4);
-      g.gain.setValueAtTime(0.32, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-      o.connect(g).connect(a.destination);
-      o.start(t);
-      o.stop(t + 0.56);
-      const noise = a.createBuffer(1, Math.floor(a.sampleRate * 0.3), a.sampleRate),
-        data = noise.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 3;
-      const src = a.createBufferSource(),
-        filter = a.createBiquadFilter(),
-        level = a.createGain();
-      src.buffer = noise;
-      filter.type = "lowpass";
-      filter.frequency.value = 900;
-      level.gain.value = 0.35;
-      src.connect(filter).connect(level).connect(a.destination);
-      src.start(t);
-    } catch {}
-  }
-  sound(block = false) {
-    if (this.muted || this.time - this.lastSound < 0.065) return;
-    this.lastSound = this.time;
-    try {
-      this.audio ??= new AudioContext();
-      void this.audio.resume();
-      const o = this.audio.createOscillator(),
-        g = this.audio.createGain();
-      o.connect(g);
-      g.connect(this.audio.destination);
-      o.type = block ? "triangle" : "sine";
-      o.frequency.setValueAtTime(
-        block ? 95 : 340 + Math.random() * 450,
-        this.audio.currentTime,
-      );
-      o.frequency.exponentialRampToValueAtTime(
-        block ? 55 : 1100,
-        this.audio.currentTime + 0.12,
-      );
-      g.gain.setValueAtTime(0.025, this.audio.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, this.audio.currentTime + 0.15);
-      o.start();
-      o.stop(this.audio.currentTime + 0.16);
-    } catch {}
+    landingThud();
   }
   /** `quiet` bakes the piece straight into the ball without flight, label or sound (endgame sweep). */
   pickup(seed: Item, candidates: Item[] = [seed], quiet = false) {
@@ -600,7 +554,8 @@ export class Game {
       time: this.time,
     });
     if (this.recent.length > 6) this.recent.splice(0, this.recent.length - 6);
-    this.sound();
+    // bigger bites and bigger groups tear longer and lower
+    tear(Math.min(1, Math.sqrt(combined.width * combined.height) / 280 + (members.length - 1) * 0.08));
     if (!this.reduced && this.particles.length < 80) {
       for (let i = 0; i < 5; i++) {
         this.particleGeometry ??= this.ownGeometry(
@@ -644,7 +599,7 @@ export class Game {
     this.labelUntil = this.time + 2.5;
     this.recent.push({ id: ++this.visualBites, big: true, label, x: this.x, z: this.y, time: this.time });
     if (this.recent.length > 6) this.recent.splice(0, this.recent.length - 6);
-    this.sound();
+    tear(0.3);
   }
   update(dt: number) {
     if (!this.ready || this.error) return;
@@ -1012,6 +967,7 @@ export class Game {
       this.drawMap();
       this.report({
         guiding: this.guide.enabled,
+        looked: this.looked,
         count: this.count,
         percent: this.total ? (100 * this.mass) / this.total : 0,
         radius: this.radius,
@@ -1048,6 +1004,5 @@ export class Game {
     this.rabbit.dispose();
     this.scene.clear();
     this.renderer.dispose();
-    void this.audio?.close();
   }
 }

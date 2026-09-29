@@ -7,6 +7,9 @@ import { crtSettings, onCrtSettings } from "../crt/settings";
 import { fitRoom, pickRoom, zoomToScreen, type Room } from "./rooms";
 import { Ambience, flickerSource } from "./Ambience";
 import { roomLight } from "./RoomLight";
+import { enterRoom, leaveRoom } from "../audio/room";
+import { room as roomSound } from "../audio/sfx";
+import { setMuted, useAudioUnlocked, useMuted } from "../audio/engine";
 import "./prelude.css";
 
 /**
@@ -61,6 +64,8 @@ export function Prelude({ onDone }: { onDone: () => void }) {
   const [discAway, setDiscAway] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [touch] = useState(() => matchMedia("(pointer: coarse)").matches);
+  const muted = useMuted();
+  const soundReady = useAudioUnlocked();
   const [, bump] = useState(0);
   useEffect(() => onCrtSettings(() => bump((n) => n + 1)), []);
   const screenCanvas = useRef<HTMLCanvasElement>(null);
@@ -88,6 +93,14 @@ export function Prelude({ onDone }: { onDone: () => void }) {
         "disc-on-rug-sprite.webp", "disc-on-rug-shadow.webp"].map((f) => asset(room, f)),
     [room],
   );
+
+  // the room's sound: starts with the first tap or click, fades out on the way in
+  useEffect(() => {
+    enterRoom();
+    return () => leaveRoom(0.3);
+  }, []);
+  /** Stereo position of a plate rect in the room, -1..1. */
+  const panOf = (r: { x: number; w: number }) => Math.max(-1, Math.min(1, ((r.x + r.w / 2) / room.size[0]) * 2 - 1)) * 0.7;
 
   // 1. load the plates, then fade the room in
   useEffect(() => {
@@ -166,9 +179,10 @@ export function Prelude({ onDone }: { onDone: () => void }) {
   useLayoutEffect(() => {
     const s = stage === "zoom" ? zoomScale.current : fit.s;
     const dpr = Math.min(2, devicePixelRatio || 1);
-    const w = Math.min(2048, room.screen.w * s * dpr);
+    // phones: a smaller tube backing store, the dive is short anyway
+    const w = Math.min(touch ? 1280 : 2048, room.screen.w * s * dpr);
     crt.current?.resize(w, (w * room.screen.h) / room.screen.w);
-  }, [fit.s, room, stage]);
+  }, [fit.s, room, stage, touch]);
 
   // 3. timeline: room → power on → boot → splash (insert disc)
   useEffect(() => {
@@ -179,6 +193,7 @@ export function Prelude({ onDone }: { onDone: () => void }) {
     if (stage === "boot") {
       // the raster needs ~0.8 s to open; BIOS text starts once it is lit
       powerStart.current = programClock();
+      roomSound("boot", panOf(room.screen), 0.35);
       const t1 = setTimeout(() => program.current?.set("boot", programClock()), 50);
       program.current?.set("splash", programClock()); // anything but boot, so set() restarts it
       const t2 = setTimeout(() => setStage("insert"), (BOOT_SECONDS + 0.9) * 1000);
@@ -190,6 +205,7 @@ export function Prelude({ onDone }: { onDone: () => void }) {
     if (stage === "insert") program.current?.set("splash", programClock());
     if (stage === "reading") {
       program.current?.set("reading", programClock());
+      roomSound("spin", panOf(room.console), 0.22);
       const start = performance.now(),
         total = reduced() ? 600 : 2600;
       let raf = 0;
@@ -210,7 +226,10 @@ export function Prelude({ onDone }: { onDone: () => void }) {
     if (finished.current) return;
     finished.current = true;
     setLeaving(true);
-    if (!revealed.current) crtTransition("reveal"); // skip: no dive to lead in
+    if (!revealed.current) {
+      crtTransition("reveal"); // skip: no dive to lead in
+      leaveRoom(0.4);
+    }
     setTimeout(onDone, reduced() ? 50 : 420);
   }, [onDone]);
 
@@ -238,6 +257,7 @@ export function Prelude({ onDone }: { onDone: () => void }) {
         ],
         { duration: ms, easing: "cubic-bezier(.45,0,.25,1)", fill: "forwards" },
       );
+      roomSound("tray", panOf(room.console), 0.6);
       const land = () => {
         setDiscAway(true);
         setConsole("tray-open");
@@ -249,60 +269,98 @@ export function Prelude({ onDone }: { onDone: () => void }) {
     [room],
   );
 
-  // pointer: click inserts at once; dragging lifts the disc and needs a drop on the console
-  const drag = useRef<{ id: number; x0: number; y0: number; moved: boolean } | null>(null);
-  const onDiscDown = (e: React.PointerEvent) => {
-    if (stageRef.current !== "insert") return;
-    e.preventDefault();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false };
+  // pointer: a tap inserts at once; dragging lifts the disc and needs a drop on
+  // the console. Move/up are followed on window, so a finger that leaves the
+  // button or a lost capture (touch browsers) still ends the drag.
+  const drag = useRef<{ id: number; x0: number; y0: number; x: number; y: number; moved: boolean; stop: () => void } | null>(null);
+  const offsetOf = (d: { x0: number; y0: number; x: number; y: number }) => ({ x: (d.x - d.x0) / fit.s, y: (d.y - d.y0) / fit.s - 30 });
+  /** Dropped on the console: the pointer or the lifted disc over it, with a finger-sized margin. */
+  const overConsole = (d: { x0: number; y0: number; x: number; y: number }) => {
+    const c = room.console,
+      m = Math.max(60, 48 / fit.s);
+    const inside = (x: number, y: number) => x > c.x - m && x < c.x + c.w + m && y > c.y - m - 80 && y < c.y + c.h + m;
+    const o = offsetOf(d);
+    return (
+      inside((d.x - fit.tx) / fit.s, (d.y - fit.ty) / fit.s) ||
+      inside(room.disc.x + room.disc.w / 2 + o.x, room.disc.y + room.disc.h / 2 + o.y)
+    );
   };
-  const offset = (e: React.PointerEvent) => {
-    const d = drag.current!;
-    return { x: (e.clientX - d.x0) / fit.s, y: (e.clientY - d.y0) / fit.s };
-  };
-  const overConsole = (e: React.PointerEvent) => {
-    const x = (e.clientX - fit.tx) / fit.s,
-      y = (e.clientY - fit.ty) / fit.s;
-    const c = room.console;
-    return x > c.x - 60 && x < c.x + c.w + 60 && y > c.y - 140 && y < c.y + c.h + 80;
-  };
-  const onDiscMove = (e: React.PointerEvent) => {
+  const endDrag = (cancelled: boolean) => {
     const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
-    if (!d.moved && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 6) return;
-    if (!d.moved) {
-      d.moved = true;
-      setDragging(true);
-    }
-    const o = offset(e);
-    discEl.current!.style.transform = `translate(${o.x}px, ${o.y - 30}px) scale(1.06)`;
-    if (discShadow.current) {
-      discShadow.current.style.opacity = "0.35";
-      discShadow.current.style.transform = `translate(${o.x + 18}px, ${o.y + 10}px)`;
-    }
-    scene.current?.classList.toggle("drop-ready", overConsole(e));
-  };
-  const onDiscUp = (e: React.PointerEvent) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
+    if (!d) return;
     drag.current = null;
+    d.stop();
     setDragging(false);
     scene.current?.classList.remove("drop-ready");
-    if (!d.moved) return insert();
-    const o = offset(e);
-    if (overConsole(e)) return insert({ x: o.x, y: o.y - 30 });
-    // missed: drop back onto the rug
-    discEl.current!.animate(
-      [{ transform: `translate(${o.x}px, ${o.y - 30}px) scale(1.06)` }, { transform: "none" }],
-      { duration: 380, easing: "cubic-bezier(.3,1.4,.5,1)" },
-    );
-    discEl.current!.style.transform = "";
+    if (!d.moved) return cancelled ? undefined : insert();
+    const o = offsetOf(d);
+    if (overConsole(d)) return insert(o);
+    // missed: back onto the rug
+    const el = discEl.current;
+    if (!el) return;
+    el.animate([{ transform: `translate(${o.x}px, ${o.y}px) scale(1.06)` }, { transform: "none" }], {
+      duration: 380,
+      easing: "cubic-bezier(.3,1.4,.5,1)",
+    });
+    el.style.transform = "";
     if (discShadow.current) {
       discShadow.current.style.opacity = "";
       discShadow.current.style.transform = "";
     }
   };
+  const onDiscDown = (e: React.PointerEvent) => {
+    if (stageRef.current !== "insert" || drag.current || e.button > 0) return;
+    e.preventDefault();
+    const el = e.currentTarget as HTMLElement;
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {
+      /* window listeners cover it */
+    }
+    const id = e.pointerId;
+    const move = (ev: PointerEvent) => {
+      const d = drag.current;
+      if (!d || ev.pointerId !== id) return;
+      d.x = ev.clientX;
+      d.y = ev.clientY;
+      if (!d.moved && Math.hypot(d.x - d.x0, d.y - d.y0) < 6) return;
+      if (!d.moved) {
+        d.moved = true;
+        setDragging(true);
+        roomSound("tick", panOf(room.disc));
+      }
+      const o = offsetOf(d);
+      discEl.current!.style.transform = `translate(${o.x}px, ${o.y}px) scale(1.06)`;
+      if (discShadow.current) {
+        discShadow.current.style.opacity = "0.35";
+        discShadow.current.style.transform = `translate(${o.x + 18}px, ${o.y + 40}px)`;
+      }
+      scene.current?.classList.toggle("drop-ready", overConsole(d));
+    };
+    const up = (ev: PointerEvent) => ev.pointerId === id && endDrag(false);
+    const cancel = (ev: PointerEvent) => ev.pointerId === id && endDrag(true);
+    // a touch drag the browser takes over still counts where the finger was
+    const lost = () => drag.current?.moved && endDrag(false);
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", up);
+    addEventListener("pointercancel", cancel);
+    el.addEventListener("lostpointercapture", lost);
+    drag.current = {
+      id,
+      x0: e.clientX,
+      y0: e.clientY,
+      x: e.clientX,
+      y: e.clientY,
+      moved: false,
+      stop: () => {
+        removeEventListener("pointermove", move);
+        removeEventListener("pointerup", up);
+        removeEventListener("pointercancel", cancel);
+        el.removeEventListener("lostpointercapture", lost);
+      },
+    };
+  };
+  useEffect(() => () => drag.current?.stop(), []);
 
   // 5. the dive into the glass
   const launch = useCallback(() => {
@@ -311,6 +369,8 @@ export function Prelude({ onDone }: { onDone: () => void }) {
     zoomScale.current = zoomToScreen(room, innerWidth, innerHeight).s;
     setStage("zoom");
     const dive = reduced() ? 80 : 1050;
+    roomSound("dive", 0, 0.8);
+    leaveRoom(dive / 1000);
     revealed.current = true;
     crtTransition("reveal", dive);
     setTimeout(finish, dive);
@@ -401,7 +461,7 @@ export function Prelude({ onDone }: { onDone: () => void }) {
         />
         <Ambience
           room={room}
-          scale={t.s}
+          scale={fit.s}
           reduced={reduced()}
           plate={plate}
           baseUrl={asset(room, room.base)}
@@ -427,9 +487,6 @@ export function Prelude({ onDone }: { onDone: () => void }) {
               aria-label="Insert the WEBIVORE disc into the console"
               disabled={stage !== "insert"}
               onPointerDown={onDiscDown}
-              onPointerMove={onDiscMove}
-              onPointerUp={onDiscUp}
-              onPointerCancel={onDiscUp}
               onClick={() => !drag.current && insert()}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -475,9 +532,14 @@ export function Prelude({ onDone }: { onDone: () => void }) {
         </div>
       )}
       {stage !== "zoom" && !leaving && (
-        <button type="button" className="pl-skip" onClick={skip}>
-          Skip intro <kbd>Esc</kbd>
-        </button>
+        <div className="pl-corner">
+          <button type="button" className="pl-text-button" aria-pressed={muted} onClick={() => soundReady && setMuted(!muted)}>
+            {muted ? "Sound on" : soundReady ? "Mute sound" : touch ? "Tap for sound" : "Click for sound"}
+          </button>
+          <button type="button" className="pl-text-button" onClick={skip}>
+            Skip intro <kbd>Esc</kbd>
+          </button>
+        </div>
       )}
     </div>
   );

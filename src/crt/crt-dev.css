@@ -98,3 +98,32 @@
   color: #888;
   font-size: 11px;
 }
+.crt-dev-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
+.crt-dev-pages {
+  margin: 0 0 4px;
+}
+.crt-dev-tabs button {
+  padding: 4px 7px;
+  border: 1px solid #444;
+  background: #16161a;
+  color: #bbb;
+  font: inherit;
+  cursor: pointer;
+}
+.crt-dev-tabs button[aria-selected="true"] {
+  border-color: #ff0013;
+  background: #ff0013;
+  color: #fff;
+}
+.crt-dev-pages button {
+  flex: 1;
+  padding: 6px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

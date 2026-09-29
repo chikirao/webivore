@@ -1,3 +1,4 @@
+import { firework } from "./audio/sfx";
 import * as THREE from "three";
 import type { Piece } from "./shared";
 
@@ -187,6 +188,7 @@ export class Stunts {
         top = this.ball().clone();
       top.y += r;
       this.burst(top, first ? 80 : 50, 160 + r * 0.8, 260 + r);
+      firework(first);
       if (first) this.trauma = 0.45;
     }
     const s = this.sinceLanding;

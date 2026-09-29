@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { GearSixIcon, XIcon } from "@phosphor-icons/react";
 import { CRT_DEFAULTS, crtSettings, onCrtSettings, resetCrtSettings, setCrtSetting, type CrtSettings } from "./settings";
 import { crtKick, crtTransition } from "./fx";
+import { SoundDevPanel } from "../audio/SoundDevPanel";
 import "./crt-dev.css";
 
 /** Dev builds only: live CRT tuning. Values persist in localStorage. */
@@ -22,6 +23,7 @@ const GROUPS: [keyof CrtSettings, string, Range[]][] = [
       ["grainFps", "Grain fps", 4, 60, 1],
       ["grainShadows", "Grain in shadows", 0, 1, 0.01],
       ["grainColor", "Grain colour", 0, 1, 0.01],
+      ["grainMobile", "Grain on phones, ×", 0.5, 4, 0.05],
       ["cloudDark", "Cloud darkness", 0, 1, 0.01],
       ["windowDim", "Window dim under cloud", 0, 1, 0.01],
       ["cloudSize", "Cloud size", 0.5, 3, 0.05],
@@ -81,14 +83,41 @@ export function CrtDevPanel() {
   const [open, setOpen] = useState(false);
   const [, bump] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [page, setPage] = useState<"picture" | "sound">(() => {
+    try {
+      return localStorage.getItem("webivore.devTab") === "sound" ? "sound" : "picture";
+    } catch {
+      return "picture";
+    }
+  });
+  const show = (p: "picture" | "sound") => {
+    setPage(p);
+    try {
+      localStorage.setItem("webivore.devTab", p);
+    } catch {
+      /* ignore */
+    }
+  };
   useEffect(() => onCrtSettings(() => bump((n) => n + 1)), []);
   return createPortal(
     <div className="crt-dev">
-      <button type="button" className="crt-dev-gear" aria-label="CRT settings" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button type="button" className="crt-dev-gear" aria-label="Dev settings" aria-expanded={open} onClick={() => setOpen(!open)}>
         {open ? <XIcon weight="bold" /> : <GearSixIcon weight="fill" />}
       </button>
       {open && (
-        <div className="crt-dev-panel" role="dialog" aria-label="CRT settings">
+        <div className="crt-dev-panel" role="dialog" aria-label="Dev settings">
+          <div className="crt-dev-tabs crt-dev-pages" role="tablist">
+            <button type="button" role="tab" aria-selected={page === "picture"} onClick={() => show("picture")}>
+              Picture
+            </button>
+            <button type="button" role="tab" aria-selected={page === "sound"} onClick={() => show("sound")}>
+              Sound
+            </button>
+          </div>
+          {page === "sound" ? (
+            <SoundDevPanel />
+          ) : (
+          <>
           <label className="crt-dev-row crt-dev-check">
             <input
               type="checkbox"
@@ -141,7 +170,9 @@ export function CrtDevPanel() {
             </button>
             <button type="button" onClick={resetCrtSettings}>Reset all</button>
           </div>
-          <p className="crt-dev-note">Double-click a slider to reset it. Room monitor changes apply live in the intro.</p>
+          </>
+          )}
+          <p className="crt-dev-note">Double-click a slider to reset it. Room changes apply live in the intro.</p>
         </div>
       )}
     </div>,

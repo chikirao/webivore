@@ -68,14 +68,19 @@ const nudgesShown = () => {
 function HelpNudge({ stats, paused, onHint }: { stats: Stats; paused: boolean; onHint: () => void }) {
   const [open, setOpen] = useState(false);
   const since = useRef<{ count: number; time: number } | null>(null);
+  /** Found a piece on their own while the callout was up: no more callouts this run. */
+  const solved = useRef(false);
   const active = stats.ready && !stats.done && !stats.error && !paused;
   useEffect(() => {
     if (!since.current || stats.count !== since.current.count || stats.guiding) {
       since.current = { count: stats.count, time: stats.time };
-      if (open) setOpen(false);
+      if (open) {
+        solved.current = true;
+        setOpen(false);
+      }
       return;
     }
-    if (!open && active && stats.time - since.current.time >= NUDGE_AFTER && nudgesShown() < NUDGE_TIMES) {
+    if (!open && !solved.current && active && stats.time - since.current.time >= NUDGE_AFTER && nudgesShown() < NUDGE_TIMES) {
       try {
         localStorage.setItem(NUDGE_KEY, String(nudgesShown() + 1));
       } catch {
@@ -323,15 +328,17 @@ export function Hud({
           </span>
         </Plate>
       </div>
-      <p className="hint hud-hint">
+      <p className={`hint hud-hint${stats.looked ? " looked" : ""}`}>
         <span className="keys-hint">
           <b>WASD</b> walk · <b>drag</b> orbit · <b>right-drag</b> pan ·{" "}
           <b>Q/E</b> turn · <b>space</b> follow · <b>esc</b> pause � <b>H</b>{" "}
           hint
         </span>
-        <span className="touch-hint">
-          <b>joystick</b> walk · <b>swipe</b> look
-        </span>
+        {!stats.looked && (
+          <span className="touch-hint">
+            <b>joystick</b> walk · <b>swipe</b> look
+          </span>
+        )}
       </p>
       {stats.ready && !stats.done && (
         <Combo pickups={stats.pickups} />

@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import type { Room } from "./rooms";
 import { RoomLight, roomLight } from "./RoomLight";
 import { crtSettings } from "../crt/settings";
+import { soundSettings } from "../audio/settings";
+import { roomFrame } from "../audio/room";
 
 /**
  * Small signs of life in the room, all driven by one rAF (no React renders
@@ -9,7 +11,8 @@ import { crtSettings } from "../crt/settings";
  *  - the lamp breathes with an irregular mains flicker;
  *  - a TV beyond the right edge cuts between cold colours;
  *  - the moonlit window breathes; a cloud drifts behind the blinds;
- * and a fly loops fast in the right corner, now and then landing.
+ * and a fly loops fast in the right corner, landing for a while between
+ * flights. The room's sound follows the lamp's dips and the fly's flight.
  */
 
 /** Smooth value noise, 1D. */
@@ -181,7 +184,8 @@ export function Ambience({
         dt = Math.min(0.05, now - last);
       last = now;
 
-      roomLight.lamp = reduced ? 0.9 : 0.72 + (lampFlicker(t) - 0.9) * 2.2;
+      const lampNow = lampFlicker(t);
+      roomLight.lamp = reduced ? 0.9 : 0.72 + (lampNow - 0.9) * 2.2;
       const tvNow = reduced ? { rgb: [120, 150, 255] as [number, number, number], level: 0.6 } : tv(t, dt);
       roomLight.tv = tvNow.rgb;
       roomLight.tvLevel = tvNow.level;
@@ -218,6 +222,7 @@ export function Ambience({
           f.vy += ((dy / d) * 7000 + (f.vx / sp) * swirl) * dt;
           if (t > f.until) {
             f.mode = "land";
+            f.until = Infinity;
             f.perch = a.fly.perches[(Math.random() * a.fly.perches.length) | 0];
           }
         } else if (f.mode === "land") {
@@ -232,7 +237,8 @@ export function Ambience({
             f.x = f.perch[0];
             f.y = f.perch[1];
             f.vx = f.vy = 0;
-            f.until = t + 1.5 + Math.random() * 3.5;
+            const { sitMin, sitMax } = soundSettings.fly;
+            f.until = t + sitMin + Math.random() * Math.max(0, sitMax - sitMin);
           }
         } else {
           // sitting: tiny shuffles, then take off
@@ -241,7 +247,8 @@ export function Ambience({
             f.mode = "fly";
             f.vy = -900;
             f.vx = (Math.random() - 0.5) * 900;
-            f.until = t + 3 + Math.random() * 5;
+            const { flyMin, flyMax } = soundSettings.fly;
+            f.until = t + flyMin + Math.random() * Math.max(0, flyMax - flyMin);
           }
         }
         const sp = Math.hypot(f.vx, f.vy);
@@ -263,6 +270,7 @@ export function Ambience({
         el.style.height = `${size * 0.7}px`;
         el.style.transform = `translate(${f.x - size / 2}px, ${f.y - size * 0.35}px) rotate(${ang}rad) scaleX(${stretch})`;
         el.classList.toggle("sitting", !moving);
+        roomFrame(reduced ? 0.94 : lampNow, { x: f.x, flying: moving, speed: sp }, room.size[0]);
       }
       raf = requestAnimationFrame(loop);
     };

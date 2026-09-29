@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PickupEvent } from "./game";
 import { burstFrom } from "./ui/confetti";
 import { crtKick } from "./crt/fx";
+import { popper, streakNote, streakTier } from "./audio/sfx";
 
 /** A streak ends this long after the last bite. */
 export const STREAK_MS = 2400;
@@ -32,6 +33,7 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
   const [streak, setStreak] = useState(0);
   const [bumped, setBumped] = useState(0);
   const seen = useRef(new Set<number>());
+  const count = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const badge = useRef<HTMLDivElement>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -40,21 +42,29 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
     if (!fresh.length) return;
     for (const p of fresh) seen.current.add(p.id);
     if (seen.current.size > 64) seen.current = new Set([...seen.current].slice(-32));
-    setStreak((n) => n + fresh.length);
+    const next = (count.current += fresh.length);
+    setStreak(next);
+    streakNote(next);
     setBumped((b) => b + 1);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setStreak(0), STREAK_MS);
+    timer.current = setTimeout(() => {
+      count.current = 0;
+      setStreak(0);
+    }, STREAK_MS);
   }, [pickups]);
   const previous = useRef(0);
   // The tube jolts when the streak climbs into a louder word (Feast and up).
   useEffect(() => {
     const now = comboTier(streak).tier,
       before = comboTier(previous.current).tier;
+    if (now > before) streakTier(now);
     if (now > before && now >= 4) crtKick(now >= 6 ? 2 : 1);
   }, [streak]);
   useEffect(() => {
-    if (Math.floor(streak / 10) > Math.floor(previous.current / 10))
+    if (Math.floor(streak / 10) > Math.floor(previous.current / 10)) {
       burstFrom(badge.current, { count: 30 + Math.min(90, streak / 2), rainbow: streak >= 100, power: 480 + Math.min(300, streak) });
+      popper();
+    }
     previous.current = streak;
   }, [streak]);
   if (!streak) return null;

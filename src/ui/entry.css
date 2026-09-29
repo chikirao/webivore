@@ -991,3 +991,58 @@
     background: transparent;
   }
 }
+
+/* Less effects and Mute: two plain toggles on the black rail. */
+.rail-toggles {
+  display: flex;
+  flex-shrink: 0;
+  gap: 18px;
+  align-items: center;
+}
+.rail-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: white;
+  font: 700 13px/1 var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rail-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+/* the effects switch: an empty square, filled red when on */
+.rail-toggle i {
+  width: 16px;
+  height: 16px;
+  border: 3px solid white;
+  flex-shrink: 0;
+}
+.rail-toggle[aria-pressed="true"] {
+  color: var(--red);
+}
+.rail-toggle[aria-pressed="true"] i {
+  background: var(--red);
+  border-color: var(--red);
+}
+.rail-toggle:hover {
+  color: var(--red);
+}
+@media (max-width: 1150px) {
+  .rail-toggles {
+    gap: 12px;
+  }
+  .rail-toggle {
+    font-size: 11px;
+    gap: 6px;
+  }
+}
+@media (max-width: 520px) {
+  .entry-rail .rail-chevrons,
+  .entry-rail .hatch-red {
+    display: none;
+  }
+}

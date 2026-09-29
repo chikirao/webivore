@@ -1,5 +1,7 @@
 import "./crt.css";
 import { crtSettings, onCrtSettings } from "./settings";
+import { lessEffects, onLessEffects } from "../prefs";
+import { tube } from "../audio/sfx";
 
 /**
  * The page lives inside the monitor after the prelude dives in.
@@ -117,7 +119,14 @@ function compile(gl: WebGL2RenderingContext) {
   return u;
 }
 
-type Layer = { canvas: HTMLCanvasElement; gl: WebGL2RenderingContext; u: (n: string) => WebGLUniformLocation | null; mode: number };
+type Layer = {
+  canvas: HTMLCanvasElement;
+  gl: WebGL2RenderingContext;
+  u: (n: string) => WebGLUniformLocation | null;
+  mode: number;
+  /** When the context was lost (performance.now()), 0 while it is fine. */
+  lostAt: number;
+};
 
 const state = {
   /** Overlay opacity; ramps in during the prelude's dive. */
@@ -231,8 +240,10 @@ function applyFilter(split: number, tear = 0) {
   if (!svg || !r) return;
   const o = crtSettings.overlay;
   const inPrelude = !!document.querySelector(".prelude");
-  const resting = o.enabled && !inPrelude && !coarse() && (o.edgeRgb > 0 || o.barrel > 0);
-  const bursting = split > 0.01 || tear > 0.01;
+  // SVG filters over the whole page (and its WebGL canvas) stall phones
+  const allowed = o.enabled && !lessEffects() && !coarse();
+  const resting = allowed && !inPrelude && (o.edgeRgb > 0 || o.barrel > 0);
+  const bursting = allowed && (split > 0.01 || tear > 0.01);
   const id = bursting ? "crt-burst" : resting ? "crt-edge" : "";
   const f = id && svg.querySelector(`#${id}`);
   if (f) {
@@ -259,31 +270,55 @@ function applyFilter(split: number, tear = 0) {
 export function installCrt() {
   if (installed) return;
   installed = true;
-  // Each canvas sits directly in <body>: a wrapper would be its own stacking
-  // context and the blend modes would only mix with the empty wrapper.
   for (const mode of [0, 1]) {
-    const canvas = document.createElement("canvas");
-    canvas.className = `crt-layer ${mode ? "crt-light" : "crt-shade"}`;
-    canvas.setAttribute("aria-hidden", "true");
-    const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, premultipliedAlpha: false });
-    if (!gl) continue;
-    try {
-      layers.push({ canvas, gl, u: compile(gl), mode });
-      document.body.appendChild(canvas);
-    } catch {
-      /* no overlay, page still works */
-    }
+    const layer = makeLayer(mode);
+    if (layer) layers.push(layer);
   }
   buildSvg();
   addEventListener("resize", () => {
     refreshSvg();
   });
   onCrtSettings(() => refreshSvg());
+  onLessEffects(() => refreshSvg());
   const loop = () => {
     draw();
     raf = requestAnimationFrame(loop);
   };
   raf = requestAnimationFrame(loop);
+}
+
+/**
+ * Each canvas sits directly in <body>: a wrapper would be its own stacking
+ * context and the blend modes would only mix with the empty wrapper. A lost
+ * context (phones drop old ones under memory pressure, e.g. during the
+ * prelude's dive) is restored, or the canvas is rebuilt if it never comes back.
+ */
+function makeLayer(mode: number, replace?: HTMLCanvasElement): Layer | null {
+  const canvas = document.createElement("canvas");
+  canvas.className = `crt-layer ${mode ? "crt-light" : "crt-shade"}`;
+  canvas.setAttribute("aria-hidden", "true");
+  const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, premultipliedAlpha: false });
+  if (!gl) return null;
+  try {
+    const layer: Layer = { canvas, gl, u: compile(gl), mode, lostAt: 0 };
+    canvas.addEventListener("webglcontextlost", (e) => {
+      e.preventDefault();
+      layer.lostAt = performance.now();
+    });
+    canvas.addEventListener("webglcontextrestored", () => {
+      try {
+        layer.u = compile(gl);
+        layer.lostAt = 0;
+      } catch {
+        /* rebuilt by draw() */
+      }
+    });
+    if (replace) replace.replaceWith(canvas);
+    else document.body.appendChild(canvas);
+    return layer;
+  } catch {
+    return null; // no overlay, page still works
+  }
 }
 
 function draw() {
@@ -300,7 +335,12 @@ function draw() {
     }
   }
   const o = crtSettings.overlay;
-  const hidden = !o.enabled || (!!document.querySelector(".prelude") && !state.revealing);
+  const hidden = !o.enabled || lessEffects() || (!!document.querySelector(".prelude") && !state.revealing);
+  layers = layers.map((L) => {
+    if (!L.lostAt && !L.gl.isContextLost()) return L;
+    L.lostAt ||= now;
+    return now - L.lostAt > 1500 ? (makeLayer(L.mode, L.canvas) ?? L) : L;
+  });
   for (const L of layers) {
     L.canvas.style.display = hidden ? "none" : "";
     L.canvas.style.opacity = String(state.opacity);
@@ -310,6 +350,7 @@ function draw() {
   const w = Math.round(innerWidth * dpr),
     h = Math.round(innerHeight * dpr);
   for (const L of layers) {
+    if (L.lostAt) continue;
     const { gl, canvas, u } = L;
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
@@ -358,10 +399,11 @@ export function crtTransition(kind: Transition = "switch", lead = 0) {
   installCrt();
   const b = crtSettings.burst;
   state.seed = Math.random() * 100;
-  if (reduced()) {
+  if (reduced() || lessEffects()) {
     state.power = 1;
     return;
   }
+  if (kind !== "reveal") tube(kind === "switch" ? 0 : 2);
   if (kind === "switch") {
     animate(b.switchMs, (p) => {
       const k = shock(p);
@@ -413,7 +455,7 @@ let lastKick = 0;
 export function crtKick(power = 1) {
   installCrt();
   const now = performance.now();
-  if (now - lastKick < 900 || reduced() || animating) return;
+  if (now - lastKick < 900 || reduced() || lessEffects() || animating) return;
   lastKick = now;
   const b = crtSettings.burst;
   const amp = b.kick * (power > 1 ? 1.25 : 0.85);

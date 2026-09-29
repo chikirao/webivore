@@ -192,3 +192,7 @@
     bottom: 23%;
   }
 }
+/* Once the camera has been turned, the swipe hint has done its job. */
+.touch-playing .hud-hint.looked {
+  display: none !important;
+}

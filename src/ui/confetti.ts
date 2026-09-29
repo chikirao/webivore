@@ -18,7 +18,11 @@ type Bit = {
   life: number;
 };
 
+import { lessEffects } from "../prefs";
+
 const PAPER = ["#ff0013", "#ffffff", "#050505"];
+/** Phones: a 1× canvas and fewer bits; the full-screen redraw is the cost. */
+const light = () => lessEffects() || matchMedia("(pointer: coarse)").matches;
 let canvas: HTMLCanvasElement | undefined;
 let ctx: CanvasRenderingContext2D | null = null;
 let bits: Bit[] = [];
@@ -33,7 +37,7 @@ function layer() {
     document.body.append(canvas);
     ctx = canvas.getContext("2d");
   }
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const dpr = light() ? 1 : Math.min(devicePixelRatio || 1, 2);
   const w = Math.round(innerWidth * dpr),
     h = Math.round(innerHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) {
@@ -58,7 +62,8 @@ export type BurstOptions = {
 export function burst(x: number, y: number, { count = 40, power = 520, rainbow = false, angle = -Math.PI / 2, spread = Math.PI * 0.9 }: BurstOptions = {}) {
   if (typeof window === "undefined" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   layer();
-  for (let i = 0; i < count && bits.length < 600; i++) {
+  if (light()) count = Math.round(count * 0.4);
+  for (let i = 0; i < count && bits.length < (light() ? 160 : 600); i++) {
     const a = angle + (Math.random() - 0.5) * spread,
       v = power * (0.45 + Math.random() * 0.75);
     bits.push({

@@ -29,6 +29,14 @@ export function markDirty(texture: THREE.Texture, canvas: HTMLCanvasElement, x: 
   } else pending.set(texture, { texture, canvas, box });
 }
 
+/**
+ * The dirty rectangle is first copied into a canvas of exactly its size: a
+ * sub-rectangle upload straight from the big canvas makes browsers read the
+ * whole canvas back first (Safari and phone GPUs especially), every bite.
+ */
+let scratch: HTMLCanvasElement | null = null;
+let scratchCtx: CanvasRenderingContext2D | null = null;
+
 export function flushPatches(renderer: THREE.WebGLRenderer) {
   if (!pending.size) return;
   const webgl2 = renderer.getContext() instanceof WebGL2RenderingContext;
@@ -47,15 +55,19 @@ export function flushPatches(renderer: THREE.WebGLRenderer) {
       texture.needsUpdate = true;
       continue;
     }
-    // With UNPACK_FLIP_Y the source is flipped before the sub-rectangle is taken,
-    // so both the source rows and the destination rows are counted from the bottom.
+    scratch ??= document.createElement("canvas");
+    scratchCtx ??= scratch.getContext("2d");
+    if (!scratchCtx) {
+      texture.needsUpdate = true;
+      continue;
+    }
+    scratch.width = width;
+    scratch.height = height;
+    scratchCtx.clearRect(0, 0, width, height);
+    scratchCtx.drawImage(canvas, box.x0, box.y0, width, height, 0, 0, width, height);
+    // With UNPACK_FLIP_Y the patch lands counted from the texture's bottom row.
     const y = texture.flipY ? canvas.height - box.y1 : box.y0;
-    renderer.copyTextureToTexture(
-      new THREE.Texture(canvas),
-      texture,
-      new THREE.Box2(new THREE.Vector2(box.x0, y), new THREE.Vector2(box.x1, y + height)),
-      new THREE.Vector2(box.x0, y),
-    );
+    renderer.copyTextureToTexture(new THREE.Texture(scratch), texture, null, new THREE.Vector2(box.x0, y));
   }
   pending.clear();
 }
