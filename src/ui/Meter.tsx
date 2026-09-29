@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Burst, Chevrons } from "./marks";
 import { appUrl } from "../paths";
 import { burstFrom } from "./confetti";
+import { crtKick } from "../crt/fx";
 
 const SEGMENTS = 12;
 /**
@@ -33,6 +34,7 @@ export function Meter({
     const bite = root.current.querySelector(".meter-bite");
     const from = bite?.getBoundingClientRect().width ? bite : root.current.querySelector(".meter-readout");
     burstFrom(from, { count: 60, power: 560 });
+    crtKick(2);
   }, [pulse, complete]);
   useEffect(() => {
     if (stage > previous.current) {

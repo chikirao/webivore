@@ -2,6 +2,7 @@ import dns from "node:dns/promises";
 import http from "node:http";
 import https from "node:https";
 import net from "node:net";
+import zlib from "node:zlib";
 export function isPublicIP(ip: string): boolean {
   if (net.isIP(ip) !== 4) return false; // IPv6 deliberately disabled in this MVP, including mapped addresses.
   const [a, b] = ip.split(".").map(Number);
@@ -38,6 +39,31 @@ export function validateURL(value: string) {
     throw new Error("Private and local addresses are blocked.");
   return u;
 }
+/** Decodes a compressed response body; output is capped like a raw resource. */
+export function decode(encoding: string | undefined, body: Buffer): Buffer {
+  const codings = (encoding ?? "")
+    .split(",")
+    .map((c) => c.trim().toLowerCase())
+    .filter((c) => c && c !== "identity");
+  const maxOutputLength = 6_000_000;
+  try {
+    // Content-Encoding lists codings in the order they were applied.
+    for (const coding of codings.reverse()) {
+      if (coding === "gzip" || coding === "x-gzip") body = zlib.gunzipSync(body, { maxOutputLength });
+      else if (coding === "deflate") body = zlib.inflateSync(body, { maxOutputLength });
+      else if (coding === "br") body = zlib.brotliDecompressSync(body, { maxOutputLength });
+      else if (coding === "zstd" && "zstdDecompressSync" in zlib)
+        body = (zlib as unknown as { zstdDecompressSync: typeof zlib.gunzipSync }).zstdDecompressSync(body, { maxOutputLength });
+      else throw new Error(`Unsupported content encoding: ${coding}.`);
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ERR_BUFFER_TOO_LARGE")
+      throw new Error("Page resource budget exceeded.");
+    throw error;
+  }
+  return body;
+}
+
 export async function safeFetch(
   value: string,
   budget: { bytes: number },
@@ -150,16 +176,25 @@ export async function safeFetch(
           for (const key of [
             "content-type",
             "location",
-            "content-encoding",
             "access-control-allow-origin",
           ]) {
             const v = res.headers[key];
             if (typeof v === "string") headers[key] = v;
           }
+          // Some CDNs compress despite "accept-encoding: identity". The
+          // browser never decodes a fulfilled body, so it gets plain bytes,
+          // decoded under the same 6 MB per-resource cap.
+          let body: Buffer = Buffer.concat(chunks);
+          try {
+            body = decode(res.headers["content-encoding"], body);
+          } catch (error) {
+            reject(error);
+            return;
+          }
           resolve({
             status: res.statusCode ?? 502,
             headers,
-            body: Buffer.concat(chunks),
+            body,
           });
         });
       },

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PickupEvent } from "./game";
 import { burstFrom } from "./ui/confetti";
+import { crtKick } from "./crt/fx";
 
 /** A streak ends this long after the last bite. */
 export const STREAK_MS = 2400;
@@ -45,6 +46,12 @@ export function Combo({ pickups }: { pickups: PickupEvent[] }) {
     timer.current = setTimeout(() => setStreak(0), STREAK_MS);
   }, [pickups]);
   const previous = useRef(0);
+  // The tube jolts when the streak climbs into a louder word (Feast and up).
+  useEffect(() => {
+    const now = comboTier(streak).tier,
+      before = comboTier(previous.current).tier;
+    if (now > before && now >= 4) crtKick(now >= 6 ? 2 : 1);
+  }, [streak]);
   useEffect(() => {
     if (Math.floor(streak / 10) > Math.floor(previous.current / 10))
       burstFrom(badge.current, { count: 30 + Math.min(90, streak / 2), rainbow: streak >= 100, power: 480 + Math.min(300, streak) });

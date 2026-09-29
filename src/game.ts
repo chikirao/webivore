@@ -559,7 +559,7 @@ export class Game {
     p.pickedAt = this.time;
     this.visualBites++;
     this.radius = Math.min(this.maxRadius, Math.max(5, Math.sqrt(this.area)));
-    if (this.count === this.items.length) this.surface.clear();
+    if (this.count === this.items.length) this.surface.clear(this.reduced);
     p.packed = this.collection.allocate(p, this.radius);
     p.normal.copy(p.packed.normal);
     for (const member of members) {
@@ -721,6 +721,7 @@ export class Game {
   animateWorld(dt: number) {
     const speed = Math.hypot(this.vx, this.vy);
     this.stunts.update(dt);
+    this.surface?.animate();
     const scale = 1 + Math.min(0.8, this.radius / 380);
     this.danceStep(dt, scale);
     this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer, this.y);

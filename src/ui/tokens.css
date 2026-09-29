@@ -137,11 +137,13 @@ a {
   opacity: 0;
   will-change: transform;
 }
-.brand-cursor-active body,
-.brand-cursor-active button,
-.brand-cursor-active a,
-.brand-cursor-active input {
-  cursor: none;
+/* The brand cursor replaces the system one everywhere, including elements
+   that set their own pointer/grab/default cursor (intro screen, hints, links). */
+.brand-cursor-active,
+.brand-cursor-active *,
+.brand-cursor-active *::before,
+.brand-cursor-active *::after {
+  cursor: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

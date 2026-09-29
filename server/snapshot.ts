@@ -26,6 +26,10 @@ export async function snapshot(url: string) {
     const context = await browser.newContext({
       viewport: { width: 1280, height: 900 },
       deviceScaleFactor: 1,
+      // Without a locale, sites guess the language from the exit IP (a VPN
+      // can make Google Docs come out in Arabic).
+      locale: "en-US",
+      extraHTTPHeaders: { "accept-language": "en-US,en;q=0.9" },
       serviceWorkers: "block",
       acceptDownloads: false,
     });

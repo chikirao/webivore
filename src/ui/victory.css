@@ -39,12 +39,13 @@
   height: auto;
   color: var(--ink);
 }
+/* one slide-in each, then they stay put (no looping jump back) */
 .victory-chev-top {
-  animation: victory-chev 0.6s linear infinite;
+  animation: victory-chev-in 0.5s var(--ease) 0.25s both;
 }
 .victory-chev-bottom {
   color: var(--paper);
-  animation: victory-chev 0.6s linear infinite reverse;
+  animation: victory-chev-in-right 0.5s var(--ease) 0.25s both;
 }
 .victory-title {
   margin: 0;
@@ -145,9 +146,16 @@
     opacity: 0;
   }
 }
-@keyframes victory-chev {
-  to {
-    transform: translateX(16px);
+@keyframes victory-chev-in {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+}
+@keyframes victory-chev-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

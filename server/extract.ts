@@ -53,6 +53,33 @@ export async function extract(page: Page) {
         });
       },
     };
+    // Visually hidden content (screen-reader-only text, zero-opacity menus):
+    // its text still has layout boxes, which would claim other pixels.
+    // (a method, like helper.add: named functions pick up a bundler helper
+    // that does not exist inside the page)
+    const hiddenCache = new Map<Element, boolean>();
+    const visibility = {
+      hidden(el: Element | null): boolean {
+        if (!el) return false;
+        const known = hiddenCache.get(el);
+        if (known !== undefined) return known;
+        let result = visibility.hidden(el.parentElement);
+        if (!result) {
+          const s = getComputedStyle(el);
+          if (Number(s.opacity) === 0) result = true;
+          else if (s.clip !== "auto" && /absolute|fixed/.test(s.position))
+            result = true;
+          else if (/inset\(\s*(50|100)%/.test(s.clipPath)) result = true;
+          else if (s.overflowX !== "visible" || s.overflowY !== "visible") {
+            // the sr-only pattern: a 1 px box that clips its own text
+            const r = el.getBoundingClientRect();
+            result = r.width <= 2 || r.height <= 2;
+          }
+        }
+        hiddenCache.set(el, result);
+        return result;
+      },
+    };
     let node: Node | null;
     while ((node = walker.nextNode()) && visits++ < 40000) {
       const el =
@@ -66,7 +93,8 @@ export async function extract(page: Page) {
       if (
         s.visibility !== "visible" ||
         s.display === "none" ||
-        Number(s.opacity) === 0
+        Number(s.opacity) === 0 ||
+        visibility.hidden(el)
       )
         continue;
       if (node.nodeType === Node.ELEMENT_NODE) {

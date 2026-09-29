@@ -52,6 +52,17 @@ export function tearSize(radius: number) {
   };
 }
 
+/** Finish floor: tile size (divides the 1024 px texture chunks), flip rhythm. */
+const FLIP_TILE = 128;
+/**
+ * Checkerboard loop, seconds: even squares turn up, then odd; the whole page
+ * holds; even squares turn back, then odd; a black beat; again.
+ */
+const FLIP = { turn: 0.45, stagger: 0.6, show: 2, rest: 1, jitter: 0.08 };
+const FLIP_DOWN = FLIP.stagger + FLIP.turn + FLIP.show;
+const FLIP_CYCLE = FLIP_DOWN + FLIP.stagger + FLIP.turn + FLIP.rest;
+type FlipTile = { x: number; z: number; w: number; h: number; odd: boolean; jitter: number };
+
 type Hole = { r: Region; pad: number; rough: number; seed: number; x0: number; y0: number; x1: number; y1: number };
 
 /**
@@ -146,13 +157,102 @@ export class WorldSurface {
       }
     }
   }
-  clear() {
+  /**
+   * The page is eaten: the ground goes black and the site comes back as a
+   * floor of tiles that flip over to the page and back to black in a
+   * checkerboard loop, like the attract screen's platform.
+   */
+  clear(reduced = false) {
     this.holes = [];
-    for (let i = 0; i < this.tiles.length; i++) {
-      const t = this.tiles[i];
-      t.ctx.fillStyle = this.level.pageColor ?? "#f4f0e7";
-      t.ctx.fillRect(0, 0, t.canvas.width, t.canvas.height);
+    const scene = this.tiles[0]?.mesh.parent;
+    for (const t of this.tiles) {
+      // the tile canvases get the untouched page back for the flip tiles
+      t.ctx.drawImage(this.source, 0, t.y, this.level.width, t.height, 0, 0, this.level.width, t.height);
       t.texture.needsUpdate = true;
+      const ground = new THREE.MeshBasicMaterial({ color: HOLE, side: THREE.DoubleSide });
+      t.mesh.material.dispose();
+      t.mesh.material = ground;
+      if (!scene) continue;
+      const tiles: FlipTile[] = [];
+      const pos: number[] = [],
+        uv: number[] = [];
+      for (let y = 0; y < t.height; y += FLIP_TILE)
+        for (let x = 0; x < this.level.width; x += FLIP_TILE) {
+          const w = Math.min(FLIP_TILE, this.level.width - x),
+            h = Math.min(FLIP_TILE, t.height - y);
+          const u0 = x / this.level.width,
+            u1 = (x + w) / this.level.width,
+            v0 = 1 - y / t.height,
+            v1 = 1 - (y + h) / t.height;
+          // two triangles facing up (+y); corners: (x0,z0) (x0,z1) (x1,z0) (x1,z1)
+          for (const [c, u, v] of [
+            [0, u0, v0],
+            [1, u0, v1],
+            [2, u1, v0],
+            [1, u0, v1],
+            [3, u1, v1],
+            [2, u1, v0],
+          ] as const) {
+            pos.push(c, 0, 0);
+            uv.push(u, v);
+          }
+          const mx = x + w / 2,
+            mz = t.y + y + h / 2;
+          const col = x / FLIP_TILE,
+            row = (t.y + y) / FLIP_TILE;
+          tiles.push({ x: mx, z: mz, w, h, odd: (col + row) % 2 === 1, jitter: Math.random() * FLIP.jitter });
+        }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      const mesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshBasicMaterial({ map: t.texture, side: THREE.FrontSide }),
+      );
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+      this.flips.push({ mesh, tiles });
+    }
+    this.flipStart = performance.now() / 1000;
+    this.flipReduced = reduced;
+    this.animate();
+  }
+  private flips: { mesh: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>; tiles: FlipTile[] }[] = [];
+  private flipStart = 0;
+  private flipReduced = false;
+  /** Advances the finish floor: each ring flips to the page, holds, flips back to black. */
+  animate() {
+    if (!this.flips.length) return;
+    const now = performance.now() / 1000 - this.flipStart;
+    const ease = (u: number) => u * u * (3 - 2 * u);
+    for (const { mesh, tiles } of this.flips) {
+      const pos = mesh.geometry.attributes.position as THREE.BufferAttribute;
+      const a = pos.array as Float32Array;
+      tiles.forEach((tile, i) => {
+        let angle = 0;
+        if (!this.flipReduced) {
+          const s = (now % FLIP_CYCLE) - (tile.odd ? FLIP.stagger : 0) - tile.jitter;
+          const turn = (from: number) => Math.min(1, Math.max(0, (s - from) / FLIP.turn));
+          angle =
+            s < FLIP_DOWN
+              ? Math.PI + Math.PI * ease(turn(0)) // black → page, over the top
+              : Math.PI * ease(turn(FLIP_DOWN)); // page → black
+        }
+        const sin = Math.sin(angle),
+          cos = Math.cos(angle);
+        const lift = 0.6 + Math.abs(sin) * tile.h * 0.35;
+        const hw = tile.w / 2,
+          hh = tile.h / 2;
+        // rotate each corner about the tile's x axis
+        const corner = (c: number) => {
+          const ox = c >= 2 ? hw : -hw,
+            oz = c % 2 ? hh : -hh;
+          return [tile.x + ox, lift - oz * sin, tile.z + oz * cos];
+        };
+        const corners = [corner(0), corner(1), corner(2), corner(3)];
+        [0, 1, 2, 1, 3, 2].forEach((c, k) => a.set(corners[c], (i * 6 + k) * 3));
+      });
+      pos.needsUpdate = true;
     }
   }
   /** Sends drawn holes to the GPU (the game loop also flushes before every render). */
@@ -160,6 +260,12 @@ export class WorldSurface {
     flushPatches(this.renderer);
   }
   dispose() {
+    for (const { mesh } of this.flips) {
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+      mesh.removeFromParent();
+    }
+    this.flips = [];
     dropPatches(this.tiles.map((t) => t.texture));
     for (const t of this.tiles) {
       t.mesh.geometry.dispose();

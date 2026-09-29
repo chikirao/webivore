@@ -199,6 +199,40 @@ export async function prepareDocument(
       }
     });
   await normalize();
+  // App-like pages (Google Docs, web mail, chat) keep the window still and
+  // scroll one inner panel. Unroll the biggest such panel into the document so
+  // the sweep and the capture see the whole thing, not one screenful.
+  await page.evaluate(() => {
+    const root = document.scrollingElement ?? document.documentElement;
+    if (root.scrollHeight > innerHeight + 200) return;
+    let best: HTMLElement | null = null,
+      area = 0;
+    for (const el of Array.from(
+      document.querySelectorAll<HTMLElement>("*"),
+    ).slice(0, 14000)) {
+      if (el.scrollHeight <= el.clientHeight + 200) continue;
+      if (!/auto|scroll|overlay/.test(getComputedStyle(el).overflowY)) continue;
+      const r = el.getBoundingClientRect();
+      const a =
+        Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0)) *
+        Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      if (a > area) {
+        area = a;
+        best = el;
+      }
+    }
+    if (!best || area < innerWidth * innerHeight * 0.35) return;
+    const full = Math.min(9000, best.scrollHeight);
+    best.style.setProperty("height", `${full}px`, "important");
+    best.style.setProperty("max-height", "none", "important");
+    best.style.setProperty("overflow", "visible", "important");
+    // every box above it was sized to the window: let them grow with it
+    for (let el = best.parentElement; el; el = el.parentElement) {
+      el.style.setProperty("height", "auto", "important");
+      el.style.setProperty("max-height", "none", "important");
+      el.style.setProperty("overflow", "visible", "important");
+    }
+  });
   // Recompute height: lazy content can extend the document during the sweep.
   for (let top = 0; top < 9000 && deadline.remaining(24_000) > 0; top += 700) {
     const height = await page.evaluate((y) => {

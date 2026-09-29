@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateURL, isPublicIP, safeFetch } from "../server/security.ts";
+import zlib from "node:zlib";
+import { validateURL, isPublicIP, safeFetch, decode } from "../server/security.ts";
 import { properties } from "../src/shared.ts";
 test("blocks alternate local, private, metadata and IPv6 addresses", () => {
   for (const url of [
@@ -42,6 +43,14 @@ test("safeFetch refuses private destination before opening a connection", async 
   await assert.rejects(
     safeFetch("http://127.0.0.1/", { bytes: 0 }, new AbortController().signal),
   );
+});
+test("compressed resources reach the browser decoded, within the resource cap", () => {
+  const css = Buffer.from("body{background:#1b2838}");
+  assert.equal(decode("gzip", zlib.gzipSync(css)).toString(), css.toString());
+  assert.equal(decode("br", zlib.brotliCompressSync(css)).toString(), css.toString());
+  assert.equal(decode(undefined, css), css);
+  // a small bomb that inflates past 6 MB is refused, not expanded
+  assert.throws(() => decode("gzip", zlib.gzipSync(Buffer.alloc(7_000_000))), /budget/);
 });
 test("size and density produce increasing pickup thresholds", () => {
   const a = properties(20, 20, "TEXT_SMALL"),

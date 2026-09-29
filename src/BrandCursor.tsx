@@ -22,7 +22,8 @@ export function BrandCursor() {
       ty = e.clientY;
       visible = true;
       hover =
-        e.target instanceof Element && !!e.target.closest("button,a,input");
+        e.target instanceof Element &&
+        !!e.target.closest("button,a,input,select,textarea,label,[role=button]");
     };
     const leave = () => {
       visible = false;

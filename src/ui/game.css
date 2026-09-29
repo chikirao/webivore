@@ -1803,6 +1803,53 @@
   bottom: 0;
   font: bold 10px Arial;
 }
+/* "Need help?" callout above the guide button (at most twice per browser). */
+.help-nudge {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 66px);
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  padding: 10px 16px 11px 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 3px solid var(--paper);
+  outline: 2px solid var(--ink);
+  border-left: 8px solid var(--red);
+  white-space: nowrap;
+  animation: nudge-in 0.35s var(--ease) both, nudge-bob 1.4s 0.35s ease-in-out infinite;
+  z-index: 5;
+}
+.help-nudge b {
+  font-size: 22px;
+}
+.help-nudge .label {
+  color: var(--red);
+  font-size: 12px;
+}
+/* arrow down to the ? button */
+.help-nudge::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  bottom: -2px;
+  border: 9px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--red);
+  transform: translateY(100%);
+}
+@keyframes nudge-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+}
+@keyframes nudge-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
 .guide-button:focus-visible {
   outline: 3px solid var(--red);
   outline-offset: 3px;

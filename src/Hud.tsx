@@ -50,6 +50,56 @@ export function Bracket({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
   );
 }
 
+const NUDGE_KEY = "webivore.helpNudges";
+const NUDGE_AFTER = 10;
+const NUDGE_TIMES = 2;
+const nudgesShown = () => {
+  try {
+    return Number(localStorage.getItem(NUDGE_KEY)) || 0;
+  } catch {
+    return NUDGE_TIMES; // no storage: never nag
+  }
+};
+
+/**
+ * "Need help?" above the guide button when no new piece has been found for
+ * ten seconds of play. Shown at most twice per browser, then never again.
+ */
+function HelpNudge({ stats, paused, onHint }: { stats: Stats; paused: boolean; onHint: () => void }) {
+  const [open, setOpen] = useState(false);
+  const since = useRef<{ count: number; time: number } | null>(null);
+  const active = stats.ready && !stats.done && !stats.error && !paused;
+  useEffect(() => {
+    if (!since.current || stats.count !== since.current.count || stats.guiding) {
+      since.current = { count: stats.count, time: stats.time };
+      if (open) setOpen(false);
+      return;
+    }
+    if (!open && active && stats.time - since.current.time >= NUDGE_AFTER && nudgesShown() < NUDGE_TIMES) {
+      try {
+        localStorage.setItem(NUDGE_KEY, String(nudgesShown() + 1));
+      } catch {
+        /* ignore */
+      }
+      setOpen(true);
+    }
+  }, [stats.count, stats.time, stats.guiding, active, open]);
+  if (!open || !active) return null;
+  return (
+    <button
+      type="button"
+      className="help-nudge"
+      onClick={() => {
+        setOpen(false);
+        onHint();
+      }}
+    >
+      <b className="display">Need help?</b>
+      <span className="label">Click me</span>
+    </button>
+  );
+}
+
 export function Hud({
   stats,
   level,
@@ -201,6 +251,7 @@ export function Hud({
         </Plate>
       </div>
       <div className="hud-camera">
+        <HelpNudge stats={stats} paused={paused} onHint={onHint} />
         <button
           className="guide-button"
           onClick={onHint}

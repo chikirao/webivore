@@ -22,6 +22,12 @@ import { downloadLevelFile, levelSource, type LevelSource } from "./level-file";
 import { loadRemoteLevel, SnapshotError } from "./remote-level";
 import { routeAt } from "./paths";
 import { startRun, type RunTicket } from "./leaderboard-api";
+import { Prelude } from "./prelude/Prelude";
+import { crtKick, crtTransition, installCrt } from "./crt/fx";
+import { CrtDevPanel } from "./crt/CrtDevPanel";
+
+/** `?intro=0` skips the room prelude (tests, returning players with a link). */
+const showIntro = new URLSearchParams(location.search).get("intro") !== "0";
 
 const initial: Stats = {
   count: 0,
@@ -73,7 +79,22 @@ function App() {
     game = useRef<Game | null>(null),
     operation = useRef<AbortController | null>(null);
   const pauseRef = useRef(false);
+  const [intro, setIntro] = useState(showIntro);
   const viewport = useViewport();
+  useEffect(installCrt, []);
+  // The tube switches channel between the main screens.
+  const hadLevel = useRef(false);
+  useEffect(() => {
+    if (level) crtTransition("power-on");
+    else if (hadLevel.current) crtTransition("switch");
+    hadLevel.current = !!level;
+  }, [level]);
+  useEffect(() => {
+    if (stats.done) crtKick(2);
+  }, [stats.done]);
+  useEffect(() => {
+    if (cheered) crtTransition("switch");
+  }, [cheered]);
   const touchControls = useTouchControls();
   const moveStick = useCallback(
     (x: number, y: number) => game.current?.setStick(x, y),
@@ -257,6 +278,8 @@ function App() {
     return (
       <>
         <BrandCursor />
+        {intro && <Prelude onDone={() => setIntro(false)} />}
+        <div className="entry-shell" inert={intro}>
         <Entry
           url={url}
           setUrl={setUrl}
@@ -284,6 +307,7 @@ function App() {
           onTurnstileToken={(token) => void load(pendingUrl || url, token)}
           onTurnstileCancel={() => setTurnstileNeeded(false)}
         />
+        </div>
       </>
     );
   const site = siteLabel(level.url);
@@ -427,7 +451,10 @@ appRoot.render(
   ) : new URLSearchParams(location.search).get("lab") === "rabbit" ? (
     <RabbitLab />
   ) : (
-    <App />
+    <>
+      <App />
+      {import.meta.env.DEV && <CrtDevPanel />}
+    </>
   ),
 );
 if (import.meta.hot) import.meta.hot.dispose(() => appRoot.unmount());
