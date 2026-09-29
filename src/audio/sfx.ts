@@ -272,6 +272,24 @@ export function thud() {
   playBuffer("countdown", thudBuffer()[0], { gain: 1.3 });
 }
 
+// ---------------------------------------------------------------- boost
+function boostBuffers() {
+  return render("boost", 3, (sr, r) => {
+    // a rush of air that opens up, on a soft push of the ball
+    const n = Math.floor(0.5 * sr);
+    const x = sweep(noise(n, r), sr, (u) => 450 * (4200 / 450) ** Math.sqrt(u), 0.45);
+    envelope(x, sr, (t, u) => Math.min(1, t / 0.015) * (1 - u) ** 2);
+    const push = chirp(Math.floor(0.25 * sr), sr, (t) => 52 + 80 * Math.exp(-t / 0.04));
+    envelope(push, sr, (t) => Math.exp(-t / 0.07));
+    mix(x, push, 0.55);
+    return finish(x, sr, 0.85, 0.0005, 0.03);
+  });
+}
+/** A speed boost; bigger balls sound heavier. */
+export function boost(size = 0) {
+  playBuffer("boost", pick(boostBuffers()), { rate: jitter(0.04) * (1 - 0.2 * Math.min(1, size)) });
+}
+
 // ---------------------------------------------------------------- tube and machinery
 function staticBuffers() {
   return render("static", 3, (sr, r, i) => {
@@ -377,6 +395,7 @@ export const SFX_TESTS: Record<string, () => void> = {
   "You won": victory,
   "3-2-1-GO": () => [3, 2, 1, 0].forEach((n, i) => setTimeout(() => countdown(n), i * 800)),
   Landing: thud,
+  Boost: () => boost(0),
   "Tube switch": () => tube(0),
   "Tube power-on": () => tube(2),
   "Disc tick": () => room("tick"),
@@ -393,5 +412,6 @@ whenAudioUnlocked(() =>
     popperBuffers();
     staticBuffers();
     thudBuffer();
+    boostBuffers();
   }, 60),
 );

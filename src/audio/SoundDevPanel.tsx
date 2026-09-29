@@ -54,6 +54,7 @@ const LABELS: Record<Channel, string> = {
   party: "Confetti",
   victory: "You won",
   countdown: "Countdown",
+  boost: "Boost",
   tube: "CRT",
 };
 /** Which test buttons belong to which tab. */
@@ -65,6 +66,7 @@ const TESTS: Partial<Record<Channel, string[]>> = {
   party: ["Popper", "Firework"],
   victory: ["You won"],
   countdown: ["3-2-1-GO", "Landing"],
+  boost: ["Boost"],
   tube: ["Tube switch", "Tube power-on"],
 };
 

@@ -435,12 +435,14 @@ BASS_DRIVE = [(i, "o" if i % 4 == 2 else "r", int(i % 8 == 0), 0, 1) for i in ra
 class Seg:
     """`bars` bars at `bpm`. A loop wraps everything ringing past its end onto its start."""
 
-    def __init__(self, bars, bpm, loop, swing=0.0):
+    def __init__(self, bars, bpm, loop, swing=0.0, origin=0.0):
         self.beat = 60 / bpm
         self.bar = 4 * self.beat
         self.step = self.beat / 4
         self.swing = swing
-        self.dur = bars * self.bar
+        self.origin = origin
+        self.fade_out = 0.0
+        self.dur = bars * self.bar + origin
         self.n = int(round(self.dur * SR))
         self.loop = loop
         self.extra = int(4 * SR)
@@ -449,7 +451,7 @@ class Seg:
         self.bass_notes = []
 
     def t(self, bar, step=0):
-        return bar * self.bar + step * self.step + (self.swing * self.step if step % 2 == 1 else 0)
+        return self.origin + bar * self.bar + step * self.step + (self.swing * self.step if int(step) % 2 == 1 else 0)
 
     def add(self, bus, sig, t, gain=1.0, pan=0.0):
         sig = np.asarray(sig, float)
@@ -604,137 +606,211 @@ class Seg:
         return drums + bass + keys + lead + fx + wet * reverb + echoes * echo
 
 
-# ================================================================ the game (120 BPM)
+# ================================================================ the game (100 BPM, soft indie)
+GAME_BPM = 100
+
+
+def soft_kick(vel=1.0):
+    return kick(vel, f0=115, f1=50, tp=0.03, ta=0.2, dur=0.45, click=0.05, drive=1.1)
+
+
+def soft_snare(vel=1.0):
+    return lp(snare(vel, tone=210, dur=0.25), 5200)
+
+
+def soft_hat(vel=1.0):
+    return lp(hat(vel), 9000)
+
+
+def guitar(m, dur, vel=1.0):
+    """A clean plucked string: harmonics that die faster the higher they are."""
+    f = midi(m)
+    n = int((dur + 0.6) * SR)
+    t = secs(n)
+    y = np.zeros(n)
+    for k in range(1, 11):
+        if f * k > 9000:
+            break
+        # plucked a fifth of the way along: every fifth harmonic is weak
+        amp = abs(np.sin(np.pi * k * 0.2)) / k**1.1
+        y += amp * np.sin(2 * np.pi * f * k * t * (1 + 0.0004 * k * k)) * np.exp(-t * (1.6 + 0.9 * k))
+    y += 0.2 * bp(rng.standard_normal(n), 1500, 5000) * np.exp(-t / 0.004)
+    env = np.minimum(1, t / 0.002) * np.where(t < dur, 1, np.exp(-(t - dur) / 0.12))
+    return fade(y * env * vel, 0.0005, 0.03)
+
+
+def flute(m, dur, vel=1.0):
+    f = midi(m)
+    n = int((dur + 0.3) * SR)
+    t = secs(n)
+    fv = f * (1 + 0.006 * np.sin(2 * np.pi * 4.8 * t) * np.clip((t - 0.2) / 0.3, 0, 1))
+    y = sine(fv) + 0.18 * sine(2 * fv) + 0.05 * sine(3 * fv)
+    breath = bp(rng.standard_normal(n), f * 0.8, min(f * 4, 12000)) * 0.12
+    env = np.minimum(1, t / 0.045) * np.where(t < dur, 1, np.exp(-(t - dur) / 0.09))
+    return fade((y + breath * (0.6 + 0.4 * np.exp(-t / 0.08))) * env * vel, 0.002, 0.03)
+
+
+def soft_groove(s, bar, kick_on=True, snare_on=True, hats=True, busy=False):
+    if kick_on:
+        hits = ((0, 1.0), (7, 0.45), (8, 0.8), (14, 0.5)) if busy else ((0, 1.0), (7, 0.45), (8, 0.8))
+        for st, v in hits:
+            s.add("drums", soft_kick(v), s.t(bar, st), 0.7)
+            s.kicks.append(s.t(bar, st))
+    if snare_on:
+        for st in (4, 12):
+            s.add("drums", soft_snare(0.8), s.t(bar, st), 0.2, pan=0.05)
+        s.add("drums", rim(0.5), s.t(bar, 15), 0.06, pan=-0.2)
+    if hats:
+        for st in range(0, 16, 2):
+            s.add("drums", soft_hat(0.4 if st % 4 == 2 else 0.25), s.t(bar, st), 0.1, pan=0.3)
+    for st in range(16):
+        s.add("drums", shaker(0.8 if st % 2 == 0 else 0.4), s.t(bar, st), 0.06 if busy else 0.045, pan=-0.35)
+
+
+def finger_bass(s, prog, bar0, bars, gain=0.4, busy=False):
+    if busy:
+        pattern = [(0, "r", 5), (6, "5", 2), (8, "o", 4), (12, "5", 2), (14, "r", 2)]
+    else:
+        pattern = [(0, "r", 6), (6, "5", 2), (8, "r", 6), (14, "5", 2)]
+    for i in range(bars):
+        for st, tone, ln in pattern:
+            root, q, _ = CH[chord_at(prog, i, st)]
+            s.add("bass", upright(root + TONES[q][tone], ln * s.step * 0.9), s.t(bar0 + i, st), gain)
+
+
+def strum(s, prog, bar0, bars, gain, hits=((0, 6), (6, 2), (10, 6))):
+    for i in range(bars):
+        for st, ln in hits:
+            v = CH[chord_at(prog, i, st)][2][1:]
+            for j, m in enumerate(v):
+                s.add("keys", guitar(m, ln * s.step, 0.8), s.t(bar0 + i, st) + j * 0.014, gain, pan=0.35)
+
+
+def picking(s, prog, bar0, bars, gain, order=(0, 2, 1, 3, 2, 4, 3, 1), every=2):
+    """Fingerpicked chord tones on eighths (or sixteenths), panned left."""
+    for i in range(bars):
+        for k, st in enumerate(range(0, 16, every)):
+            v = CH[chord_at(prog, i, st)][2][1:]
+            m = v[order[k % len(order)] % len(v)]
+            s.add("fx", guitar(m, every * s.step * 1.5, 0.9), s.t(bar0 + i, st), gain, pan=-0.4)
+
+
+def game_count():
+    """3, 2, 1 on the beats: a swell rising with each count; GO is the next downbeat."""
+    s = Seg(0.75, GAME_BPM, loop=False)
+    s.add("keys", pad([m - 12 if m > 70 else m for m in CH["Em9"][2][1:]], 1.9, attack=1.6, release=0.1, cutoff=1400), 0, 0.12)
+    for i, m in enumerate((40, 43, 47)):
+        s.add("drums", soft_kick(0.7 + 0.1 * i), s.t(0, 4 * i), 0.6)
+        s.add("bass", upright(m, 0.4), s.t(0, 4 * i), 0.35)
+    s.add("fx", whoosh(1.8, 300, 5000, res=0.45, shape=2.4, peak=0.98), 0, 0.12)
+    for j in range(8):
+        s.add("drums", shaker(0.3 + 0.08 * j), s.t(0, 8) + j * s.step / 2, 0.05)
+    return s
+
+
 def game_intro():
-    s = Seg(2, 120, loop=False)
-    # GO! — a hit, then the groove gathers
-    s.add("drums", crash(1.0), 0, 0.3)
-    s.add("keys", stab(CH["Em9"][2], 0.3), 0, 0.3)
-    s.add("fx", boom(60, 32, 1.2), 0, 0.35)
-    for st, v in ((0, 1.0), (6, 0.7), (10, 0.9)):
-        s.add("drums", kick(v), s.t(0, st), 0.95)
-        s.kicks.append(s.t(0, st))
-    for st in range(0, 16, 2):
-        s.add("drums", hat(0.45 if st % 4 == 2 else 0.25), s.t(0, st), 0.28, pan=0.28)
-    s.groove(1, PAT_A, steps=range(8))
-    s.roll(1, 8, 12, 0.25, 0.6)
-    s.roll(1, 12, 16, 0.6, 1.0, div=2)
-    s.add("fx", whoosh(2.0, 300, 6000, res=0.65, shape=2.3, peak=0.97), s.t(1) - 0.5 * s.bar, 0.18)
-    s.bass(["Em9"], 0, 2, [(i, "r" if i % 4 else "o", int(i % 8 == 0), 0, 1) for i in range(0, 16, 2)])
-    s.acid(lambda t: np.interp(t, [0, 4], [300, 1400]), 0.34)
-    s.melody([[], PICKUP], 0, vibe, 0.2)
+    """GO: one bar that opens up, the theme's pickup at its end."""
+    s = Seg(1, GAME_BPM, loop=False)
+    for m in (64, 71, 76, 83):
+        s.add("lead", bell(m, 0.6), 0, 0.05)
+    s.add("drums", lp(crash(0.6), 7000), 0, 0.12)
+    s.add("drums", soft_kick(1.0), 0, 0.8)
+    s.kicks.append(0)
+    soft_groove(s, 0, kick_on=False, snare_on=False)
+    s.add("drums", soft_snare(0.8), s.t(0, 12), 0.2)
+    finger_bass(s, ["Em9"], 0, 1)
+    strum(s, ["Em9"], 0, 1, 0.07)
+    s.melody([PICKUP], 0, vibe, 0.2)
     return s
 
 
 def game_loop():
-    s = Seg(48, 120, loop=True)
+    s = Seg(48, GAME_BPM, loop=True, swing=0.1)
     A, B, C, D, A2, E, F = 0, 8, 16, 24, 28, 36, 44
-    # A — the theme on vibes over the break
-    s.add("drums", crash(0.9), s.t(A), 0.28)
+    # A — the theme on vibes, guitar and a light kit
     for i in range(8):
-        s.groove(A + i, PAT_A if i % 2 == 0 else PAT_B)
-    s.bass(PROG_A, A, 8, BASS_A)
-    s.melody(THEME, A, vibe, 0.22)
-    s.keys(PROG_A, A, 8, [(0, 6), (10, 4)], 0.045)
-    s.stabs(PROG_A, A, 1, [(0, 2)], 0.22)
-    s.stabs(PROG_A[4:], A + 4, 1, [(0, 2)], 0.2)
-    # B — the answer on a square lead, stabs pushing
+        soft_groove(s, A + i)
+    finger_bass(s, PROG_A, A, 8)
+    strum(s, PROG_A, A, 8, 0.06)
+    s.keys(PROG_A, A, 8, [(0, 14)], 0.03)
+    s.melody(THEME, A, vibe, 0.2)
+    # B — the answer on a flute, a vibe shadowing it
     for i in range(8):
-        s.groove(B + i, PAT_A if i % 2 == 0 else PAT_B, open_hats=(6, 14))
-    s.bass(PROG_B, B, 8, BASS_B)
-    s.melody(ANSWER, B, lead, 0.1)
-    s.melody(ANSWER, B, vibe, 0.07, shift=12, pan=0.3)
-    s.stabs(PROG_B, B, 8, [(0, 2), (6, 1), (10, 2)], 0.13)
-    # C — breakdown: pads, hats and rim, the theme in fragments
+        soft_groove(s, B + i)
+    finger_bass(s, PROG_B, B, 8)
+    picking(s, PROG_B, B, 8, 0.07)
+    s.keys(PROG_B, B, 8, [(0, 6), (10, 6)], 0.035)
+    s.melody(ANSWER, B, flute, 0.1)
+    s.melody(ANSWER, B, vibe, 0.05, shift=12, pan=0.3)
+    # C — breakdown: shaker and rim, pads, the theme in fragments on bells
     for i in range(8):
-        s.groove(C + i, {"k": [(0, 0.8)] if i < 6 else [], "s": [], "h": PAT_HALF["h"]}, gain=0.8)
-        for st in (4, 12):
-            s.add("drums", rim(0.8), s.t(C + i, st), 0.14, pan=-0.2)
-    s.pads(PROG_A, C, 8, 0.11)
-    s.keys(PROG_A, C, 8, [(0, 10)], 0.05)
-    s.bass(PROG_A, C, 8, BASS_SUB)
-    s.melody(THEME[0:2], C, vibe, 0.2)
-    s.melody(THEME[4:6], C + 4, vibe, 0.2)
-    s.melody([THEME[7]], C + 7, vibe, 0.16, shift=-12)
-    # D — build: four on the floor, a roll, the filter opens
+        soft_groove(s, C + i, kick_on=i in (0, 4), snare_on=False, hats=False)
+        s.add("drums", rim(0.7), s.t(C + i, 12), 0.08, pan=-0.2)
+    s.pads(PROG_A, C, 8, 0.08, cutoff=1500)
+    picking(s, PROG_A, C, 8, 0.06, order=(0, 1, 2, 3), every=4)
+    finger_bass(s, PROG_A, C, 8, gain=0.3)
+    s.melody(THEME[0:2], C, bell, 0.05, shift=12)
+    s.melody(THEME[0:2], C, vibe, 0.13)
+    s.melody(THEME[4:6], C + 4, vibe, 0.13)
+    s.melody([THEME[7]], C + 7, vibe, 0.12, shift=-12)
+    # D — the kit comes back, a tambourine gathers
     prog_d = ["Em9", "Cmaj9", "D69", "D69"]
     for i in range(4):
-        s.groove(D + i, {"k": [(0, 1.0), (4, 0.9), (8, 0.95), (12, 0.9)], "s": [(4, 0.8), (12, 0.8)] if i < 2 else [],
-                         "h": [(st, 0.4) for st in range(2, 16, 4)]})
-    s.roll(D + 2, 0, 16, 0.2, 0.5)
-    s.roll(D + 3, 0, 8, 0.45, 0.7)
-    s.roll(D + 3, 8, 16, 0.7, 1.0, div=2)
-    s.stabs(prog_d, D, 4, [(0, 2)], 0.2)
-    s.pads(prog_d, D, 4, 0.08, cutoff=1200)
-    s.bass(prog_d, D, 4, BASS_DRIVE)
-    s.add("fx", whoosh(4 * s.bar, 250, 7000, res=0.7, shape=2.4, peak=0.98), s.t(D), 0.2)
-    s.melody([[], [], [], PICKUP], D, vibe, 0.22)
-    # A2 — the theme again, lead and vibes an octave apart, arps underneath
-    s.add("drums", crash(1.0), s.t(A2), 0.3)
+        soft_groove(s, D + i, snare_on=i >= 2)
+        for st in range(16):
+            s.add("drums", tamb(0.5), s.t(D + i, st), 0.012 * (i + 1 + st / 16), pan=0.4)
+    s.pads(prog_d, D, 4, 0.07, cutoff=1300)
+    finger_bass(s, prog_d, D, 4)
+    strum(s, prog_d, D, 4, 0.06)
+    s.add("fx", whoosh(2 * s.bar, 300, 4000, res=0.4, shape=2.2, peak=0.98), s.t(D + 2), 0.08)
+    s.melody([[], [], [], PICKUP], D, vibe, 0.2)
+    # A2 — the theme on flute with bells above, fingerpicking under it
     for i in range(8):
-        s.groove(A2 + i, PAT_A if i % 2 == 0 else PAT_B, open_hats=(14,))
-    s.bass(PROG_A, A2, 8, BASS_A)
-    s.melody(THEME, A2, lead, 0.1)
-    s.melody(THEME, A2, vibe, 0.1, shift=12, pan=-0.25)
-    s.arps(PROG_A, A2, 8, 0.035)
-    s.stabs(PROG_A, A2, 8, [(0, 2)], 0.15)
-    # E — a new colour: ii–iii–IV–V, a riff calling across the stereo field
-    s.add("drums", crash(0.7), s.t(E), 0.22)
+        soft_groove(s, A2 + i, busy=i % 2 == 1)
+    finger_bass(s, PROG_A, A2, 8, busy=True)
+    picking(s, PROG_A, A2, 8, 0.06)
+    s.keys(PROG_A, A2, 8, [(0, 6), (10, 6)], 0.03)
+    s.melody(THEME, A2, flute, 0.11)
+    s.melody(THEME, A2, bell, 0.035, shift=12, pan=-0.25)
+    # E — ii–iii–IV–V: a riff between vibes and guitar
     for i in range(8):
-        s.groove(E + i, PAT_C, open_hats=(14,) if i % 2 else ())
-    s.bass(PROG_E, E, 8, BASS_B)
-    s.melody(RIFF, E, vibe, 0.18, pan=-0.3)
-    s.melody(RIFF2, E + 4, pluck_voice, 0.12, pan=0.3)
-    s.melody(RIFF2, E + 4, vibe, 0.1, pan=0.3)
-    s.stabs(PROG_E, E, 8, [(0, 3), (6, 1), (10, 1), (12, 2)], 0.1)
-    s.arps(PROG_E, E + 4, 4, 0.03, order=(0, 1, 2, 3))
-    # F — turnaround on E minor, half time, a fill back to the top
-    for i in range(3):
-        s.groove(F + i, PAT_HALF, open_hats=(14,))
-    s.groove(F + 3, PAT_HALF, steps=range(8))
-    s.roll(F + 3, 8, 16, 0.3, 1.0, div=2)
-    for st in (8, 12, 14):
-        s.add("drums", kick(0.9), s.t(F + 3, st), 0.9)
-        s.kicks.append(s.t(F + 3, st))
-    s.pads(["Em9"] * 3 + ["D69"], F, 4, 0.09)
-    s.keys(["Em9"] * 3 + ["D69"], F, 4, [(0, 6), (7, 3), (10, 6)], 0.05)
-    s.bass(["Em9"] * 3 + ["D69"], F, 4, BASS_SUB)
-    s.melody([[(0, 83, 4), (4, 81, 4), (8, 79, 8)], [(0, 76, 12)], [(0, 79, 4), (4, 78, 4), (8, 74, 8)], PICKUP], F, vibe, 0.18)
-    s.add("fx", whoosh(2.0, 400, 9000, res=0.55, shape=2.2, peak=0.98), s.t(F + 3), 0.18)
-    s.acid(lambda t: 460 + 220 * np.sin(2 * np.pi * t / 32) ** 2 + np.interp(t, [s.t(D), s.t(A2), s.t(E), s.t(F)], [0, 900, 150, 0]) * ((t > s.t(D)) & (t < s.t(E + 1))), 0.34)
+        soft_groove(s, E + i, busy=True)
+    finger_bass(s, PROG_E, E, 8, busy=True)
+    strum(s, PROG_E, E, 8, 0.05, hits=((0, 3), (6, 2), (10, 3), (14, 2)))
+    s.melody(RIFF, E, vibe, 0.17, pan=-0.25)
+    s.melody(RIFF2, E + 4, guitar, 0.12, pan=0.3)
+    s.pads(PROG_E, E + 4, 4, 0.05)
+    # F — turnaround, half the kit, back to the top
+    for i in range(4):
+        soft_groove(s, F + i, snare_on=i == 3, hats=i >= 2)
+    s.pads(["Em9"] * 3 + ["D69"], F, 4, 0.07)
+    s.keys(["Em9"] * 3 + ["D69"], F, 4, [(0, 6), (7, 3), (10, 6)], 0.04)
+    finger_bass(s, ["Em9"] * 3 + ["D69"], F, 4, gain=0.34)
+    turn = [[(0, 83, 4), (4, 81, 4), (8, 79, 8)], [(0, 76, 12)], [(0, 79, 4), (4, 78, 4), (8, 74, 8)], PICKUP]
+    s.melody(turn, F, flute, 0.1)
     return s
-
-
-def pluck_voice(m, dur, vel=1.0):
-    return pluck(m, dur, vel)
 
 
 def game_final():
-    """The last bites: everything a notch up."""
-    s = Seg(16, 120, loop=True)
-    s.add("drums", crash(1.0), 0, 0.3)
-    for i in range(8):
-        s.groove(i, PAT_A if i % 2 == 0 else PAT_B, open_hats=(6, 14))
+    """The last bites: a little more motion, not more volume."""
+    s = Seg(16, GAME_BPM, loop=True, swing=0.1)
+    for i in range(16):
+        soft_groove(s, i, busy=True)
         for st in range(1, 16, 2):
-            s.add("drums", hat(0.18), s.t(i, st), 0.2, pan=-0.2)
-    s.bass(PROG_A, 0, 8, BASS_DRIVE)
-    s.melody(THEME, 0, lead, 0.11)
-    s.melody(THEME, 0, vibe, 0.1, shift=12, pan=0.25)
-    s.stabs(PROG_A, 0, 8, [(0, 2), (6, 1), (10, 2), (14, 1)], 0.12)
-    s.arps(PROG_A, 0, 8, 0.03)
-    s.add("drums", crash(0.8), s.t(8), 0.26)
-    for i in range(8):
-        s.groove(8 + i, PAT_C, steps=range(16) if i < 7 else range(8))
-    s.roll(15, 8, 16, 0.35, 1.0, div=2)
-    s.bass(PROG_E, 8, 8, BASS_A)
-    s.melody(RIFF, 8, lead, 0.1)
-    s.melody(RIFF2, 12, vibe, 0.14, shift=0, pan=0.3)
-    s.melody([PICKUP], 15, vibe, 0.2)
-    s.stabs(PROG_E, 8, 8, [(0, 2), (6, 1), (10, 2)], 0.12)
-    s.arps(PROG_E, 8, 8, 0.035, order=(0, 1, 2, 3))
-    s.add("fx", whoosh(2.0, 400, 9000, res=0.55, shape=2.2, peak=0.98), s.t(15), 0.18)
-    s.acid(lambda t: 900 + 500 * np.sin(2 * np.pi * t / 16) ** 2, 0.33)
+            s.add("drums", soft_hat(0.2), s.t(i, st), 0.06, pan=0.3)
+    finger_bass(s, PROG_A, 0, 8, busy=True)
+    picking(s, PROG_A, 0, 8, 0.05, every=1)
+    s.keys(PROG_A, 0, 8, [(0, 6), (10, 6)], 0.03)
+    s.melody(THEME, 0, vibe, 0.18)
+    s.melody(THEME, 0, flute, 0.07, shift=-12, pan=0.2)
+    finger_bass(s, PROG_E, 8, 8, busy=True)
+    strum(s, PROG_E, 8, 8, 0.05, hits=((0, 3), (6, 2), (10, 3), (14, 2)))
+    picking(s, PROG_E, 8, 8, 0.04, order=(0, 1, 2, 3), every=1)
+    s.melody(RIFF, 8, flute, 0.1)
+    s.melody(RIFF2, 12, vibe, 0.15, pan=0.3)
+    s.melody([PICKUP], 15, bell, 0.05, shift=12)
     return s
+
 
 
 # ================================================================ the menu (90 BPM, swung, lo-fi)
@@ -798,19 +874,54 @@ def lofi(s, x):
 
 
 # ================================================================ the finale (120 BPM, half time)
-def finale_intro():
-    s = Seg(2, 120, loop=False)
+def finale_jingle():
+    """The last bite to the trophy screen, timed to Victory.tsx: the rabbit
+    dances 4 s, then the YOU WON! card lands on four hits a beat apart (card,
+    YOU, WON!, the subtitle) and the last chord rings until the trophy screen
+    at 7 s."""
+    s = Seg(3.3, 120, loop=False, origin=0.4)
+    s.fade_out = 0.35
+    # a run up out of the last bite
+    for j, m in enumerate((64, 67, 71, 74, 76, 79)):
+        s.add("lead", pluck(m + 12, 0.06), j * 0.06, 0.08, pan=(j - 2.5) * 0.15)
+    # two bars of dance: the theme's head, bright, over G and C
     for i, c in enumerate(("Gmaj9", "Cmaj9")):
-        s.add("keys", stab(CH[c][2], 0.5, cut0=7000, cut1=1600, tau=0.4, release=0.4), s.t(i), 0.3)
-        s.add("drums", kick(1.0), s.t(i), 0.9)
-        s.kicks.append(s.t(i))
-        s.add("fx", boom(midi(CH[c][0] - 12) * 1.4, midi(CH[c][0] - 12), 1.0), s.t(i), 0.3)
-    s.add("drums", crash(1.0, 3.0), 0, 0.32)
-    s.pads(["Gmaj9", "Cmaj9"], 0, 2, 0.08, cutoff=2600)
-    s.melody(THEME[:2], 0, lead, 0.12)
-    s.melody(THEME[:2], 0, vibe, 0.14, shift=12)
-    s.roll(1, 12, 16, 0.4, 1.0, div=2)
+        root, q, voicing = CH[c]
+        s.add("keys", stab(voicing, 0.3, cut0=7000, cut1=1400), s.t(i), 0.22)
+        s.pads([c], i, 1, 0.06, cutoff=2600)
+        for st, v in ((0, 1.0), (6, 0.6), (8, 0.9), (14, 0.5)):
+            s.add("drums", kick(v, drive=1.4), s.t(i, st), 0.75)
+            s.kicks.append(s.t(i, st))
+        for st in (4, 12):
+            s.add("drums", clap(0.9), s.t(i, st), 0.2)
+        for st in range(0, 16, 2):
+            s.add("drums", tamb(0.8 if st % 4 == 2 else 0.4), s.t(i, st), 0.07, pan=-0.3)
+        for st, tone, ln in ((0, "r", 3), (3, "o", 1), (6, "5", 2), (8, "r", 3), (11, "o", 1), (14, "5", 2)):
+            s.add("bass", round_bass(root + TONES[q][tone], ln * s.step), s.t(i, st), 0.36)
+    s.add("drums", crash(0.7), s.t(0), 0.2)
+    s.melody(THEME[:2], 0, vibe, 0.2)
+    s.melody(THEME[:2], 0, lead, 0.07, shift=-12)
+    s.melody(THEME[:2], 0, bell, 0.04, shift=12, pan=0.3)
+    s.roll(1, 12, 16, 0.3, 0.9, div=2)
+    # the card: four hits a beat apart, the last one resolving to G
+    for k, (c, root) in enumerate((("Em9", 28), ("Cmaj9", 24), ("D69", 26), ("Gmaj9", 31))):
+        t = s.t(2, 4 * k)
+        last = k == 3
+        if last:
+            hit = stab(CH[c][2], 1.1, cut0=7000, cut1=1600, tau=0.4, release=0.6)
+        else:
+            hit = stab(CH[c][2], 0.3)
+        s.add("keys", hit, t, 0.34)
+        s.add("fx", boom(midi(root) * 1.4, midi(root), 1.2 if last else 0.55), t, 0.4)
+        s.add("drums", kick(1.0, f0=190, ta=0.35), t, 0.9)
+        s.kicks.append(t)
+        s.add("drums", snare(0.8 if last else 0.6), t, 0.4)
+    s.add("drums", crash(1.0, 3.0), s.t(2), 0.3)
+    s.add("drums", crash(0.9, 3.0), s.t(2, 12), 0.3)
+    for j, m in enumerate((79, 83, 86, 91, 95)):
+        s.add("lead", bell(m, 0.4), s.t(2, 12) + 0.05 + j * 0.05, 0.05, pan=(j - 2) * 0.2)
     return s
+
 
 
 def finale_loop():
@@ -855,6 +966,9 @@ def render(name, parts, rms, kbps, rate=SR, post=None):
     gain = 10 ** ((rms - db(np.sqrt((loops**2).mean()))) / 20)
     for label, seg, x in mixes:
         x = np.tanh(x * gain * 1.2) / np.tanh(1.2)
+        if seg.fade_out:
+            k = int(seg.fade_out * SR)
+            x[:, -k:] *= np.linspace(1, 0, k) ** 2
         if seg.loop:
             info[label] = [round(pos, 6), round(pos + M, 6), round(pos + seg.dur + M, 6)]
             x = np.concatenate([x, x[:, : int(TAIL * SR)]], axis=1)
@@ -867,15 +981,15 @@ def render(name, parts, rms, kbps, rate=SR, post=None):
     out = OUT / f"music-{name}.mp3"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(tmp), "-ar", str(rate), "-b:a", f"{kbps}k", str(out)], check=True)
     print(f"music-{name}.mp3  {y.shape[1] / SR:.1f} s  {out.stat().st_size // 1024} KB  loops {info}")
-    return {"bar": parts[0][1].bar, **info}
+    return {"beat": parts[-1][1].beat, "bar": parts[-1][1].bar, **info}
 
 
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     music = {
         "menu": render("menu", [("intro", menu_intro()), ("loop", menu_loop())], -21, 48, 22050, post=lofi),
-        "game": render("game", [("intro", game_intro()), ("loop", game_loop()), ("final", game_final())], -17, 96),
-        "finale": render("finale", [("intro", finale_intro()), ("loop", finale_loop())], -17, 96),
+        "game": render("game", [("count", game_count()), ("intro", game_intro()), ("loop", game_loop()), ("final", game_final())], -20, 96),
+        "finale": render("finale", [("jingle", finale_jingle()), ("loop", finale_loop())], -18, 96),
     }
     MAP.write_text(json.dumps(music, indent=2) + "\n", "utf-8")
     print("wrote", MAP)

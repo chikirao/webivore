@@ -2206,3 +2206,71 @@
 .pause-toggles .chip[aria-pressed="true"] {
   color: var(--red);
 }
+
+/* ---- Boost: fills up over the cooldown, red and solid when ready ---- */
+.boost-button {
+  --charge: 1;
+  display: grid;
+  place-items: center;
+  color: white;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
+}
+.boost-button svg {
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+.boost-button[data-ready="false"] svg {
+  opacity: 0.55;
+}
+/* keyboards: a small key next to the guide button */
+.hud-boost {
+  position: absolute;
+  right: 64px;
+  top: -55px;
+  width: 48px;
+  height: 48px;
+  border: 3px solid white;
+  outline: 2px solid black;
+  background: linear-gradient(to top, #8d0b0b calc(var(--charge) * 100%), black 0);
+}
+.hud-boost[data-ready="true"] {
+  background: var(--red);
+  animation: boost-ready 0.25s var(--ease);
+}
+.hud-boost .boost-key {
+  position: absolute;
+  left: 3px;
+  bottom: 1px;
+  font: bold 8px Arial;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.hud-boost:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
+}
+.touch-playing .hud-boost {
+  display: none;
+}
+@keyframes boost-ready {
+  50% {
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-boost[data-ready="true"] {
+    animation: none;
+  }
+}
+/* Narrow phones: no room for the site name beside the minimap controls; the rail stays as the back button. */
+@media (max-width: 520px) {
+  .site-rail .site-name,
+  .site-rail .site-note {
+    display: none;
+  }
+}

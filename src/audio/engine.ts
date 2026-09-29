@@ -64,6 +64,39 @@ export function useMuted() {
   );
 }
 
+// ---------- the player's mix: all sound and music levels, kept across visits ----------
+export type Mix = { volume: number; music: number; musicMuted: boolean };
+const MIX_KEY = "webivore.mix";
+let mix: Mix = (() => {
+  const base: Mix = { volume: 1, music: 1, musicMuted: false };
+  try {
+    return { ...base, ...JSON.parse(localStorage.getItem(MIX_KEY) ?? "{}") };
+  } catch {
+    return base;
+  }
+})();
+const mixListeners = new Set<() => void>();
+export const getMix = () => mix;
+export function setMix(patch: Partial<Mix>) {
+  mix = { ...mix, ...patch };
+  try {
+    localStorage.setItem(MIX_KEY, JSON.stringify(mix));
+  } catch {
+    /* ignore */
+  }
+  applyMaster();
+  mixListeners.forEach((f) => f());
+}
+export function onMix(f: () => void) {
+  mixListeners.add(f);
+  return () => void mixListeners.delete(f);
+}
+export function useMix() {
+  return useSyncExternalStore(onMix, getMix);
+}
+/** Music's share of the mix: 0 when muted either way. */
+export const musicLevel = () => (mix.musicMuted ? 0 : mix.music);
+
 // ---------- context ----------
 /** The shared context (created suspended on first use), or null without Web Audio. */
 export function audio(): AudioContext | null {
@@ -169,7 +202,7 @@ export function whenAudioUnlocked(f: () => void, gesture?: () => void) {
 function applyMaster() {
   if (!ctx || !master) return;
   const m = soundSettings.master;
-  master.gain.setTargetAtTime(muted ? 0 : m.volume, ctx.currentTime, 0.04);
+  master.gain.setTargetAtTime(muted ? 0 : m.volume * mix.volume, ctx.currentTime, 0.04);
   if (reverb && Math.abs(reverbTime - m.reverbTime) > 0.05) {
     reverbTime = m.reverbTime;
     reverb.buffer = impulse(ctx, reverbTime);

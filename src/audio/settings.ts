@@ -58,6 +58,8 @@ export const SOUND_DEFAULTS = {
   party: strip({ volume: 0.4, lowpass: 9000, reverb: 0.35 }),
   /** The YOU WON! motif. */
   victory: strip({ volume: 0.38, lowpass: 9000, reverb: 0.45, echo: 0.12, echoTime: 0.25, echoFeedback: 0.3 }),
+  /** The speed boost's rush. */
+  boost: strip({ volume: 0.3, lowpass: 9000, reverb: 0.12 }),
   /** 3, 2, 1, GO and the rabbit landing on the page. */
   countdown: strip({ volume: 0.3, lowpass: 8000, reverb: 0.2 }),
   /** Static and a tube thunk when the CRT switches channel. */

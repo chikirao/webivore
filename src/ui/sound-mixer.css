@@ -1,0 +1,131 @@
+/* The sound mixer: all sound and music, each with its speaker. */
+.sound-mixer {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.mixer-row {
+  display: grid;
+  grid-template-columns: 44px 84px 1fr;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+}
+.mixer-speaker {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--ink);
+  color: var(--paper);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  cursor: pointer;
+}
+.mixer-speaker svg {
+  width: 22px;
+  height: 22px;
+}
+.mixer-speaker:hover,
+.mixer-speaker:focus-visible {
+  background: var(--red);
+}
+.mixer-row.is-off .mixer-speaker {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 3px var(--ink);
+}
+.mixer-label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mixer-row.is-off .mixer-label {
+  opacity: 0.5;
+}
+/* a thick keyline track filled red up to the value, a square thumb */
+.mixer-range {
+  --fill: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mixer-range::-webkit-slider-runnable-track {
+  height: 14px;
+  border: 3px solid var(--ink);
+  background: linear-gradient(90deg, var(--red) var(--fill), var(--paper) var(--fill));
+}
+.mixer-range::-moz-range-track {
+  height: 8px;
+  border: 3px solid var(--ink);
+  background: linear-gradient(90deg, var(--red) var(--fill), var(--paper) var(--fill));
+}
+.mixer-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 26px;
+  margin-top: -9px;
+  background: var(--ink);
+  border: 3px solid var(--paper);
+  outline: 2px solid var(--ink);
+}
+.mixer-range::-moz-range-thumb {
+  width: 12px;
+  height: 22px;
+  border-radius: 0;
+  background: var(--ink);
+  border: 3px solid var(--paper);
+  outline: 2px solid var(--ink);
+}
+.mixer-range:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+.mixer-row.is-off .mixer-range::-webkit-slider-runnable-track {
+  opacity: 0.55;
+}
+
+/* the speaker on the entry and finish rails, and its small window */
+.sound-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--paper);
+  font: 700 13px/1 var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sound-button svg {
+  width: 22px;
+  height: 22px;
+}
+.sound-button:hover,
+.sound-button[aria-expanded="true"] {
+  color: var(--red);
+}
+.sound-pop {
+  position: fixed;
+  z-index: 60;
+  width: min(330px, calc(100vw - 24px));
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 4px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--red);
+  animation: sound-pop-in 0.16s var(--ease, ease-out) both;
+}
+@keyframes sound-pop-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sound-pop {
+    animation: none;
+  }
+}

@@ -7,6 +7,7 @@ import { Meter } from "./ui/Meter";
 import { metres, time } from "./Hud";
 import { ArrowArt, EntryGraphics } from "./ui/OverdriveArt";
 import { BallMark, Burst, Chevrons, ClockMark } from "./ui/marks";
+import { SoundButton } from "./ui/SoundMixer";
 import "./ui/finish.css";
 import { appUrl } from "./paths";
 import { imageReady } from "./load-image";
@@ -115,14 +116,14 @@ export class TrophyScene {
     c.clip();
     c.fillStyle = INK;
     c.fillRect(ART.x, ART.y, ART.w, ART.h);
-    rays(c, -30, -40, 22, 320, "#222");
-    shade(c, -30, 52, 90, 14, 0.8);
+    rays(c, -44, -40, 22, 320, "#222");
+    shade(c, -44, 52, 90, 14, 0.8);
     this.ball.rotation.set(0.2, phase * Math.PI * 2, 0.08);
     this.renderer.render(this.scene, this.camera);
-    c.drawImage(this.renderer.domElement, -30 - BALL_PX / 2, -48 - BALL_PX / 2, BALL_PX, BALL_PX);
+    c.drawImage(this.renderer.domElement, -44 - BALL_PX / 2, -48 - BALL_PX / 2, BALL_PX, BALL_PX);
     if (this.rabbit.complete && this.rabbit.naturalWidth) {
       const h = 170;
-      c.drawImage(this.rabbit, 60, -120, (h * this.rabbit.naturalWidth) / this.rabbit.naturalHeight, h);
+      c.drawImage(this.rabbit, 36, -120, (h * this.rabbit.naturalWidth) / this.rabbit.naturalHeight, h);
     }
     c.restore();
     c.lineWidth = 3;
@@ -443,6 +444,7 @@ export function Finish({
         <b className="display rail-value">{time(game.time)}</b>
         <i className="rail-bar" />
         <span className="label rail-pieces">{game.count} pieces</span>
+        <SoundButton className="finish-sound" />
         <span className="strip checker-paper" aria-hidden="true" />
         <span className="strip hatch-white" aria-hidden="true" />
         <span className="strip hatch-red wide" aria-hidden="true" />

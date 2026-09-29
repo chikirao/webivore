@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { CrosshairIcon } from "@phosphor-icons/react";
+import { BoostButton } from "./BoostButton";
 import "./ui/touch-controls.css";
 
 /** Capability detection also covers iPads reporting a desktop user agent. */
@@ -26,8 +27,12 @@ export function useTouchControls() {
 export function TouchControls({
   onMove,
   looked = false,
+  onBoost,
+  boostCharge,
 }: {
   onMove: (x: number, y: number) => void;
+  onBoost: () => void;
+  boostCharge: () => number;
   /** The camera has been turned once: the swipe hint has done its job. */
   looked?: boolean;
 }) {
@@ -147,6 +152,7 @@ export function TouchControls({
           Move
         </span>
       </button>
+      <BoostButton className="touch-boost" onBoost={onBoost} charge={boostCharge} />
       <span id="joystick-help" className="sr-only">
         Drag to walk. Release to stop. Swipe the game field with another finger
         to rotate the camera. Arrow keys also move.

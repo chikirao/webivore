@@ -11,7 +11,7 @@ import { RabbitEditor } from "./RabbitEditor";
 import { Entry } from "./Entry";
 import { Hud } from "./Hud";
 import { Finish, siteLabel } from "./Finish";
-import { Victory } from "./Victory";
+import { DANCE_MS, Victory } from "./Victory";
 import { FALL } from "./stunts";
 import { Plate } from "./ui/Plate";
 import { Chevrons } from "./ui/marks";
@@ -27,7 +27,8 @@ import { crtKick, crtTransition, installCrt } from "./crt/fx";
 import { CrtDevPanel } from "./crt/CrtDevPanel";
 import { installAudioUnlock, setMuted, useMuted } from "./audio/engine";
 import { countdown as countdownSound } from "./audio/sfx";
-import { musicFinal, musicPause, playMusic, prefetchMusic, type Track } from "./audio/music";
+import { MUSIC_MAP, musicFinal, musicPause, musicToLoop, playMusic, prefetchMusic, type Track } from "./audio/music";
+import { SoundMixer } from "./ui/SoundMixer";
 import { soundSettings } from "./audio/settings";
 import { setLessEffects, useLessEffects } from "./prefs";
 
@@ -62,6 +63,8 @@ function useViewport() {
   }, []);
   return size;
 }
+
+const BEAT_MS = MUSIC_MAP.game.beat * 1000;
 
 function App() {
   const [url, setUrl] = useState(""),
@@ -105,6 +108,8 @@ function App() {
     if (cheered) crtTransition("switch");
   }, [cheered]);
   const touchControls = useTouchControls();
+  const boost = useCallback(() => void game.current?.boost(), []);
+  const boostCharge = useCallback(() => game.current?.boostCharge() ?? 1, []);
   const moveStick = useCallback(
     (x: number, y: number) => game.current?.setStick(x, y),
     [],
@@ -144,9 +149,12 @@ function App() {
       delete (window as unknown as { __game?: Game }).__game;
     };
   }, [level]);
+  // 3, 2, 1, GO fall on the game take's beats: its count-in plays under them.
+  const countStart = useRef(0);
   useEffect(() => {
     if (!stats.ready || !game.current) return;
     let n = 3;
+    countStart.current = performance.now();
     const timer = setInterval(() => {
       n--;
       setCountdown(n);
@@ -154,7 +162,7 @@ function App() {
         clearInterval(timer);
         setCountdown(null);
       }
-    }, 800);
+    }, BEAT_MS);
     return () => clearInterval(timer);
   }, [stats.ready]);
   // A leaderboard run opens when play actually starts on a captured website;
@@ -166,7 +174,7 @@ function App() {
   // The rabbit falls during "1" and hits the page exactly on "GO".
   useEffect(() => {
     if (countdown !== 1) return;
-    const timer = setTimeout(() => game.current?.startDrop(), 800 - FALL * 1000);
+    const timer = setTimeout(() => game.current?.startDrop(), Math.max(0, BEAT_MS - FALL * 1000));
     return () => clearTimeout(timer);
   }, [countdown]);
   useEffect(() => {
@@ -178,18 +186,28 @@ function App() {
   useEffect(() => {
     if (stats.ready && countdown !== null) countdownSound(countdown);
   }, [countdown, stats.ready]);
-  // Music: the room has its own record; then the menu take, silence through
-  // the countdown, the game take from GO, the finale from the last bite.
+  // Music: the room has its own record; then the menu take (while the level
+  // builds too), the game take from its count-in under 3-2-1, the finale
+  // from the last bite.
   const track: Track | null = intro
     ? null
-    : !level
-      ? "menu"
-      : stats.done
-        ? "finale"
-        : stats.ready && !stats.error && (countdown === null || countdown <= 0)
-          ? "game"
-          : null;
-  useEffect(() => playMusic(track), [track]);
+    : stats.error
+      ? null
+      : !level || !stats.ready
+        ? "menu"
+        : stats.done
+          ? "finale"
+          : "game";
+  useEffect(() => {
+    if (track === "game") playMusic("game", { fade: 0.35, since: countStart.current });
+    else if (track === "finale")
+      // without the dance the card lands at once: start the jingle at the card
+      playMusic("finale", { fade: 0.5, offset: matchMedia("(prefers-reduced-motion: reduce)").matches ? DANCE_MS / 1000 : 0 });
+    else playMusic(track);
+  }, [track]);
+  useEffect(() => {
+    if (cheered) musicToLoop();
+  }, [cheered]);
   useEffect(() => {
     if (level) prefetchMusic("game");
   }, [level]);
@@ -330,8 +348,6 @@ function App() {
           }}
           onImport={(file, kind) => void importFile(file, kind)}
           onCancel={cancel}
-          muted={muted}
-          setMuted={setMuted}
           loadingMessage={loadingMessage}
           importError={importError}
           notice={notice}
@@ -355,7 +371,7 @@ function App() {
         aria-label={
           touchControls
             ? "3D website world. Joystick to walk; swipe to rotate camera."
-            : "3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to follow."
+            : "3D website world. WASD to walk; drag to orbit; right-drag to pan; scroll to zoom; Space to boost; F to follow."
         }
       />
       {touchControls &&
@@ -363,7 +379,7 @@ function App() {
         !stats.done &&
         !stats.error &&
         !paused &&
-        countdown === null && <TouchControls onMove={moveStick} looked={stats.looked} />}
+        countdown === null && <TouchControls onMove={moveStick} looked={stats.looked} onBoost={boost} boostCharge={boostCharge} />}
       <div inert={stats.done}>
         <Hud
           stats={stats}
@@ -378,6 +394,8 @@ function App() {
           onLeave={leave}
           onZoom={(f) => game.current?.zoom(f)}
           onRecenter={() => game.current?.recenter()}
+          onBoost={boost}
+          boostCharge={boostCharge}
           onReset={() => game.current?.resetCamera()}
           onHint={() => game.current?.toggleHint()}
           viewport={viewport}
@@ -464,10 +482,8 @@ function App() {
               <Plate as="button" shape="chip" className="chip" aria-pressed={less} onClick={() => setLessEffects(!less)}>
                 {less ? "Full effects" : "Less effects"}
               </Plate>
-              <Plate as="button" shape="chip" className="chip" aria-pressed={muted} onClick={() => setMuted(!muted)}>
-                {muted ? "Sound on" : "Mute all sounds"}
-              </Plate>
             </span>
+            <SoundMixer />
           </Plate>
         </div>
       )}

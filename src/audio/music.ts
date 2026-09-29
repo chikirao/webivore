@@ -1,5 +1,5 @@
 import { appUrl } from "../paths";
-import { audio, bus, whenAudioUnlocked } from "./engine";
+import { audio, bus, musicLevel, onMix, whenAudioUnlocked } from "./engine";
 import MAP_JSON from "./music-map.json";
 import { onSoundSettings, soundSettings } from "./settings";
 
@@ -7,8 +7,10 @@ import { onSoundSettings, soundSettings } from "./settings";
  * The game's music: one theme in three takes (scripts/game-music.py).
  *
  * - menu:   the entry screen, slow and muffled;
- * - game:   from GO, a long loop, then "last bites" near the end;
- * - finale: from the last bite through the trophy screen.
+ * - game:   a count-in under 3-2-1, the groove from GO, a long loop, then
+ *           "last bites" near the end;
+ * - finale: a jingle timed to the dance and the YOU WON! card, then the
+ *           trophy screen's loop.
  *
  * Each file is an intro followed by loops. A section is [entry, loopStart,
  * loopEnd] in seconds: play from `entry`, then repeat [loopStart, loopEnd).
@@ -16,8 +18,9 @@ import { onSoundSettings, soundSettings } from "./settings";
  */
 export type Track = "menu" | "game" | "finale";
 type Section = [entry: number, start: number, end: number];
-type TrackMap = { bar: number; loop: Section; final?: Section };
-const MAP = MAP_JSON as unknown as Record<Track, TrackMap>;
+type TrackMap = { beat: number; bar: number; loop: Section; final?: Section };
+export const MUSIC_MAP = MAP_JSON as unknown as Record<Track, TrackMap>;
+const MAP = MUSIC_MAP;
 
 type Playing = { track: Track; src: AudioBufferSourceNode; gain: GainNode; when: number; offset: number; section: Section };
 
@@ -129,8 +132,17 @@ function stop(p: Playing | null, fade: number, at?: number) {
   }
 }
 
-/** Switches to a take (null: silence), fading the current one out over `fade` s. */
-export function playMusic(track: Track | null, fade = 1) {
+export type PlayOptions = {
+  /** Seconds the current take fades out over. */
+  fade?: number;
+  /** Where in the file to begin. */
+  offset?: number;
+  /** performance.now() of the moment the take should have started: a late start catches up. */
+  since?: number;
+};
+
+/** Switches to a take (null: silence), fading the current one out. */
+export function playMusic(track: Track | null, { fade = 1, offset = 0, since }: PlayOptions = {}) {
   if (track === wanted) return;
   const previous = wanted;
   wanted = track;
@@ -149,8 +161,9 @@ export function playMusic(track: Track | null, fade = 1) {
       if (id !== token || !buffer || !a) return;
       const m = MAP[track];
       // from the top: the intro, then the loop (or straight into the last bites)
+      const late = since === undefined ? 0 : Math.max(0, (performance.now() - since) / 1000);
       if (wantFinal && m.final) start(track, buffer, m.final, a.currentTime + 0.03, m.final[0]);
-      else start(track, buffer, m.loop, a.currentTime + 0.03, 0);
+      else start(track, buffer, m.loop, a.currentTime + 0.03, Math.min(offset + late, m.loop[1]));
     });
   });
 }
@@ -175,7 +188,7 @@ export function musicFinal() {
     const now = a.currentTime + 0.05,
       pos = position(p, now),
       bar = MAP.game.bar,
-      origin = pos >= p.section[0] ? p.section[0] : 0;
+      origin = p.section[0];
     let next = origin + Math.ceil((pos - origin) / bar) * bar;
     if (next - pos < 0.08) next += bar;
     const when = now + (next - pos);
@@ -184,12 +197,27 @@ export function musicFinal() {
   });
 }
 
+/** The finale skips ahead to its trophy-screen loop (the YOU WON! card was skipped). */
+export function musicToLoop() {
+  const a = audio(),
+    p = current;
+  if (!a || !p || p.track !== "finale" || position(p, a.currentTime) >= p.section[0] - 0.3) return;
+  void load("finale").then((buffer) => {
+    if (!buffer || current !== p) return;
+    const when = a.currentTime + 0.02;
+    stop(p, 0.25, when);
+    start("finale", buffer, p.section, when, p.section[0]);
+    current!.gain.gain.setValueAtTime(0, when);
+    current!.gain.gain.setTargetAtTime(level("finale"), when, 0.08);
+  });
+}
+
 function applyPause() {
   const a = audio();
   if (!a || !chain) return;
   const t = a.currentTime;
   chain.filter.frequency.setTargetAtTime(paused ? soundSettings.music.pauseMuffle : 20000, t, 0.12);
-  chain.out.gain.setTargetAtTime(paused ? 0.55 : 1, t, 0.12);
+  chain.out.gain.setTargetAtTime((paused ? 0.55 : 1) * musicLevel(), t, 0.12);
 }
 
 /** Pausing muffles the music instead of stopping it. */
@@ -204,13 +232,14 @@ onSoundSettings(() => {
   if (a && current) current.gain.gain.setTargetAtTime(level(current.track), a.currentTime, 0.05);
   applyPause();
 });
+onMix(applyPause);
 
 export const MUSIC_TESTS: Record<string, () => void> = {
-  Menu: () => playMusic("menu", 0.3),
-  Game: () => playMusic("game", 0.3),
+  Menu: () => playMusic("menu", { fade: 0.3 }),
+  Game: () => playMusic("game", { fade: 0.3 }),
   "Last bites": musicFinal,
-  Finale: () => playMusic("finale", 0.3),
-  "Stop music": () => playMusic(null, 0.5),
+  Finale: () => playMusic("finale", { fade: 0.3 }),
+  "Stop music": () => playMusic(null, { fade: 0.5 }),
 };
 
 if (import.meta.env.DEV)

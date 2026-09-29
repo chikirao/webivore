@@ -10,7 +10,7 @@ import { EmptyCells } from "./clearing";
 import { imageReady, reasonOf } from "./load-image";
 import { crumbsToSweep } from "./sweep";
 import { LayeredPile, type PackedFragment } from "./pile";
-import { tear, thud as landingThud } from "./audio/sfx";
+import { boost as boostSound, tear, thud as landingThud } from "./audio/sfx";
 
 export type PickupEvent = {
   id: number;
@@ -53,6 +53,12 @@ type Item = Piece & {
   flightAge?: number;
 };
 const UP = new THREE.Vector3(0, 1, 0);
+/**
+ * Boost: a burst of speed in the steering direction (or straight ahead),
+ * again once the cooldown has refilled. The rabbit bounds after the ball in a
+ * few quick hops; the page jumps in the ball's wake.
+ */
+export const BOOST = { duration: 0.6, cooldown: 1, drag: 1.6, hop: { duration: 0.7, count: 2, height: 28 } };
 const clamp = THREE.MathUtils.clamp;
 
 export class Game {
@@ -151,6 +157,11 @@ export class Game {
   /** Victory dance: the let-go ball and the rabbit's short walk away from it. */
   party?: { ball: THREE.Vector3; from: { x: number; y: number }; to: { x: number; y: number }; t: number };
   private shaken = new THREE.Vector3();
+  private boostAt = -Infinity;
+  /** The rabbit riding the ball as paper pieces during a boost. */
+  private rippleAt = 0;
+  /** Where the player steers, world units per second squared direction (0 when idle). */
+  private steer = new THREE.Vector2();
   constructor(
     canvas: HTMLCanvasElement,
     level: Level,
@@ -361,7 +372,8 @@ export class Game {
         e.preventDefault();
       this.keys.add(e.code);
       if (e.repeat) return;
-      if (e.code === "Space") this.recenter();
+      if (e.code === "Space") this.boost();
+      if (e.code === "KeyF") this.recenter();
       if (e.code === "KeyR") this.resetCamera();
       if (e.code === "KeyH" && !e.ctrlKey && !e.metaKey && !e.altKey)
         this.toggleHint();
@@ -476,6 +488,28 @@ export class Game {
   startDrop() {
     if (!this.surface) return;
     this.stunts.drop(this.x, this.y, this.items, this.surface.tiles, () => this.thud());
+  }
+  /** 0 just after a boost … 1 ready for the next. */
+  boostCharge() {
+    return clamp((this.time - this.boostAt) / BOOST.cooldown, 0, 1);
+  }
+  get boosting() {
+    return this.time - this.boostAt < BOOST.duration;
+  }
+  /** Space or the boost button. False while it cannot fire (cooldown, countdown, pause). */
+  boost() {
+    if (!this.ready || this.error || this.paused || this.done || this.party) return false;
+    if (this.stunts.state !== "landed" || this.boostCharge() < 1) return false;
+    const dir = this.steer.lengthSq() > 0.01 ? this.steer.clone().normalize() : new THREE.Vector2(Math.sin(this.heading), Math.cos(this.heading));
+    const speed = 640 + this.radius * 2.6;
+    this.vx = dir.x * speed;
+    this.vy = dir.y * speed;
+    this.heading = Math.atan2(dir.x, dir.y);
+    this.boostAt = this.time;
+    this.rippleAt = 0;
+    this.stunts.jolt(0.3);
+    boostSound(this.radius / 400);
+    return true;
   }
   /** Landing boom. */
   thud() {
@@ -620,9 +654,11 @@ export class Game {
     }
     const ax = side * Math.cos(this.cam.yaw) - forward * Math.sin(this.cam.yaw),
       az = -side * Math.sin(this.cam.yaw) - forward * Math.cos(this.cam.yaw);
-    const accel = 680 + this.radius * 2.3;
-    this.vx = (this.vx + ax * accel * dt) * Math.exp(-4 * dt);
-    this.vy = (this.vy + az * accel * dt) * Math.exp(-4 * dt);
+    this.steer.set(ax, az);
+    const accel = 680 + this.radius * 2.3,
+      drag = this.boosting ? BOOST.drag : 4;
+    this.vx = (this.vx + ax * accel * dt) * Math.exp(-drag * dt);
+    this.vy = (this.vy + az * accel * dt) * Math.exp(-drag * dt);
     this.x += this.vx * dt;
     this.y += this.vy * dt;
     const speed = Math.hypot(this.vx, this.vy);
@@ -661,6 +697,12 @@ export class Game {
       }
     }
     if (ate) this.sweepCrumbs();
+    // the page jumps in the boost's wake
+    if (this.boosting && this.surface && this.time >= this.rippleAt) {
+      this.rippleAt = this.time + 0.04;
+      const r = Math.max(110, this.radius * 1.6 + 70);
+      this.stunts.ripple(px, pz, this.pickupIndex.near(px, pz, r), this.surface.tiles, r, this.radius > 150 ? 8 : 6);
+    }
     if (this.count && speed > 1) {
       const axis = new THREE.Vector3(this.vy, 0, -this.vx).normalize();
       this.pile.quaternion.premultiply(
@@ -673,17 +715,35 @@ export class Game {
     this.done = this.count === this.items.length;
     if (this.done) this.stunts.celebrate(() => this.pile.position, () => this.radius);
   }
+  /**
+   * Boost hops: the rabbit bounds after the rolling ball in a few quick,
+   * higher-than-walking jumps, squashing on each landing.
+   */
+  private boostHop(scale: number) {
+    const u = (this.time - this.boostAt) / BOOST.hop.duration;
+    if (this.reduced || this.party || u < 0 || u >= 1) return { lift: 0, squash: 1 };
+    const phase = u * BOOST.hop.count,
+      n = Math.floor(phase),
+      l = phase - n,
+      arc = 4 * l * (1 - l);
+    return {
+      lift: arc * BOOST.hop.height * scale * (1 - n * 0.18),
+      // stretched in the air, squashed at take-off and landing
+      squash: l < 0.12 || l > 0.9 ? 0.82 : 1 + 0.1 * arc,
+    };
+  }
   animateWorld(dt: number) {
     const speed = Math.hypot(this.vx, this.vy);
     this.stunts.update(dt);
     this.surface?.animate();
     const scale = 1 + Math.min(0.8, this.radius / 380);
     this.danceStep(dt, scale);
-    this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer, this.y);
+    const hop = this.boostHop(scale);
+    this.character.position.set(this.x, this.stunts.lift + this.stunts.cheer + hop.lift, this.y);
     // Dancing, the rabbit faces the orbiting camera; otherwise its walk heading.
     const heading = (this.party ? this.cam.yaw : this.heading) + this.stunts.dance;
     this.character.rotation.y = heading;
-    this.character.scale.set(scale, scale * this.stunts.squash, scale);
+    this.character.scale.set(scale, scale * this.stunts.squash * hop.squash, scale);
     this.rabbit.update(
       this.camera,
       heading,

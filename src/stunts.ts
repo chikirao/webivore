@@ -3,12 +3,12 @@ import * as THREE from "three";
 import type { Piece } from "./shared";
 
 /**
- * One-off set pieces: the rabbit's drop onto the page at the start and the
- * victory burst at the end. Everything here is temporary geometry that
+ * One-off set pieces: the rabbit's drop onto the page at the start, the
+ * page jumping in a boost's wake and the victory burst at the end. Everything here is temporary geometry that
  * disposes itself; the playable world is never modified.
  */
 type Tile = { y: number; height: number; texture: THREE.Texture; mesh: THREE.Mesh };
-type Hopper = { mesh: THREE.Mesh; shadow: THREE.Mesh; delay: number; height: number; tilt: THREE.Vector2; age: number };
+type Hopper = { piece: Piece; mesh: THREE.Mesh; shadow: THREE.Mesh; delay: number; height: number; tilt: THREE.Vector2; age: number };
 type Bit = { mesh: THREE.Mesh; velocity: THREE.Vector3; spin: THREE.Vector3; life: number };
 
 const DROP_HEIGHT = 520;
@@ -30,6 +30,7 @@ export class Stunts {
   private sinceLanding = Infinity;
   private since = 0;
   private hoppers: Hopper[] = [];
+  private hopping = new Set<Piece>();
   private bits: Bit[] = [];
   private ring?: THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>;
   private tiles: Tile[] = [];
@@ -88,12 +89,24 @@ export class Stunts {
 
   /** The nearest pieces jump in a wave that travels out from the landing spot. */
   private hop() {
-    const reach = 300;
-    const near = this.pieces
-      .map((p) => ({ p, d: Math.hypot(p.x + p.width / 2 - this.x, p.y + p.height / 2 - this.z) }))
+    this.jump(this.x, this.z, this.pieces, 300, 18, 1100, 1);
+  }
+
+  /** A boost's wake: the page under the ball's path jumps, nearest first. */
+  ripple(x: number, z: number, near: Piece[], tiles: Tile[], reach: number, max = 5) {
+    if (this.reduced) return;
+    if (tiles.length) this.tiles = tiles;
+    this.jump(x, z, near, reach, max, 1600, 0.75);
+  }
+
+  private jump(x: number, z: number, pieces: Piece[], reach: number, max: number, wave: number, power: number) {
+    if (this.hoppers.length > 70) return;
+    const near = pieces
+      .filter((p) => !(p as { gone?: boolean }).gone && !this.hopping.has(p))
+      .map((p) => ({ p, d: Math.hypot(p.x + p.width / 2 - x, p.y + p.height / 2 - z) }))
       .filter(({ p, d }) => d < reach && p.width * p.height < 90_000 && p.width > 4 && p.height > 4)
       .sort((a, b) => a.d - b.d)
-      .slice(0, 18);
+      .slice(0, max);
     for (const { p, d } of near) {
       const tile = this.tiles.find((t) => p.y >= t.y && p.y + p.height <= t.y + t.height);
       if (!tile) continue;
@@ -118,15 +131,22 @@ export class Stunts {
       shadow.visible = false;
       this.scene.add(shadow, mesh);
       const strength = 1 - d / reach;
+      this.hopping.add(p);
       this.hoppers.push({
+        piece: p,
         mesh,
         shadow,
-        delay: d / 1100,
-        height: 10 + 30 * strength,
+        delay: d / wave,
+        height: (10 + 30 * strength) * power,
         tilt: new THREE.Vector2((Math.random() - 0.5) * 0.5 * strength, (Math.random() - 0.5) * 0.5 * strength),
         age: 0,
       });
     }
+  }
+
+  /** A jolt of the landing shake, 0–1. */
+  jolt(amount: number) {
+    if (!this.reduced) this.trauma = Math.max(this.trauma, amount);
   }
 
   /** Paper confetti: flat red, white and black shards. */
@@ -223,6 +243,7 @@ export class Stunts {
     }
     const done = this.hoppers.filter((h) => h.age - h.delay >= HOP);
     for (const h of done) {
+      this.hopping.delete(h.piece);
       h.mesh.removeFromParent();
       h.shadow.removeFromParent();
       h.mesh.geometry.dispose();

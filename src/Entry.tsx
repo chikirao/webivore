@@ -2,8 +2,6 @@ import {
   GlobeIcon,
   PlayIcon,
   UploadSimpleIcon,
-  SpeakerHighIcon,
-  SpeakerSlashIcon,
   QuestionIcon,
 } from "@phosphor-icons/react";
 import { useCallback, useState } from "react";
@@ -16,6 +14,7 @@ import { TurnstileDialog } from "./TurnstileWidget";
 import type { ImportKind } from "./local-import";
 import { appUrl } from "./paths";
 import { setLessEffects, useLessEffects } from "./prefs";
+import { SoundButton } from "./ui/SoundMixer";
 import "./ui/entry.css";
 export const PRESETS: [string, string][] = [
   ["Wikipedia", "https://en.wikipedia.org/wiki/Internet"],
@@ -30,8 +29,6 @@ export function Entry({
   onDemo,
   onImport,
   onCancel,
-  muted,
-  setMuted,
   loadingMessage,
   importError,
   notice,
@@ -48,8 +45,6 @@ export function Entry({
   onDemo: () => void;
   onImport: (file: File, kind?: ImportKind) => void;
   onCancel: () => void;
-  muted: boolean;
-  setMuted: (m: boolean) => void;
   loadingMessage: string;
   importError: string;
   notice: string;
@@ -197,7 +192,7 @@ export function Entry({
             <b>Drag</b> orbit · <b>right-drag</b> pan · <b>scroll</b> zoom.
           </p>
           <p>
-            <b>Space</b> follow · <b>Q / E</b> turn · <b>Esc</b> pause &middot;{" "}
+            <b>Space</b> boost · <b>F</b> follow · <b>Q / E</b> turn · <b>Esc</b> pause &middot;{" "}
             <b>H</b> toggle pickup hint.
           </p>
         </div>
@@ -212,10 +207,7 @@ export function Entry({
             <i aria-hidden="true" />
             Less effects
           </button>
-          <button type="button" className="rail-toggle" aria-pressed={muted} onClick={() => setMuted(!muted)}>
-            {muted ? <SpeakerSlashIcon weight="fill" /> : <SpeakerHighIcon weight="fill" />}
-            Mute sound
-          </button>
+          <SoundButton className="rail-toggle" />
         </span>
         <span className="rail-line" />
         <Chevrons className="rail-chevrons" />

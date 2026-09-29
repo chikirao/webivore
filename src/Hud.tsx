@@ -17,6 +17,7 @@ import { Plate } from "./ui/Plate";
 import { Meter } from "./ui/Meter";
 import { BallMark, ClockMark } from "./ui/marks";
 import { Combo } from "./Combo";
+import { BoostButton } from "./BoostButton";
 import "./ui/game.css";
 
 export function time(n: number) {
@@ -118,6 +119,8 @@ export function Hud({
   onLeave,
   onZoom,
   onRecenter,
+  onBoost,
+  boostCharge,
   onReset,
   onHint,
   viewport,
@@ -134,6 +137,8 @@ export function Hud({
   onLeave: () => void;
   onZoom: (f: number) => void;
   onRecenter: () => void;
+  onBoost: () => void;
+  boostCharge: () => number;
   onReset: () => void;
   onHint: () => void;
   viewport: { width: number; height: number };
@@ -226,6 +231,7 @@ export function Hud({
           className="site-rail"
           onClick={onLeave}
           title="Back to websites"
+          aria-label={`Back to websites, now eating ${site}`}
         >
           <CaretLeftIcon weight="bold" />
           <span className="site-name">{site}</span>
@@ -257,6 +263,7 @@ export function Hud({
       </div>
       <div className="hud-camera">
         <HelpNudge stats={stats} paused={paused} onHint={onHint} />
+        {stats.ready && !stats.done && <BoostButton className="hud-boost" onBoost={onBoost} charge={boostCharge} keyLabel="Space" />}
         <button
           className="guide-button"
           onClick={onHint}
@@ -331,7 +338,7 @@ export function Hud({
       <p className={`hint hud-hint${stats.looked ? " looked" : ""}`}>
         <span className="keys-hint">
           <b>WASD</b> walk · <b>drag</b> orbit · <b>right-drag</b> pan ·{" "}
-          <b>Q/E</b> turn · <b>space</b> follow · <b>esc</b> pause � <b>H</b>{" "}
+          <b>Q/E</b> turn · <b>space</b> boost · <b>F</b> follow · <b>esc</b> pause � <b>H</b>{" "}
           hint
         </span>
         {!stats.looked && (

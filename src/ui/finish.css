@@ -288,6 +288,17 @@
   .rail-value {
     font-size: 18px;
   }
+  .finish-sound .sound-button-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .finish-sound {
+    flex-shrink: 0;
+  }
+  .finish-rail .checker-paper,
   .rail-pieces,
   .finish-rail .hatch-red,
   .dots-paper {

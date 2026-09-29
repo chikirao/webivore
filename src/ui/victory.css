@@ -31,8 +31,9 @@
   box-shadow: 0 12px 0 var(--ink);
   transform: rotate(-6deg);
   animation:
-    victory-card 0.42s var(--ease) 0.1s both,
-    victory-shudder 0.34s linear 0.5s;
+    victory-card 0.4s var(--ease) both,
+    victory-shudder 0.3s linear 0.4s,
+    victory-shudder 0.4s linear 1.9s;
 }
 .victory-chev {
   width: min(300px, 60%);
@@ -65,10 +66,10 @@
   animation: victory-slam 0.34s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 .victory-title span:first-child {
-  animation-delay: 0.3s;
+  animation-delay: 0.62s;
 }
 .victory-title span:last-child {
-  animation-delay: 0.42s;
+  animation-delay: 1.12s;
 }
 .victory-sub {
   margin: 0;
@@ -77,7 +78,7 @@
   color: var(--paper);
   font-size: clamp(11px, 1.3vw, 16px);
   clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
-  animation: victory-rise 0.3s var(--ease) 0.7s both;
+  animation: victory-rise 0.28s var(--ease) 1.62s both;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

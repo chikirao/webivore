@@ -88,7 +88,8 @@
 .touch-camera-hint {
   position: absolute;
   right: max(24px, env(safe-area-inset-right));
-  bottom: calc(22% + env(safe-area-inset-bottom));
+  /* above the boost button */
+  bottom: calc(22% + clamp(84px, 12vw, 104px) + 16px + env(safe-area-inset-bottom));
   padding: 5px 9px;
   background: #ffffffd9;
   color: var(--ink);
@@ -189,10 +190,49 @@
     height: 44px;
   }
   .touch-camera-hint {
+    bottom: calc(23% + 96px);
+  }
+  .touch-boost {
+    width: 80px;
     bottom: 23%;
   }
 }
 /* Once the camera has been turned, the swipe hint has done its job. */
 .touch-playing .hud-hint.looked {
   display: none !important;
+}
+/* The boost sits under the right thumb, which also swipes the camera. */
+.touch-boost {
+  position: absolute;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: calc(22% + env(safe-area-inset-bottom));
+  width: clamp(84px, 12vw, 104px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 0 0 3px #050505;
+  /* the ring fills clockwise over the cooldown */
+  background:
+    radial-gradient(circle, #050505 58%, transparent 59%),
+    conic-gradient(var(--red) calc(var(--charge) * 360deg), #ffffff30 0);
+  pointer-events: auto;
+  gap: 0;
+  align-content: center;
+}
+.touch-boost[data-ready="true"] {
+  background: var(--red);
+  animation: boost-ready 0.25s var(--ease);
+}
+.touch-boost:active {
+  transform: scale(0.94);
+}
+.touch-boost svg {
+  width: 34px;
+  height: 34px;
+}
+.touch-boost .boost-label {
+  position: relative;
+  font: 700 11px/1 var(--text);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
